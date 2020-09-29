@@ -12,6 +12,8 @@
     ],
     "require": {
         "php": "^7.2",
+        "ext-bcmath": "^7",
+        "google/cloud-tasks": "^1.8",
         "ingenerator/oidc-token-verifier": "0.1.x@dev"
     },
     "require-dev": {
