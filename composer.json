@@ -1,0 +1,38 @@
+{
+    "name": "ingenerator/cloud-tasks-wrapper",
+    "description": "Library for dispatching and processing Google Cloud Tasks from PHP",
+    "homepage": "https://github.com/ingenerator/oidc-token-verifier",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Andrew Coulton",
+            "email": "andrew@ingenerator.com"
+        }
+    ],
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5"
+    },
+    "support": {
+        "source": "https://github.com/ingenerator/cloud-tasks-wrapper",
+        "issues": "https://github.com/ingenerator/cloud-tasks-wrapper/issues"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ingenerator\\CloudTasksWrapper\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "test\\mock\\Ingenerator\\CloudTasksWrapper\\": "test/mock",
+            "test\\unit\\Ingenerator\\CloudTasksWrapper\\": "test/unit"
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}
