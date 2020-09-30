@@ -53,8 +53,10 @@ class CloudTasksQueueMapperTest extends TestCase
      *           [{"project": "prod"}, "projects/prod/locations/derby/queues/awesome-queue"]
      *           [{}, "projects/mine/locations/derby/queues/awesome-queue"]
      */
-    public function test_it_merges_default_location_project_or_internal_name_if_not_set($map, $expect)
-    {
+    public function test_it_merges_default_location_project_or_internal_name_if_not_set(
+        $map,
+        $expect
+    ) {
         $this->config['default_location']        = 'derby';
         $this->config['default_project']         = 'mine';
         $this->config['queues']['awesome-queue'] = $map;
@@ -69,7 +71,7 @@ class CloudTasksQueueMapperTest extends TestCase
         $subject->getOidcSignerEmail('not-a-queue-here');
     }
 
-    public function test_it_throws_if_no_default_or_explicit_value()
+    public function test_it_throws_for_oidc_signer_if_no_default_or_explicit_value()
     {
         $this->config['default_signer']   = NULL;
         $this->config['queues']['some-q'] = [];
@@ -92,7 +94,6 @@ class CloudTasksQueueMapperTest extends TestCase
             $this->newSubject()->getOidcSignerEmail('my-q')
         );
     }
-
 
     protected function newSubject(): CloudTasksQueueMapper
     {
