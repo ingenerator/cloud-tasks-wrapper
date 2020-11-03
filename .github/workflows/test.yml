@@ -1,8 +1,9 @@
 name: Run tests
 on:
   push:
-    # Only mainline branches, features etc are covered on the pull_request trigger
-    - '*.x'
+    branches:
+      # Only mainline branches, features etc are covered on the pull_request trigger
+      - '*.x'
   pull_request:
   schedule:
     # Build every Monday morning in case of external issues
