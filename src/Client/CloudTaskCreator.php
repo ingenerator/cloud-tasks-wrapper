@@ -17,20 +17,11 @@ use Psr\Log\LoggerInterface;
 
 class CloudTaskCreator
 {
-    /**
-     * @var CloudTasksClient
-     */
-    protected $client;
+    protected CloudTasksClient $client;
 
-    /**
-     * @var CloudTasksQueueMapper
-     */
-    protected $queue_mappper;
+    protected CloudTasksQueueMapper $queue_mappper;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     public function __construct(
         CloudTasksClient $client,

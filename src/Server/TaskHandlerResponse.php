@@ -7,78 +7,26 @@ namespace Ingenerator\CloudTasksWrapper\Server;
 class TaskHandlerResponse
 {
 
-    /**
-     * @var string
-     */
-    protected $code;
+    protected string $code;
 
-    /**
-     * @var string
-     */
-    protected $msg;
+    protected string $msg;
 
-    /**
-     * @var int
-     */
-    protected $http_status;
+    protected int $http_status;
 
-    /**
-     * @var string
-     */
-    protected $http_status_name;
+    protected string $http_status_name;
 
-    /**
-     * @var string
-     */
-    protected $loglevel;
+    protected string $loglevel;
 
-    /**
-     * @var array
-     */
-    protected $log_context;
+    protected array $log_context;
 
     public function __construct(array $data)
     {
-        // Don't allow invalid creation
-        $this->setCode($data['code']);
-        $this->setMsg($data['msg']);
-        $this->setStatus($data['http_status']);
-        $this->setStatusName($data['http_status_name']);
-        $this->setLoglevel($data['loglevel']);
-        $this->setLogContext($data['log_context'] ?? []);
-    }
-
-    /**
-     * @param string $code
-     */
-    private function setCode(string $code): void
-    {
-        $this->code = $code;
-    }
-
-    private function setMsg(string $msg): void
-    {
-        $this->msg = $msg;
-    }
-
-    private function setStatus(int $status): void
-    {
-        $this->http_status = $status;
-    }
-
-    private function setStatusName(string $status_name): void
-    {
-        $this->http_status_name = $status_name;
-    }
-
-    private function setLoglevel(string $loglevel): void
-    {
-        $this->loglevel = $loglevel;
-    }
-
-    private function setLogContext(array $log_context): void
-    {
-        $this->log_context = $log_context;
+        $this->code             = $data['code'];
+        $this->msg              = $data['msg'];
+        $this->http_status      = $data['http_status'];
+        $this->http_status_name = $data['http_status_name'];
+        $this->loglevel         = $data['loglevel'];
+        $this->log_context      = $data['log_context'] ?? [];
     }
 
     /**

@@ -9,11 +9,7 @@ use Ingenerator\PHPUtils\StringEncoding\JSON;
 
 class CloudTasksQueueMapper
 {
-
-    /**
-     * @var array
-     */
-    protected $config;
+    protected array $config;
 
     public function __construct(array $config)
     {

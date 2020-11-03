@@ -12,20 +12,11 @@ use Psr\Log\LoggerInterface;
 class TaskHandlerWrapper
 {
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
+    protected LoggerInterface $logger;
 
-    /**
-     * @var MutexWrapper
-     */
-    protected $mutex;
+    protected MutexWrapper $mutex;
 
-    /**
-     * @var \Ingenerator\OIDCTokenVerifier\TokenVerifier
-     */
-    protected $token_verifier;
+    protected TokenVerifier $token_verifier;
 
     public function __construct(
         TokenVerifier $oidc_token_verifier,
