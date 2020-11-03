@@ -6,6 +6,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 use Google\ApiCore\ApiException;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
@@ -55,8 +56,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->newSubject()->createTask('fast-queue', 'https://any.url');
 
         $task = $this->tasks_client->assertCreatedOneTask();
-        // @todo: update this test to use the ->hasOidcToken when the method is fixed https://github.com/protocolbuffers/protobuf/issues/7926
-//        $this->assertSame($expect_has_oidc, $task->getHttpRequest()->hasOidcToken());
+        $this->assertSame($expect_has_oidc, $task->getHttpRequest()->hasOidcToken());
         if ($expect_has_oidc) {
             $this->assertSame(
                 $expect_oidc_email,
@@ -72,6 +72,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->newSubject()->createTask('any-old-queue', 'https://my.handler/foo?id=bar');
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame('https://my.handler/foo?id=bar', $task->getHttpRequest()->getUrl());
+        $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
     /**
