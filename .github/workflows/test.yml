@@ -1,7 +1,12 @@
 name: Run tests
 on:
   push:
+    # Only mainline branches, features etc are covered on the pull_request trigger
+    - '*.x'
   pull_request:
+  schedule:
+    # Build every Monday morning in case of external issues
+    - cron: '0 8 * * 1'
 
 jobs:
   run-tests:
@@ -11,19 +16,18 @@ jobs:
       fail-fast: false
       matrix:
         php_version:
-          - '7.2'
           - '7.4'
         dependencies:
           - 'default'
         include:
-          - php_version: '7.2'
+          - php_version: '7.4'
             dependencies: 'lowest'
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php_version }}
-          tools: composer
+          tools: composer:v2
 
       - name: Checkout
         uses: actions/checkout@v2
