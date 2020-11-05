@@ -8,12 +8,11 @@ use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Mutex\MutexWrapper;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
 
 class TaskHandlerWrapper
 {
 
-    protected LoggerInterface $logger;
+    protected TaskHandlingLogger $logger;
 
     protected MutexWrapper $mutex;
 
@@ -22,7 +21,7 @@ class TaskHandlerWrapper
     public function __construct(
         TokenVerifier $oidc_token_verifier,
         MutexWrapper $mutex,
-        LoggerInterface $logger
+        TaskHandlingLogger $logger
     ) {
         $this->token_verifier = $oidc_token_verifier;
         $this->logger         = $logger;
@@ -39,19 +38,12 @@ class TaskHandlerWrapper
             $result = CoreTaskResult::cannotBeValid($e);
         } catch (MutexTimedOutException $e) {
             // No problem, we'll let cloud tasks try again shortly
-            // This is logged in the outer wrapper
-            return CoreTaskResult::mutexTimeout($e);
+            $result = CoreTaskResult::mutexTimeout($e);
         } catch (\Throwable $e) {
             $result = CoreTaskResult::uncaughtException($e);
         }
 
-        // @todo: record a metric
-
-        $this->logger->log(
-            $result->getLoglevel(),
-            \sprintf('Task: [%s] %s', $result->getCode(), $result->getMsg()),
-            array_merge(['suppress_trace' => TRUE], $result->getLogContext())
-        );
+        $this->logger->logResult($request, $result, 0);
 
         return $result;
     }
