@@ -3,6 +3,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\Server;
 
+use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Mutex\MutexWrapper;
@@ -31,17 +32,17 @@ class TaskHandlerWrapper
     public function handle(
         ServerRequestInterface $request,
         TaskHandler $handler
-    ): TaskHandlerResponse {
+    ): TaskResponse {
         try {
             $result = $this->doHandle($request, $handler);
         } catch (CloudTaskCannotBeValidException $e) {
-            $result = ResponseBuilder::cannotBeValid($e);
+            $result = CoreTaskResult::cannotBeValid($e);
         } catch (MutexTimedOutException $e) {
             // No problem, we'll let cloud tasks try again shortly
             // This is logged in the outer wrapper
-            return ResponseBuilder::mutexTimeout($e);
+            return CoreTaskResult::mutexTimeout($e);
         } catch (\Throwable $e) {
-            $result = ResponseBuilder::uncaughtException($e);
+            $result = CoreTaskResult::uncaughtException($e);
         }
 
         // @todo: record a metric
@@ -58,12 +59,12 @@ class TaskHandlerWrapper
     protected function doHandle(
         ServerRequestInterface $request,
         TaskHandler $handler
-    ): TaskHandlerResponse {
+    ): TaskHandlerResult {
         if ( ! $request->isMethod(ServerRequestInterface::POST)) {
             // If it's not the right request method it is almost certainly not from us. Send a generic 400 so that
             // whoever is poking it finds that out and so it stands out in logs. If this is Cloud Tasks it will be
             // retried :(
-            return ResponseBuilder::badHTTPMethod($request->getMethod());
+            return CoreTaskResult::badHTTPMethod($request->getMethod());
         }
 
         if ($auth_result = $this->authenticateOrBuildFailureResult($request)) {
@@ -88,23 +89,23 @@ class TaskHandlerWrapper
     }
 
     protected function authenticateOrBuildFailureResult(ServerRequestInterface $request
-    ): ?TaskHandlerResponse {
+    ): ?TaskHandlerResult {
         $token = $request->getHttpHeader('X-Tokenista');
 
         if ( ! $token) {
             // If there is no auth at all then it is almost certainly not from us. Send a generic 403 and show them the
             // door. If this is Cloud Tasks it will be retried :(
-            return ResponseBuilder::authNotProvided();
+            return CoreTaskResult::authNotProvided();
         }
 
         $validation = $this->tokenista->validate($token, ['url' => $request->getUri()]);
         if ($validation->isExpired()) {
-            return ResponseBuilder::authExpired(
+            return CoreTaskResult::authExpired(
                 'Token expired at '.$validation->getTokenExpiry()->format(\DateTime::ATOM)
             );
         }
         if ( ! $validation->isValid()) {
-            return ResponseBuilder::authInvalid(
+            return CoreTaskResult::authInvalid(
                 'Token invalid: '.implode(', ', $validation->getStatusCodes())
             );
         }
