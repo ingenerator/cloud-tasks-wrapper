@@ -15,9 +15,13 @@ class TaskHandlerChain
 
     protected TaskHandler $handler;
 
+    public function __construct(TaskHandlerMiddleware...$middlewares)
+    {
+        $this->middlewares = $middlewares;
+    }
+
     public function nextHandler(ServerRequestInterface $request): TaskHandlerResult
     {
-        throw new \BadMethodCallException('Not tested yet');
         if ($middleware = \array_shift($this->middlewares)) {
             return $middleware->handle($request, $this);
         }

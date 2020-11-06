@@ -6,14 +6,12 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
-use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
-use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
 use Ingenerator\PHPUtils\DateTime\Clock\StoppedMockClock;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\Test\TestLogger;
@@ -36,7 +34,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->handle(
             new ServerRequest('POST', '/some-task-handler'),
-            TaskHandlerChainStub::withFixedResult($expect)
+            TestTaskChain::withFixedResult($expect)
         );
         $this->assertSame($expect, $result);
     }
@@ -49,7 +47,7 @@ class TaskLoggingMiddlewareTest extends TestCase
 
         $this->newSubject()->handle(
             new ServerRequest('POST', '/some-task-handler'),
-            TaskHandlerChainStub::withArbitraryResult('someCustomCode', 'I did not work')
+            TestTaskChain::withArbitraryResult('someCustomCode', 'I did not work')
         );
 
         $this->assertTrue(
@@ -66,7 +64,7 @@ class TaskLoggingMiddlewareTest extends TestCase
 
         $this->newSubject()->handle(
             new ServerRequest('POST', '/some-task-handler'),
-            TaskHandlerChainStub::withArbitraryResult(
+            TestTaskChain::withArbitraryResult(
                 'someCustomCode',
                 'I worked',
                 ['data' => 'I really did']
@@ -89,7 +87,7 @@ class TaskLoggingMiddlewareTest extends TestCase
 
         $this->newSubject()->handle(
             new ServerRequest('POST', '/some-task-handler'),
-            TaskHandlerChainStub::will(
+            TestTaskChain::will(
                 function () {
                     $this->clock->tickMicroseconds(213204);
 
@@ -129,45 +127,4 @@ class TaskLoggingMiddlewareTest extends TestCase
         return \array_shift($infos);
     }
 
-
-}
-
-class TaskHandlerChainStub extends TaskHandlerChain
-{
-    /**
-     * @var callable
-     */
-    private $next_handler;
-
-    public static function withArbitraryResult(
-        string $code,
-        ?string $msg = NULL,
-        array $log_context = []
-    ): TaskHandlerChainStub {
-        return static::withFixedResult(new ArbitraryTaskResult($code, $msg, $log_context));
-    }
-
-    public static function withFixedResult(TaskHandlerResult $result): TaskHandlerChainStub
-    {
-        return static::will(
-            function (ServerRequestInterface $request) use ($result) {
-                return $result;
-            }
-        );
-    }
-
-    public static function will(callable $handler): TaskHandlerChainStub
-    {
-        $i               = new static;
-        $i->next_handler = $handler;
-
-        return $i;
-    }
-
-    public function nextHandler(ServerRequestInterface $request): TaskHandlerResult
-    {
-        $handler = $this->next_handler;
-
-        return $handler($request);
-    }
 }
