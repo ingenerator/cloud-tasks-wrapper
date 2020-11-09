@@ -4,17 +4,44 @@
 namespace Ingenerator\CloudTasksWrapper\Server;
 
 
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
+
 class TaskHandlerChain
 {
-    /**
-     * @var \Ingenerator\CloudTasksWrapper\Server\TaskHandler
-     */
     protected ?TaskHandler $handler = NULL;
 
     /**
      * @var \Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware[]
      */
     protected $middlewares = [];
+
+    /**
+     * Creates a middleware stack with the default middlewares
+     *
+     * Syntax sugar for dependency construction to make it obvious how we recommend wiring up
+     * middlewares.
+     *
+     * The sequence is:
+     *
+     *  - Logging first so that everything bar dependency issues gets logged
+     *  - Auth next so that spam calls can't DDOS through the mutex implementation
+     *  - Then mutex so that a given task is only processed once at a time
+     *
+     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware               $logging
+     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware $auth
+     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware          $mutex
+     *
+     * @return \Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain
+     */
+    public static function makeDefault(
+        TaskLoggingMiddleware $logging,
+        TaskRequestAuthenticatingMiddleware $auth,
+        TaskMutexLockingMiddleware $mutex
+    ): TaskHandlerChain {
+        return new static($logging, $auth, $mutex);
+    }
 
     public function __construct(TaskHandlerMiddleware...$middlewares)
     {
