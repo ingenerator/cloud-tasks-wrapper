@@ -5,8 +5,8 @@ namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
+use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use PHPUnit\Framework\Assert;
-use Psr\Http\Message\ServerRequestInterface;
 
 class TestTaskHandler implements TaskHandler
 {
