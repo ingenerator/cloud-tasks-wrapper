@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 interface TaskHandlerMiddleware
 {
 
-    public function handle(
+    public function process(
         ServerRequestInterface $request,
         TaskHandlerChain $chain
     ): TaskHandlerResult;

@@ -32,7 +32,7 @@ class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
         $this->mutex = $mutex;
     }
 
-    public function handle(
+    public function process(
         ServerRequestInterface $request,
         TaskHandlerChain $chain
     ): TaskHandlerResult {

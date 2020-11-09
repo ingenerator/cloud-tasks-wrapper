@@ -1,17 +1,17 @@
 <?php
 
 
-namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
+namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TestHelpers;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
-use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskCallableExecutingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestMiddleware;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
-class TaskCallableExecutingMiddlewareTest extends TestCase
+class TestMiddlewareTest extends TestCase
 {
     /**
      * @var \Closure
@@ -21,7 +21,7 @@ class TaskCallableExecutingMiddlewareTest extends TestCase
     public function test_it_is_initialisable()
     {
         $this->assertInstanceOf(
-            TaskCallableExecutingMiddleware::class,
+            TestMiddleware::class,
             $this->newSubject()
         );
     }
@@ -37,7 +37,7 @@ class TaskCallableExecutingMiddlewareTest extends TestCase
         };
         $this->assertSame(
             $result,
-            $this->newSubject()->handle($request, $this->mockChainExpectingNoCalls())
+            $this->newSubject()->process($request, $this->mockChainExpectingNoCalls())
         );
     }
 
@@ -48,9 +48,9 @@ class TaskCallableExecutingMiddlewareTest extends TestCase
     }
 
 
-    protected function newSubject(): TaskCallableExecutingMiddleware
+    protected function newSubject(): TestMiddleware
     {
-        return new TaskCallableExecutingMiddleware($this->callable);
+        return new TestMiddleware($this->callable);
     }
 
     protected function mockChainExpectingNoCalls()

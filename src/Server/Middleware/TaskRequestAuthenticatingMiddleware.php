@@ -23,7 +23,7 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
         $this->token_verifier = $oidc_token_verifier;
     }
 
-    public function handle(
+    public function process(
         ServerRequestInterface $request,
         TaskHandlerChain $chain
     ): TaskHandlerResult {

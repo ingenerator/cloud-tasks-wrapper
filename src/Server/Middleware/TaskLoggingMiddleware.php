@@ -37,7 +37,7 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         $this->clock       = $clock;
     }
 
-    public function handle(
+    public function process(
         ServerRequestInterface $request,
         TaskHandlerChain $chain
     ): TaskHandlerResult {

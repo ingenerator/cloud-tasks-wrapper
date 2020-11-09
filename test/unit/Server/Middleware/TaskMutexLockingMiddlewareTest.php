@@ -29,7 +29,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
 
     public function test_it_returns_result_of_next_handler_if_mutex_available()
     {
-        $result = $this->newSubject()->handle(
+        $result = $this->newSubject()->process(
             new ServerRequest('POST', '/task/some-task'),
             TestTaskChain::will(
                 function (ServerRequestInterface $req) {
@@ -53,9 +53,9 @@ class TaskMutexLockingMiddlewareTest extends TestCase
     {
         $this->mutex->willTimeoutEverything();
 
-        $result = $this->newSubject()->handle(
+        $result = $this->newSubject()->process(
             new ServerRequest('POST', '/task/some-task'),
-            TestTaskChain::neverCallsNext()
+            TestTaskChain::nextNeverCalled()
         );
         $this->assertSame(CoreTaskResult::MUTEX_TIMEOUT, $result->getCode());
     }

@@ -32,7 +32,7 @@ class TaskLoggingMiddlewareTest extends TestCase
     public function test_it_returns_unmodified_result_from_next_handler()
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
-        $result = $this->newSubject()->handle(
+        $result = $this->newSubject()->process(
             new ServerRequest('POST', '/some-task-handler'),
             TestTaskChain::withFixedResult($expect)
         );
@@ -45,7 +45,7 @@ class TaskLoggingMiddlewareTest extends TestCase
             ['someCustomCode' => ['loglevel' => LogLevel::WARNING]]
         );
 
-        $this->newSubject()->handle(
+        $this->newSubject()->process(
             new ServerRequest('POST', '/some-task-handler'),
             TestTaskChain::withArbitraryResult('someCustomCode', 'I did not work')
         );
@@ -62,7 +62,7 @@ class TaskLoggingMiddlewareTest extends TestCase
             ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
         );
 
-        $this->newSubject()->handle(
+        $this->newSubject()->process(
             new ServerRequest('POST', '/some-task-handler'),
             TestTaskChain::withArbitraryResult(
                 'someCustomCode',
@@ -85,7 +85,7 @@ class TaskLoggingMiddlewareTest extends TestCase
             ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
         );
 
-        $this->newSubject()->handle(
+        $this->newSubject()->process(
             new ServerRequest('POST', '/some-task-handler'),
             TestTaskChain::will(
                 function () {
