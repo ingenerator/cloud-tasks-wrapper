@@ -8,6 +8,8 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
+use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
+use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 
 class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
@@ -25,35 +27,47 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
     {
-//        if ( ! $request->isMethod(ServerRequestInterface::POST)) {
-//            // If it's not the right request method it is almost certainly not from us. Send a generic 400 so that
-//            // whoever is poking it finds that out and so it stands out in logs. If this is Cloud Tasks it will be
-//            // retried :(
-//            return CoreTaskResult::badHTTPMethod($request->getMethod());
-//        }
-//
-//        $token = $request->getHttpHeader('X-Tokenista');
-//
-//        if ( ! $token) {
-//            // If there is no auth at all then it is almost certainly not from us. Send a generic 403 and show them the
-//            // door. If this is Cloud Tasks it will be retried :(
-//            return CoreTaskResult::authNotProvided();
-//        }
-//
-//        $validation = $this->tokenista->validate($token, ['url' => $request->getUri()]);
-//        if ($validation->isExpired()) {
-//            return CoreTaskResult::authExpired(
-//                'Token expired at '.$validation->getTokenExpiry()->format(\DateTime::ATOM)
-//            );
-//        }
-//        if ( ! $validation->isValid()) {
-//            return CoreTaskResult::authInvalid(
-//                'Token invalid: '.implode(', ', $validation->getStatusCodes())
-//            );
-//        }
-//
-//        // OK, it's valid, carry on
-//        return NULL;
+        $http_req       = $request->getHttpRequest();
+        $request_method = $http_req->getMethod();
+        if ($request_method !== 'POST') {
+            // If it's not the right request method it is almost certainly not from us. Send a
+            // generic 400 so that whoever is poking it finds that out and so it stands out in logs.
+            // If this is Cloud Tasks it will be retried :(
+            return CoreTaskResult::badHTTPMethod($request_method);
+        }
+
+        $auth = $http_req->getHeaderLine('Authorization');
+        if (empty($auth)) {
+            return CoreTaskResult::authNotProvided('No `Authorization` header');
+        }
+
+        if ( ! \preg_match('/^Bearer (.+)$/', $auth, $matches)) {
+            return CoreTaskResult::authInvalid('`Authorization` must be a bearer token');
+        }
+
+        $result = $this->token_verifier->verify($matches[1]);
+        if ( ! $result->isVerified()) {
+            return $this->createAuthFailureResult($result);
+        }
+
+        // Auth was successful, store the info onto the request object for use elsewhere
+        $request->setCallerEmail($result->getPayload()->email ?? NULL);
+
+        return $chain->nextHandler($request);
+    }
+
+    protected function createAuthFailureResult(TokenVerificationResult $result): TaskHandlerResult
+    {
+        $failure = $result->getFailure();
+
+        return CoreTaskResult::authInvalid(
+            \sprintf(
+                'Token failed (%s: %s)',
+                \get_class($failure),
+                $failure->getMessage()
+            ),
+            ['exception' => $failure]
+        );
     }
 
 

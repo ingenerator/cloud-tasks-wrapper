@@ -25,9 +25,9 @@ class CoreTaskResult extends TaskHandlerResult
         return new static(static::AUTH_EXPIRED, $msg);
     }
 
-    public static function authInvalid(string $msg): TaskHandlerResult
+    public static function authInvalid(string $msg, array $log_context = []): TaskHandlerResult
     {
-        return new static(static::AUTH_INVALID, $msg);
+        return new static(static::AUTH_INVALID, $msg, $log_context);
     }
 
     public static function authNotProvided(string $msg = 'No auth provided'): TaskHandlerResult

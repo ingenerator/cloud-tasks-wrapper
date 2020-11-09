@@ -14,6 +14,7 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class TaskRequest
 {
+    protected ?string $caller_email = NULL;
     protected ServerRequestInterface $request;
     protected string $task_type;
 
@@ -143,6 +144,16 @@ class TaskRequest
     public function getHttpRequest(): ServerRequestInterface
     {
         return $this->request;
+    }
+
+    public function getCallerEmail(): ?string
+    {
+        return $this->caller_email;
+    }
+
+    public function setCallerEmail(?string $email): void
+    {
+        $this->caller_email = $email;
     }
 
 }
