@@ -5,9 +5,9 @@ namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\PHPUtils\DateTime\Clock\RealtimeClock;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -37,10 +37,8 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         $this->clock       = $clock;
     }
 
-    public function process(
-        ServerRequestInterface $request,
-        TaskHandlerChain $chain
-    ): TaskHandlerResult {
+    public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
+    {
         $start  = $this->clock->getMicrotime();
         $result = $chain->nextHandler($request);
         $end    = $this->clock->getMicrotime();
@@ -50,11 +48,8 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
     }
 
 
-    protected function logResult(
-        ServerRequestInterface $request,
-        TaskHandlerResult $result,
-        int $time_ms
-    ) {
+    protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms)
+    {
         // By default, request is not logged on the assumption your logger already includes info on
         // the request URL etc within log metadata
         $this->logger->log(

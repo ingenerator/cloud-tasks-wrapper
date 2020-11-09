@@ -7,8 +7,8 @@ namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
-use Psr\Http\Message\ServerRequestInterface;
 
 class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 {
@@ -23,10 +23,8 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
         $this->token_verifier = $oidc_token_verifier;
     }
 
-    public function process(
-        ServerRequestInterface $request,
-        TaskHandlerChain $chain
-    ): TaskHandlerResult {
+    public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
+    {
 //        if ( ! $request->isMethod(ServerRequestInterface::POST)) {
 //            // If it's not the right request method it is almost certainly not from us. Send a generic 400 so that
 //            // whoever is poking it finds that out and so it stands out in logs. If this is Cloud Tasks it will be

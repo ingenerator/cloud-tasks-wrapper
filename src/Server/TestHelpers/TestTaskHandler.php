@@ -4,6 +4,7 @@ namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -12,7 +13,7 @@ class TestTaskHandler implements TaskHandler
     protected $callable;
 
     public static function expectsReqAndReturns(
-        ServerRequestInterface $expect_req,
+        TaskRequest $expect_req,
         TaskHandlerResult $result
     ): TestTaskHandler {
         return new static(
@@ -41,7 +42,7 @@ class TestTaskHandler implements TaskHandler
         $this->callable = $callable;
     }
 
-    public function handle(ServerRequestInterface $request): TaskHandlerResult
+    public function handle(TaskRequest $request): TaskHandlerResult
     {
         return ($this->callable)($request);
     }

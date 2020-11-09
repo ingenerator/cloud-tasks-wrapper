@@ -7,6 +7,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskHandler;
 use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
@@ -26,7 +27,7 @@ class TaskHandlerChainTest extends TestCase
         $this->middlewares = [TestMiddleware::neverCalled()];
         $subject           = $this->newSubject();
         $this->expectException(\UnderflowException::class);
-        $subject->nextHandler(new ServerRequest('POST', 'anything'));
+        $subject->nextHandler(TaskRequestStub::any());
     }
 
     public function test_its_process_method_does_not_modify_state_of_original_object()
@@ -39,7 +40,7 @@ class TaskHandlerChainTest extends TestCase
         $subject = $this->newSubject();
 
         $subject->process(
-            new ServerRequest('POST', 'anything'),
+            TaskRequestStub::any(),
             new TestTaskHandler(
                 function () { return new ArbitraryTaskResult('anything'); }
             )
@@ -55,7 +56,7 @@ class TaskHandlerChainTest extends TestCase
     {
         $this->middlewares = [];
         $rsp               = new ArbitraryTaskResult('anything');
-        $request           = new ServerRequest('POST', 'anything');
+        $request           =TaskRequestStub::any();
         $handler           = TestTaskHandler::expectsReqAndReturns($request, $rsp);
 
         $this->assertSame(
@@ -68,7 +69,7 @@ class TaskHandlerChainTest extends TestCase
     public function test_its_process_calls_middlewares_before_returning_handler_result()
     {
         $rsp               = new ArbitraryTaskResult('anything');
-        $request           = new ServerRequest('POST', 'anything');
+        $request           =TaskRequestStub::any();
         $middleware_calls  = [];
         $this->middlewares = [
             new TestMiddleware(
@@ -107,7 +108,7 @@ class TaskHandlerChainTest extends TestCase
     public function test_its_process_short_circuits_if_middleware_returns_result_without_next()
     {
         $rsp               = new ArbitraryTaskResult('anything');
-        $request           = new ServerRequest('POST', 'anything');
+        $request           =TaskRequestStub::any();
         $this->middlewares = [
             TestMiddleware::callsNext(),
             TestMiddleware::returnsResult($rsp),

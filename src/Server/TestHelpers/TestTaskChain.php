@@ -32,7 +32,7 @@ class TestTaskChain extends TaskHandlerChain
         return static::withHandler(new TestTaskHandler($handler), TRUE);
     }
 
-    public static function withHandler(TaskHandler $handler, bool $allow_next): TestTaskChain
+    public static function withHandler(TaskHandler $handler, bool $allow_next = TRUE): TestTaskChain
     {
         $chain             = new static;
         $chain->handler    = $handler;
@@ -50,7 +50,7 @@ class TestTaskChain extends TaskHandlerChain
         return $i;
     }
 
-    public function nextHandler(ServerRequestInterface $request): TaskHandlerResult
+    public function nextHandler(\Ingenerator\CloudTasksWrapper\Server\TaskRequest $request): TaskHandlerResult
     {
         if ( ! $this->allow_next) {
             throw new \BadMethodCallException('Unexpected call to '.__METHOD__);

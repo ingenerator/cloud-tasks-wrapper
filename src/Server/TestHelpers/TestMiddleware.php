@@ -5,7 +5,7 @@ namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
-use Psr\Http\Message\ServerRequestInterface;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 
 /**
  * Predominantly used for testing other middlewares, to allow test suites to stub a chain
@@ -17,7 +17,7 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function callsNext(): TestMiddleware
     {
         return new static(
-            function (ServerRequestInterface $req, TaskHandlerChain $chain) {
+            function (TaskRequest $req, TaskHandlerChain $chain) {
                 return $chain->nextHandler($req);
             }
         );
@@ -42,10 +42,8 @@ class TestMiddleware implements TaskHandlerMiddleware
         $this->callable = $callable;
     }
 
-    public function process(
-        ServerRequestInterface $request,
-        TaskHandlerChain $chain
-    ): TaskHandlerResult {
+    public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
+    {
         return ($this->callable)($request, $chain);
     }
 

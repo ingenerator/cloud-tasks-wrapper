@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
 use Ingenerator\PHPUtils\DateTime\Clock\StoppedMockClock;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
@@ -33,7 +34,7 @@ class TaskLoggingMiddlewareTest extends TestCase
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->process(
-            new ServerRequest('POST', '/some-task-handler'),
+            TaskRequestStub::any(),
             TestTaskChain::withFixedResult($expect)
         );
         $this->assertSame($expect, $result);
@@ -46,7 +47,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
 
         $this->newSubject()->process(
-            new ServerRequest('POST', '/some-task-handler'),
+            TaskRequestStub::any(),
             TestTaskChain::withArbitraryResult('someCustomCode', 'I did not work')
         );
 
@@ -63,7 +64,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
 
         $this->newSubject()->process(
-            new ServerRequest('POST', '/some-task-handler'),
+            TaskRequestStub::any(),
             TestTaskChain::withArbitraryResult(
                 'someCustomCode',
                 'I worked',
@@ -86,7 +87,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
 
         $this->newSubject()->process(
-            new ServerRequest('POST', '/some-task-handler'),
+            TaskRequestStub::any(),
             TestTaskChain::will(
                 function () {
                     $this->clock->tickMicroseconds(213204);

@@ -7,10 +7,10 @@ namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Mutex\MutexWrapper;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Uses a mutex (usually database-backed) to prevent concurrent duplicate task processing
@@ -32,10 +32,8 @@ class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
         $this->mutex = $mutex;
     }
 
-    public function process(
-        ServerRequestInterface $request,
-        TaskHandlerChain $chain
-    ): TaskHandlerResult {
+    public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
+    {
         try {
             // Use a mutex to protect against concurrent deliveries of the same task
             return $this->mutex->withLock(
@@ -54,14 +52,26 @@ class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
         }
     }
 
-    protected function getMutexName(ServerRequestInterface $request): string
+    protected function getMutexName(TaskRequest $request): string
     {
-        // MD5 is fine for the lock name here, collisions don't matter (they just mean very rarely two different tasks
-        // could get queued one behind the other).
+        // MD5 is fine for the lock name here, collisions don't matter (they just mean very rarely
+        // two different tasks could get queued one behind the other).
         //
-        // NB that this assumes that everything required to uniquely ID a given task execution is in the GET
-        return 'task-'.\hash('md5', (string) $request->getUri());
+        // We intentionally assume that everything required to uniquely ID a given task execution is
+        // in the GET string *NOT* the task name property from Cloud Tasks.
+        //
+        // This is because task names are only unique if you assign them when creating the task, but
+        // this reduces throughput. For better throughput, Cloud Tasks recommend using their
+        // server-side generated names / IDs. However then you may have multiple submissions for the
+        // same target payload (e.g. due to user retry / concurrent operations) with different
+        // unique names.
+        //
+        // Therefore by insisting that the target URL is unique (e.g. it contains the ID of the
+        // record to operate on / some other identity in the GET params) this mutex will ensure that
+        // even concurrently queuing operations on the same entity will still mean they are
+        // processed in sequence while also protecting against platform-level more-than-once
+        // delivery.
+        return 'task-'.\hash('md5', (string) $request->getFullUrl());
     }
-
 
 }

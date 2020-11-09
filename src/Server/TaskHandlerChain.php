@@ -4,8 +4,6 @@
 namespace Ingenerator\CloudTasksWrapper\Server;
 
 
-use Psr\Http\Message\ServerRequestInterface;
-
 class TaskHandlerChain
 {
     /**
@@ -23,17 +21,15 @@ class TaskHandlerChain
         $this->middlewares = $middlewares;
     }
 
-    public function process(
-        ServerRequestInterface $request,
-        TaskHandler $handler
-    ): TaskHandlerResult {
+    public function process(TaskRequest $request, TaskHandler $handler): TaskHandlerResult
+    {
         $chain          = clone $this;
         $chain->handler = $handler;
 
         return $chain->nextHandler($request);
     }
 
-    public function nextHandler(ServerRequestInterface $request): TaskHandlerResult
+    public function nextHandler(TaskRequest $request): TaskHandlerResult
     {
         if ( ! $this->handler) {
             throw new \UnderflowException('No TaskHandler was provided to '.__CLASS__);

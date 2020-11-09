@@ -6,8 +6,11 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TestHelpers;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestMiddleware;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -29,15 +32,15 @@ class TestMiddlewareTest extends TestCase
     public function test_it_passes_to_request_and_returns_result_without_calling_next()
     {
         $result         = new ArbitraryTaskResult('anything');
-        $request        = new ServerRequest('POST', 'anything');
-        $this->callable = function (ServerRequestInterface $r) use ($request, $result) {
+        $request        = TaskRequestStub::any();
+        $this->callable = function (TaskRequest $r) use ($request, $result) {
             $this->assertSame($request, $r);
 
             return $result;
         };
         $this->assertSame(
             $result,
-            $this->newSubject()->process($request, $this->mockChainExpectingNoCalls())
+            $this->newSubject()->process($request, TestTaskChain::nextNeverCalled())
         );
     }
 
@@ -51,18 +54,6 @@ class TestMiddlewareTest extends TestCase
     protected function newSubject(): TestMiddleware
     {
         return new TestMiddleware($this->callable);
-    }
-
-    protected function mockChainExpectingNoCalls()
-    {
-        $mock = $this->getMockBuilder(TaskHandlerChain::class)
-            ->disableOriginalConstructor()
-            ->disableProxyingToOriginalMethods()
-            ->getMock();
-
-        $mock->expects($this->never())->method($this->anything());
-
-        return $mock;
     }
 
 }

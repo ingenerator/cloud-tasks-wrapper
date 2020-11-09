@@ -4,14 +4,14 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
-use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
+use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskHandler;
 use Ingenerator\PHPUtils\Mutex\MockMutexWrapper;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
 
 class TaskMutexLockingMiddlewareTest extends TestCase
 {
@@ -29,24 +29,13 @@ class TaskMutexLockingMiddlewareTest extends TestCase
 
     public function test_it_returns_result_of_next_handler_if_mutex_available()
     {
+        $res    = new ArbitraryTaskResult('got-mutex');
+        $req    = TaskRequestStub::any();
         $result = $this->newSubject()->process(
-            new ServerRequest('POST', '/task/some-task'),
-            TestTaskChain::will(
-                function (ServerRequestInterface $req) {
-                    return new ArbitraryTaskResult('got-mutex', $req->getUri());
-                }
-            )
+            $req,
+            TestTaskChain::withHandler(TestTaskHandler::expectsReqAndReturns($req, $res))
         );
-        $this->assertSame(
-            [
-                'code' => 'got-mutex',
-                'url'  => '/task/some-task'
-            ],
-            [
-                'code' => $result->getCode(),
-                'url'  => $result->getMsg()
-            ]
-        );
+        $this->assertSame($res, $result);
     }
 
     public function test_it_returns_mutex_timeout_without_running_handler_if_locked()
@@ -54,7 +43,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->mutex->willTimeoutEverything();
 
         $result = $this->newSubject()->process(
-            new ServerRequest('POST', '/task/some-task'),
+            TaskRequestStub::any(),
             TestTaskChain::nextNeverCalled()
         );
         $this->assertSame(CoreTaskResult::MUTEX_TIMEOUT, $result->getCode());
