@@ -13,6 +13,7 @@ use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\Client\CloudTaskCreator;
 use Ingenerator\CloudTasksWrapper\Client\CloudTasksQueueMapper;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
+use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -29,13 +30,17 @@ class CloudTaskCreatorTest extends TestCase
      */
     protected $logger;
 
-    protected $queue_config = [
-        'default_project'  => 'dev',
-        'default_location' => 'here',
-        'default_signer'   => 'himthere@service.com',
-        'queues'           => [
-            'any-old-queue' => [],
+    protected $task_config = [
+        '_default'  => [
+            'queue'        => [
+                'project'  => 'good-proj',
+                'location' => 'the-moon',
+                'name'     => 'priority',
+            ],
+            'signer_email' => 'neil@armstrong.serviceaccount.test',
+            'handler_url'  => 'https://moon.test/my-task',
         ],
+        'some-task' => [],
     ];
 
     public function test_it_is_initialisable()
@@ -43,17 +48,89 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
+    public function test_it_throws_if_specifying_multiple_body_types()
+    {
+        $subject = $this->newSubject();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid body type');
+        $subject->create(
+            'some-task',
+            [
+                'body' => ['form' => ['foo' => 'bar'], 'json' => ['any' => 'json']],
+            ]
+        );
+    }
+
+    public function test_it_throws_if_specifying_invalid_body()
+    {
+        $subject = $this->newSubject();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid body type');
+        $subject->create(
+            'some-task',
+            [
+                'body' => new \stdClass,
+            ]
+        );
+    }
+
+    public function provider_body_encoding()
+    {
+        return [
+            [
+                ['form' => ['foo' => 'bar', 'child' => ['any' => 'thing']]],
+                'foo=bar&child%5Bany%5D=thing',
+                'application/x-www-form-urlencoded',
+            ],
+            [
+                ['json' => ['foo' => 'bar', 'child' => ['any' => 'thing']]],
+                '{"foo":"bar","child":{"any":"thing"}}',
+                'application/json',
+            ],
+            [
+                'My custom payload',
+                'My custom payload',
+                NULL,
+            ],
+            [
+                NULL,
+                '',
+                NULL,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provider_body_encoding
+     */
+    public function test_it_adds_json_or_form_body_with_headers($opt_body, $expect_body, $expect_content_type)
+    {
+        $this->newSubject()->create('some-task', ['body' => $opt_body, 'headers' => ['X-something' => 'Else']]);
+        $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
+        $this->assertSame(
+            $expect_content_type,
+            $task->getHttpRequest()->getHeaders()['Content-Type'] ?? NULL,
+            'Sets content type'
+        );
+        $this->assertSame(
+            'Else',
+            $task->getHttpRequest()->getHeaders()['X-something'],
+            'Doesn\'t overwrite other headers'
+        );
+    }
+
     /**
      * @testWith ["someone@service.com",true, "someone@service.com"]
      *           ["anonymous", false, null]
      */
-    public function test_it_adds_oidc_token_for_queue_name_unless_queue_is_configured_anonymous(
+    public function test_it_adds_oidc_token_for_task_unless_task_type_is_configured_anonymous(
         $signer,
         $expect_has_oidc,
         $expect_oidc_email
     ) {
-        $this->queue_config['queues']['fast-queue']['signer'] = $signer;
-        $this->newSubject()->createTask('fast-queue', 'https://any.url');
+        $this->task_config['do-something']['signer_email'] = $signer;
+        $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect_has_oidc, $task->getHttpRequest()->hasOidcToken());
@@ -67,11 +144,16 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    public function test_it_sets_task_to_post_to_provided_url()
+    /**
+     * @testWith [[], "https://my.handler.foo/something"]
+     *           [{"query": {"id": 15, "scope": "any"}}, "https://my.handler.foo/something?id=15&scope=any"]
+     */
+    public function test_it_sets_task_to_post_to_provided_url_optionally_adding_query_params($opts, $expect)
     {
-        $this->newSubject()->createTask('any-old-queue', 'https://my.handler/foo?id=bar');
+        $this->task_config['do-something']['handler_url'] = 'https://my.handler.foo/something';
+        $this->newSubject()->create('do-something', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame('https://my.handler/foo?id=bar', $task->getHttpRequest()->getUrl());
+        $this->assertSame($expect, $task->getHttpRequest()->getUrl());
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
@@ -81,9 +163,22 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_task_name_if_provided($opts, $expect)
     {
-        $this->newSubject()->createTask('any-old-queue', 'https://any.thing', $opts);
+        $this->task_config['some-task'] = [];
+        $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, $task->getName());
+    }
+
+    /**
+     * @testWith [{}, []]
+     *           [{"headers": {"X-SomeThing": "This"}}, {"X-SomeThing": "This"}]
+     */
+    public function test_it_adds_http_headers_if_provided($opts, $expect)
+    {
+        $this->task_config['some-task'] = [];
+        $this->newSubject()->create('some-task', $opts);
+        $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertSame($expect, \iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
     public function provider_schedule_time()
@@ -97,10 +192,10 @@ class CloudTaskCreatorTest extends TestCase
                     'schedule_send_after' => \DateTimeImmutable::createFromFormat(
                         'U.u',
                         "$ts.123456"
-                    )
+                    ),
                 ],
-                ['seconds' => $ts, 'nanos' => 123456000]
-            ]
+                ['seconds' => $ts, 'nanos' => 123456000],
+            ],
         ];
     }
 
@@ -109,7 +204,8 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_timestamp_for_scheduled_time_if_provided($opts, $expect)
     {
-        $this->newSubject()->createTask('any-old-queue', 'https://any.thing', $opts);
+        $this->task_config['any-old-job'] = [];
+        $this->newSubject()->create('any-old-job', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         if ($expect === NULL) {
             $this->assertSame($expect, $task->getScheduleTime());
@@ -123,37 +219,40 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    public function test_it_submits_to_the_configured_queue_url_for_the_internal_name()
+    public function test_it_submits_to_the_configured_queue_url_for_the_task_options()
     {
-        $this->queue_config['queues']['fast-queue'] = [
-            'project'  => 'our-project',
-            'location' => 'europe',
-            'name'     => 'queue-name',
+        $this->task_config['something']['queue'] = [
+            'project'  => 'mine',
+            'location' => 'mars',
+            'name'     => 'archival',
         ];
-        $this->newSubject()->createTask('fast-queue', 'https://any.thing');
+        $this->newSubject()->create('something');
         $this->tasks_client->assertCreatedOneTaskInQueue(
-            CloudTasksClient::queueName('our-project', 'europe', 'queue-name')
+            CloudTasksClient::queueName('mine', 'mars', 'archival')
         );
     }
 
     public function test_it_logs_nothing_on_success()
     {
-        $this->logger = new TestLogger();
-        $this->newSubject()->createTask('any-old-queue', 'https://any.thing');
+        $this->task_config['anything'] = [];
+        $this->logger                  = new TestLogger();
+        $this->newSubject()->create('anything');
         $this->assertSame([], $this->logger->records);
     }
 
     public function test_it_logs_and_throws_on_failure()
     {
-        $this->logger       = new TestLogger();
-        $api_exception      = ApiException::createFromApiResponse(
+        $this->task_config['anything'] = [];
+        $this->logger                  = new TestLogger();
+        $this->logger                  = new TestLogger();
+        $api_exception                 = ApiException::createFromApiResponse(
             'Create task broke!',
             Code::UNKNOWN
         );
-        $this->tasks_client = TasksClientSpy::willThrowOnCreate($api_exception);
-        $subject            = $this->newSubject();
+        $this->tasks_client            = TasksClientSpy::willThrowOnCreate($api_exception);
+        $subject                       = $this->newSubject();
         try {
-            $subject->createTask('any-old-queue', 'https://any.thing');
+            $subject->create('anything');
             $this->fail('Expected exception, none got');
         } catch (TaskCreationFailedException $e) {
             $this->assertSame('Failed to create task: Create task broke!', $e->getMessage());
@@ -183,7 +282,7 @@ class CloudTaskCreatorTest extends TestCase
     {
         return new CloudTaskCreator(
             $this->tasks_client,
-            new CloudTasksQueueMapper($this->queue_config),
+            new TaskTypeConfigProvider($this->task_config),
             $this->logger
         );
     }

@@ -13,46 +13,44 @@ use Google\Cloud\Tasks\V2\OidcToken;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Internal\Message;
 use Google\Protobuf\Timestamp;
+use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
+use Ingenerator\PHPUtils\StringEncoding\JSON;
 use Psr\Log\LoggerInterface;
 
-class CloudTaskCreator
+class CloudTaskCreator implements TaskCreator
 {
     protected CloudTasksClient $client;
 
-    protected CloudTasksQueueMapper $queue_mappper;
+    protected TaskTypeConfigProvider $task_config;
 
     protected LoggerInterface $logger;
 
     public function __construct(
         CloudTasksClient $client,
-        CloudTasksQueueMapper $queue_mapper,
+        TaskTypeConfigProvider $task_config,
         LoggerInterface $logger
     ) {
-        $this->client        = $client;
-        $this->queue_mappper = $queue_mapper;
-        $this->logger        = $logger;
+        $this->client      = $client;
+        $this->task_config = $task_config;
+        $this->logger      = $logger;
     }
 
-    /**
-     * Create a task to be sent by HTTP POST
-     *
-     * By default will be sent signed with an OIDC token for verification at the receiving end
-     *
-     * @param string $internal_queue_name
-     * @param string $post_url
-     * @param array  $options
-     *
-     * @return string the task name
-     *
-     * @throws TaskCreationFailedException
-     */
-    public function createTask(
-        string $internal_queue_name,
-        string $post_url,
-        array $options = []
-    ): string {
+    public function create(string $task_type, array $options = []): string
+    {
+        $config = $this->task_config->getConfig($task_type);
+
         $options = array_merge(
             [
+                // Data to be sent in the body, can be JSON or form-encoded:
+                // - to send JSON, 'body' => ['json' => [//data]]
+                // - to send form, 'body' => ['form' => [//data]]
+                'body'                => NULL,
+                // Extra headers to send with the HTTP request
+                'headers'             => [],
+                // Optionally add GET parameters to the handler URL. The handler URL itself comes from
+                // config.
+                'query'               => NULL,
+                // Optionally specify when the task should first be executed
                 'schedule_send_after' => NULL,
                 // Optional, specify a task name for server-side dedupe by Cloud Tasks. Note per the
                 // docs this significantly reduces throughput especially if it is not a
@@ -64,6 +62,13 @@ class CloudTaskCreator
             $options
         );
 
+        $handler_url = $config['handler_url'];
+        if ($options['query']) {
+            $handler_url .= '?'.\http_build_query($options['query']);
+        }
+
+        $options = $this->prepareBody($options);
+
         $task = $this->createObj(
             Task::class,
             [
@@ -71,12 +76,14 @@ class CloudTaskCreator
                 'http_request'  => $this->createObj(
                     HttpRequest::class,
                     [
-                        'url'         => $post_url,
+                        'url'         => $handler_url,
                         'http_method' => HttpMethod::POST,
-                        'oidc_token'  => $this->oidcTokenUnlessAnonymous($internal_queue_name),
+                        'oidc_token'  => $this->oidcTokenUnlessAnonymous($config['signer_email']),
+                        'headers'     => $options['headers'],
+                        'body'        => $options['body'],
                     ]
                 ),
-                'schedule_time' => $this->toTimestampOrNull($options['schedule_send_after'])
+                'schedule_time' => $this->toTimestampOrNull($options['schedule_send_after']),
             ]
         );
 
@@ -85,7 +92,7 @@ class CloudTaskCreator
             // NB that the defaults don't appear to be the defaults in the docs, and customising doesn't work the way
             // you think either (doesn't seem to actually accept a RetrySettings despite saying it does)
             $result = $this->client->createTask(
-                $this->queue_mappper->pathFor($internal_queue_name),
+                $config['queue-path'],
                 $task
             );
 
@@ -98,8 +105,8 @@ class CloudTaskCreator
                     'exception'          => $e,
                     'exception_metadata' => $e->getMetadata(),
                     'task_info'          => [
-                        'post_url'       => $post_url,
-                        'internal_queue' => $internal_queue_name
+                        'post_url'  => $handler_url,
+                        'task_type' => $task_type,
                     ],
                 ]
             );
@@ -116,9 +123,8 @@ class CloudTaskCreator
      *
      * @return OidcToken
      */
-    protected function oidcTokenUnlessAnonymous(string $internal_queue_name): ?OidcToken
+    protected function oidcTokenUnlessAnonymous(string $email): ?OidcToken
     {
-        $email = $this->queue_mappper->getOidcSignerEmail($internal_queue_name);
         if ($email === 'anonymous') {
             return NULL;
         }
@@ -139,7 +145,7 @@ class CloudTaskCreator
         return new Timestamp(
             [
                 'seconds' => $datetime->getTimestamp(),
-                'nanos'   => 1000 * $datetime->format('u')
+                'nanos'   => 1000 * $datetime->format('u'),
             ]
         );
     }
@@ -151,5 +157,32 @@ class CloudTaskCreator
         // and some fields don't have valid `null` values
 
         return new $class(array_filter($vars));
+    }
+
+    protected function prepareBody(array $options): array
+    {
+        if ($options['body'] === NULL) {
+            return $options;
+        }
+
+        if (\is_array($options['body'])) {
+            $type = \array_keys($options['body']);
+            if ($type === ['json']) {
+                $options['body']                    = JSON::encode($options['body']['json'], FALSE);
+                $options['headers']['Content-Type'] = 'application/json';
+            } elseif ($type === ['form']) {
+                $options['body']                    = \http_build_query($options['body']['form']);
+                $options['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
+            } else {
+                throw new \InvalidArgumentException('Invalid body type: '.JSON::encode($type, FALSE));
+            }
+        }
+
+        if ( ! \is_string($options['body'])) {
+            throw new \InvalidArgumentException('Invalid body type: '.\get_debug_type($options['body']));
+        }
+
+
+        return $options;
     }
 }
