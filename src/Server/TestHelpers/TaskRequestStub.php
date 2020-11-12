@@ -23,17 +23,20 @@ class TaskRequestStub extends TaskRequest
         $defaults = [
             'method'    => 'POST',
             'url'       => 'http://foo.bar/anything',
+            'query'     => [],
             'task_type' => 'some-task',
-            'headers'   => []
+            'headers'   => [],
         ];
         $options  = AssociativeArrayUtils::deepMerge($defaults, $options);
 
+        $request = new ServerRequest(
+            $options['method'],
+            $options['url'],
+            $options['headers']
+        );
+
         return new TaskRequest(
-            new ServerRequest(
-                $options['method'],
-                $options['url'],
-                $options['headers']
-            ),
+            $request->withQueryParams($options['query']),
             $options['task_type']
         );
     }
@@ -41,6 +44,11 @@ class TaskRequestStub extends TaskRequest
     public static function withAuthToken(string $token = 'abc1234')
     {
         return static::with(['headers' => ['Authorization' => 'Bearer '.$token]]);
+    }
+
+    public static function withQuery(array $query)
+    {
+        return static::with(['query' => $query]);
     }
 
 }

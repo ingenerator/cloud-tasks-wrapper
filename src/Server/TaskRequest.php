@@ -156,4 +156,26 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    /**
+     * Requires a non-empty value from the task URL query string
+     *
+     * Used for the common case where your task URLs include object IDs etc in the querystring
+     * and you can't do anything useful without them. The exception short-circuits further
+     * execution but will be mapped to an HTTP response that tells CloudTasks not to bother
+     * retrying.
+     *
+     * @param string $param
+     *
+     * @return string
+     */
+    public function requireQueryParam(string $param): string
+    {
+        $params = $this->request->getQueryParams();
+        if (empty($params[$param] ?? NULL)) {
+            throw new CloudTaskCannotBeValidException('Required param `'.$param.'` missing from task URL');
+        }
+
+        return $params[$param];
+    }
+
 }

@@ -5,6 +5,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
+use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\PHPUtils\DateTime\DateString;
 use PHPUnit\Framework\TestCase;
@@ -123,6 +124,25 @@ class TaskRequestTest extends TestCase
             $hdrs
         );
         $this->assertSame($expect, $this->newSubject()->getRetryReason());
+    }
+
+    public function test_its_require_query_provides_value_if_present()
+    {
+        $this->http_req = $this->http_req->withQueryParams(['foo' => 'bar']);
+        $this->assertSame('bar', $this->newSubject()->requireQueryParam('foo'));
+    }
+
+    /**
+     * @testWith [[]]
+     *           [{"something":"else"}]
+     *           [{"foo":""}]
+     */
+    public function test_its_require_query_throws_if_value_missing_or_empty($vars)
+    {
+        $this->http_req = $this->http_req->withQueryParams($vars);
+        $subject        = $this->newSubject();
+        $this->expectException(CloudTaskCannotBeValidException::class);
+        $subject->requireQueryParam('foo');
     }
 
     protected function setUp(): void
