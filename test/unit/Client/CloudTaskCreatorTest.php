@@ -74,6 +74,17 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
+    public function test_it_throws_if_specifying_name_and_name_from()
+    {
+        $subject = $this->newSubject();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('task_name_from');
+        $subject->create(
+            'some-task',
+            ['task_name' => 'something', 'task_name_from' => 'something else']
+        );
+    }
+
     public function provider_body_encoding()
     {
         return [
@@ -164,6 +175,17 @@ class CloudTaskCreatorTest extends TestCase
     public function test_it_adds_task_name_if_provided($opts, $expect)
     {
         $this->task_config['some-task'] = [];
+        $this->newSubject()->create('some-task', $opts);
+        $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertSame($expect, $task->getName());
+    }
+
+    /**
+     * @testWith [{}, ""]
+     *           [{"task_name_from": "some application string"}, "4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e"]
+     */
+    public function test_it_adds_hashed_task_name_if_name_from_provided($opts, $expect)
+    {
         $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, $task->getName());

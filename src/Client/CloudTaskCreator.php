@@ -58,6 +58,11 @@ class CloudTaskCreator implements TaskCreator
                 // and deal with de-duping on receipt (necessary anyway as Tasks is always
                 // at-least-once delivery).
                 'task_name'           => NULL,
+                // Optional, *instead* of task_name, specify task_name_from to have the library automatically
+                // calculate the task_name as an SHA256 hash of the application-provided string. Supports the
+                // common case where you want to use a known string for deduping, but want the throughput of
+                // well-distributed random-like task names.
+                'task_name_from'      => NULL,
             ],
             $options
         );
@@ -72,7 +77,7 @@ class CloudTaskCreator implements TaskCreator
         $task = $this->createObj(
             Task::class,
             [
-                'name'          => $options['task_name'],
+                'name'          => $this->getTaskName($options),
                 'http_request'  => $this->createObj(
                     HttpRequest::class,
                     [
@@ -184,5 +189,18 @@ class CloudTaskCreator implements TaskCreator
 
 
         return $options;
+    }
+
+    protected function getTaskName(array $options): ?string
+    {
+        if (isset($options['task_name_from'])) {
+            if (isset($options['task_name'])) {
+                throw new \InvalidArgumentException('Cannot set both task_name_from and task_name');
+            }
+
+            return \hash('sha256', $options['task_name_from']);
+        }
+
+        return $options['task_name'] ?? NULL;
     }
 }
