@@ -22,9 +22,22 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->assertInstanceOf(TaskMutexLockingMiddleware::class, $this->newSubject());
     }
 
-    public function test_it_takes_mutex_based_on_request_url()
+    /**
+     * @testWith ["https://my.handler/_task/anything", "task-5c737dfa9f1aee5d5cee02ded109cb25"]
+     *           ["https://my.handler/_task/anything?foo=bar", "task-58edbfa5da73f53ad2324fd00aacdcdd"]
+     */
+    public function test_it_takes_mutex_based_on_request_url($url, $expect_lock_name)
     {
-        $this->markTestIncomplete();
+        $this->mutex = new MockMutexWrapper;
+        $result      = $this->newSubject()->process(
+            TaskRequestStub::with(['url' => $url]),
+            TestTaskChain::will(
+                function () {
+                    return new ArbitraryTaskResult('mutex-name', $this->mutex->getCurrentLockName());
+                }
+            )
+        );
+        $this->assertSame($expect_lock_name, $result->getMsg());
     }
 
     public function test_it_returns_result_of_next_handler_if_mutex_available()
