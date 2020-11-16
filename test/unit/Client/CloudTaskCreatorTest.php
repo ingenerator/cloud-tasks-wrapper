@@ -5,6 +5,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
 use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\Task;
@@ -282,7 +283,30 @@ class CloudTaskCreatorTest extends TestCase
 
     public function test_it_provides_retry_options_when_sending_task()
     {
-        $this->markTestIncomplete();
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'something',
+            [
+                'create_retry_settings' => [
+                    'initialRetryDelayMillis' => 100,
+                    'retryDelayMultiplier'    => 1.3,
+                    'maxRetryDelayMillis'     => 10000,
+                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled'          => TRUE,
+                ],
+            ]
+        );
+        $this->newSubject()->create('something');
+        $this->tasks_client->assertCreatedOneTaskWithOptions(
+            [
+                'retrySettings' => [
+                    'initialRetryDelayMillis' => 100,
+                    'retryDelayMultiplier'    => 1.3,
+                    'maxRetryDelayMillis'     => 10000,
+                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled'          => TRUE,
+                ],
+            ]
+        );
     }
 
     protected function setUp(): void
@@ -341,6 +365,12 @@ class TasksClientSpy extends CloudTasksClient
     {
         Assert::assertCount(1, $this->created);
         Assert::assertSame($queue, $this->created[0]['parent']);
+    }
+
+    public function assertCreatedOneTaskWithOptions(array $options)
+    {
+        Assert::assertCount(1, $this->created);
+        Assert::assertSame($options, $this->created[0]['args']);
     }
 
 }

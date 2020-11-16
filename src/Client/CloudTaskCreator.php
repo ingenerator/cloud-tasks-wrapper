@@ -93,12 +93,17 @@ class CloudTaskCreator implements TaskCreator
         );
 
         try {
-            //@todo: set retry and timeout settings either on the operation or the client
-            // NB that the defaults don't appear to be the defaults in the docs, and customising doesn't work the way
-            // you think either (doesn't seem to actually accept a RetrySettings despite saying it does)
             $result = $this->client->createTask(
                 $config['queue-path'],
-                $task
+                $task,
+                [
+                    // Note that we set retrySettings based on the task type config (falling back to our custom global
+                    // defaults). This is different to the default CloudTasksClient behaviour, which does not retry
+                    // CreateTask calls as they are not guaranteed idempotent without a client-side name attribute.
+                    // In our case they are because task handlers should already be written to be idempotent to cope
+                    // with at-least-once delivery, so we can safely retry creating the task.
+                    'retrySettings' => $config['create_retry_settings'],
+                ]
             );
 
             return $result->getName();

@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper;
 
 
+use Google\ApiCore\ApiStatus;
 use PHPUnit\Framework\TestCase;
 
 class TaskTypeConfigProviderTest extends TestCase
@@ -41,8 +42,18 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('_default');
     }
 
-    public function test_it_provides_explicit_values_for_known_task_type()
+    public function test_it_throws_on_attempt_to_override_retryable_codes()
+    {
+        $this->config['_default']['create_retry_settings']['retryableCodes'] = ['foo'];
+        $this->config['any-task']                                            = [];
 
+        $subject = $this->newSubject();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('retryableCodes');
+        $subject->getConfig('any-task');
+    }
+
+    public function test_it_provides_explicit_values_for_known_task_type()
     {
         $this->config = [
             'do-a-thing' => [
@@ -55,6 +66,8 @@ class TaskTypeConfigProviderTest extends TestCase
                 'handler_url'  => 'https://moon.test/my-task',
             ],
         ];
+        $cfg          = $this->newSubject()->getConfig('do-a-thing');
+        unset($cfg['create_retry_settings']); // Tested separately
         $this->assertSame(
             [
                 'queue'        => [
@@ -66,7 +79,7 @@ class TaskTypeConfigProviderTest extends TestCase
                 'handler_url'  => 'https://moon.test/my-task',
                 'queue-path'   => 'projects/good-proj/locations/the-moon/queues/slow-stuff',
             ],
-            $this->newSubject()->getConfig('do-a-thing')
+            $cfg
         );
     }
 
@@ -89,6 +102,8 @@ class TaskTypeConfigProviderTest extends TestCase
                 'handler_url' => 'https://glacier.test/background',
             ],
         ];
+        $cfg          = $this->newSubject()->getConfig('background-thing');
+        unset($cfg['create_retry_settings']); // Tested separately
         $this->assertSame(
             [
                 'queue'        => [
@@ -100,7 +115,7 @@ class TaskTypeConfigProviderTest extends TestCase
                 'handler_url'  => 'https://glacier.test/background',
                 'queue-path'   => 'projects/good-proj/locations/the-moon/queues/unimportant',
             ],
-            $this->newSubject()->getConfig('background-thing')
+            $cfg
         );
     }
 
@@ -120,6 +135,72 @@ class TaskTypeConfigProviderTest extends TestCase
                 'slow-job'  => $subject->getConfig('slow-job')['handler_url'],
                 'other-job' => $subject->getConfig('other-job')['handler_url'],
             ],
+        );
+    }
+
+    public function test_it_provides_default_creation_retry_options_if_none_provided()
+    {
+        unset($this->config['_default']['create_retry_settings']);
+        $this->config['my-task'] = [];
+
+        $this->assertSame(
+            [
+                'initialRetryDelayMillis' => 100,
+                'retryDelayMultiplier'    => 1.3,
+                'maxRetryDelayMillis'     => 10000,
+                'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                'retriesEnabled'          => TRUE,
+            ],
+            $this->newSubject()->getConfig('my-task')['create_retry_settings']
+        );
+    }
+
+    public function provider_custom_retry()
+    {
+        return [
+            [
+                // Override one prop for all methods
+                [
+                    '_default'  => ['create_retry_settings' => ['retryDelayMultiplier' => 5]],
+                    'some-task' => [],
+                ],
+                [
+                    'initialRetryDelayMillis' => 100,
+                    'retryDelayMultiplier'    => 5,
+                    'maxRetryDelayMillis'     => 10000,
+                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled'          => TRUE,
+                ],
+            ],
+            [
+                // Override for a single task type
+                [
+                    '_default'  => ['create_retry_settings' => ['maxRetryDelayMillis' => 5000]],
+                    'some-task' => ['create_retry_settings' => ['maxRetryDelayMillis' => 20000]],
+                ],
+                [
+                    'initialRetryDelayMillis' => 100,
+                    'retryDelayMultiplier'    => 1.3,
+                    'maxRetryDelayMillis'     => 20000,
+                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled'          => TRUE,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provider_custom_retry
+     */
+    public function test_it_can_customise_creation_retry_options_for_all_tasks_or_one_task($config, $expect)
+    {
+        $this->config                            = $config;
+        $this->config['_default']['queue']       = ['project' => 'a', 'location' => 'b', 'name' => 'c'];
+        $this->config['_default']['handler_url'] = 'http://foo.com';
+
+        $this->assertSame(
+            $expect,
+            $this->newSubject()->getConfig('some-task')['create_retry_settings']
         );
     }
 
