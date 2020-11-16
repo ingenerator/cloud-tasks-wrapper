@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\TestHelpers;
 
 
+use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
@@ -44,7 +45,7 @@ class TaskTypeConfigStub extends TaskTypeConfigProvider
         );
     }
 
-    public function getConfig(string $task_type): array
+    public function getConfig(string $task_type): TaskTypeConfig
     {
         if ($this->allow_any_task_type and ! isset($this->config[$task_type])) {
             $this->config[$task_type] = [];

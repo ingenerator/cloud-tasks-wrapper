@@ -59,8 +59,12 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 
     protected function verifyTokenForTaskRequest(string $token, TaskRequest $request): TokenVerificationResult
     {
-        $expect_signer = $this->task_type_config->getConfig($request->getTaskType())['signer_email'];
-        $result        = $this->token_verifier->verify(
+        $expect_signer = $this
+            ->task_type_config
+            ->getConfig($request->getTaskType())
+            ->getSignerEmail();
+
+        $result = $this->token_verifier->verify(
             $token,
             [
                 'email_exact' => $expect_signer,

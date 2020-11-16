@@ -5,6 +5,7 @@ namespace Ingenerator\CloudTasksWrapper;
 
 
 use Google\ApiCore\ApiStatus;
+use Google\Cloud\Tasks\V2\CloudTasksClient;
 use PHPUnit\Framework\TestCase;
 
 class TaskTypeConfigProviderTest extends TestCase
@@ -67,19 +68,9 @@ class TaskTypeConfigProviderTest extends TestCase
             ],
         ];
         $cfg          = $this->newSubject()->getConfig('do-a-thing');
-        unset($cfg['create_retry_settings']); // Tested separately
         $this->assertSame(
-            [
-                'queue'        => [
-                    'project'  => 'good-proj',
-                    'location' => 'the-moon',
-                    'name'     => 'slow-stuff',
-                ],
-                'signer_email' => 'neil@armstrong.serviceaccount.test',
-                'handler_url'  => 'https://moon.test/my-task',
-                'queue-path'   => 'projects/good-proj/locations/the-moon/queues/slow-stuff',
-            ],
-            $cfg
+            ['type' => 'do-a-thing', 'signer' => 'neil@armstrong.serviceaccount.test'],
+            ['type' => $cfg->getTaskType(), 'signer' => $cfg->getSignerEmail()],
         );
     }
 
@@ -102,41 +93,23 @@ class TaskTypeConfigProviderTest extends TestCase
                 'handler_url' => 'https://glacier.test/background',
             ],
         ];
-        $cfg          = $this->newSubject()->getConfig('background-thing');
-        unset($cfg['create_retry_settings']); // Tested separately
+
+        $cfg = $this->newSubject()->getConfig('background-thing');
+
         $this->assertSame(
             [
-                'queue'        => [
-                    'project'  => 'good-proj',
-                    'location' => 'the-moon',
-                    'name'     => 'unimportant',
-                ],
-                'signer_email' => 'neil@armstrong.serviceaccount.test',
-                'handler_url'  => 'https://glacier.test/background',
-                'queue-path'   => 'projects/good-proj/locations/the-moon/queues/unimportant',
+                'queue_path' => CloudTasksClient::queueName('good-proj', 'the-moon', 'unimportant'),
+                'handler'    => 'https://glacier.test/background',
+                'signer'     => 'neil@armstrong.serviceaccount.test',
             ],
-            $cfg
+            [
+                'queue_path' => $cfg->getQueuePath(),
+                'handler'    => $cfg->getHandlerUrl(),
+                'signer'     => $cfg->getSignerEmail(),
+            ]
         );
     }
 
-    public function test_it_replaces_task_type_parameter_in_handler_url()
-    {
-        $this->config['_default']['handler_url'] = 'https://some.handler/_do_task/{TASK_TYPE}';
-        $this->config['slow-job']                = [];
-        $this->config['other-job']               = [];
-
-        $subject = $this->newSubject();
-        $this->assertSame(
-            [
-                'slow-job'  => 'https://some.handler/_do_task/slow-job',
-                'other-job' => 'https://some.handler/_do_task/other-job',
-            ],
-            [
-                'slow-job'  => $subject->getConfig('slow-job')['handler_url'],
-                'other-job' => $subject->getConfig('other-job')['handler_url'],
-            ],
-        );
-    }
 
     public function test_it_provides_default_creation_retry_options_if_none_provided()
     {
@@ -151,7 +124,7 @@ class TaskTypeConfigProviderTest extends TestCase
                 'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 'retriesEnabled'          => TRUE,
             ],
-            $this->newSubject()->getConfig('my-task')['create_retry_settings']
+            $this->newSubject()->getConfig('my-task')->getCreateRetrySettings()
         );
     }
 
@@ -200,7 +173,7 @@ class TaskTypeConfigProviderTest extends TestCase
 
         $this->assertSame(
             $expect,
-            $this->newSubject()->getConfig('some-task')['create_retry_settings']
+            $this->newSubject()->getConfig('some-task')->getCreateRetrySettings()
         );
     }
 

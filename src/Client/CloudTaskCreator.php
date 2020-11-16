@@ -35,9 +35,9 @@ class CloudTaskCreator implements TaskCreator
         $this->logger      = $logger;
     }
 
-    public function create(string $task_type, array $options = []): string
+    public function create(string $task_type_name, array $options = []): string
     {
-        $config = $this->task_config->getConfig($task_type);
+        $task_type = $this->task_config->getConfig($task_type_name);
 
         $options = array_merge(
             [
@@ -67,7 +67,7 @@ class CloudTaskCreator implements TaskCreator
             $options
         );
 
-        $handler_url = $config['handler_url'];
+        $handler_url = $task_type->getHandlerUrl();
         if ($options['query']) {
             $handler_url .= '?'.\http_build_query($options['query']);
         }
@@ -83,7 +83,7 @@ class CloudTaskCreator implements TaskCreator
                     [
                         'url'         => $handler_url,
                         'http_method' => HttpMethod::POST,
-                        'oidc_token'  => $this->oidcTokenUnlessAnonymous($config['signer_email']),
+                        'oidc_token'  => $this->oidcTokenUnlessAnonymous($task_type->getSignerEmail()),
                         'headers'     => $options['headers'],
                         'body'        => $options['body'],
                     ]
@@ -94,7 +94,7 @@ class CloudTaskCreator implements TaskCreator
 
         try {
             $result = $this->client->createTask(
-                $config['queue-path'],
+                $task_type->getQueuePath(),
                 $task,
                 [
                     // Note that we set retrySettings based on the task type config (falling back to our custom global
@@ -102,7 +102,7 @@ class CloudTaskCreator implements TaskCreator
                     // CreateTask calls as they are not guaranteed idempotent without a client-side name attribute.
                     // In our case they are because task handlers should already be written to be idempotent to cope
                     // with at-least-once delivery, so we can safely retry creating the task.
-                    'retrySettings' => $config['create_retry_settings'],
+                    'retrySettings' => $task_type->getCreateRetrySettings(),
                 ]
             );
 

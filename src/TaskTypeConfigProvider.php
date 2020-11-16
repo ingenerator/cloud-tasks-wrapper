@@ -34,7 +34,7 @@ class TaskTypeConfigProvider
         $this->config                                = $config;
     }
 
-    public function getConfig(string $task_type): array
+    public function getConfig(string $task_type): TaskTypeConfig
     {
         if ($task_type === '_default') {
             throw new \InvalidArgumentException('Cannot directly access _default task config');
@@ -56,14 +56,7 @@ class TaskTypeConfigProvider
             throw new \InvalidArgumentException('Cannot customise `retryableCodes` for creating cloud tasks');
         }
 
-        $cfg['queue-path'] = CloudTasksClient::queueName(
-            $cfg['queue']['project'],
-            $cfg['queue']['location'],
-            $cfg['queue']['name'],
-        );
 
-        $cfg['handler_url'] = \str_replace('{TASK_TYPE}', $task_type, $cfg['handler_url']);
-
-        return $cfg;
+        return new TaskTypeConfig($task_type, $cfg);
     }
 }
