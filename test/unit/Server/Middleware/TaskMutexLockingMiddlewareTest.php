@@ -7,9 +7,9 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskHandler;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use Ingenerator\PHPUtils\Mutex\MockMutexWrapper;
 use PHPUnit\Framework\TestCase;
 

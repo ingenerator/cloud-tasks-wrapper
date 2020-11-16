@@ -12,7 +12,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskHandler;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use PHPUnit\Framework\TestCase;
 
 class TaskControllerTest extends TestCase

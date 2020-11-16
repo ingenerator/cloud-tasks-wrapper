@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Ingenerator\CloudTasksWrapper\Client\TestHelpers;
+namespace Ingenerator\CloudTasksWrapper\TestHelpers\Client;
 
 
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;

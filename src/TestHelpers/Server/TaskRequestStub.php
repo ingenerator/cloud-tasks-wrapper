@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
+namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 
 use GuzzleHttp\Psr7\ServerRequest;

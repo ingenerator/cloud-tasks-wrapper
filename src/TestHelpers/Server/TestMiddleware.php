@@ -1,6 +1,6 @@
 <?php
 
-namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
+namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;

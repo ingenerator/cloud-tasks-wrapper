@@ -1,14 +1,13 @@
 <?php
 
 
-namespace Ingenerator\CloudTasksWrapper\Server\TestHelpers;
+namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
-use Psr\Http\Message\ServerRequestInterface;
 
 class TestTaskChain extends TaskHandlerChain
 {

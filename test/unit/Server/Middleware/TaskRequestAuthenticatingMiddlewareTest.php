@@ -9,8 +9,8 @@ use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMid
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 use PHPUnit\Framework\Assert;

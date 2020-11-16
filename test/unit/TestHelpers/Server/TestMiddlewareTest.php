@@ -1,16 +1,16 @@
 <?php
 
 
-namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TestHelpers;
+namespace test\unit\Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TaskRequestStub;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestMiddleware;
-use Ingenerator\CloudTasksWrapper\Server\TestHelpers\TestTaskChain;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestMiddleware;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
