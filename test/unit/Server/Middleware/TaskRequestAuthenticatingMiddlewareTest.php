@@ -9,6 +9,7 @@ use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMid
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
+use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 {
     protected TokenVerifier $token_verifier;
+    protected TaskTypeConfigStub $task_type_config;
 
     public function test_it_is_initialisable()
     {
@@ -40,7 +42,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             [
                 'code'        => CoreTaskResult::BAD_HTTP_METHOD,
                 'msg'         => '`GET` not accepted',
-                'log_context' => []
+                'log_context' => [],
             ],
             $result->toArray()
         );
@@ -58,7 +60,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             [
                 'code'        => CoreTaskResult::AUTH_NOT_PROVIDED,
                 'msg'         => 'No `Authorization` header',
-                'log_context' => []
+                'log_context' => [],
             ],
             $result->toArray()
         );
@@ -70,7 +72,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             ->process(
                 TaskRequestStub::with(
                     [
-                        'headers' => ['Authorization' => 'Basic '.\base64_encode('open:sesame')]
+                        'headers' => ['Authorization' => 'Basic '.\base64_encode('open:sesame')],
                     ]
                 ),
                 TestTaskChain::nextNeverCalled()
@@ -80,25 +82,38 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             [
                 'code'        => CoreTaskResult::AUTH_INVALID,
                 'msg'         => '`Authorization` must be a bearer token',
-                'log_context' => []
+                'log_context' => [],
             ],
             $result->toArray()
         );
     }
 
-    public function test_it_validates_token_using_token_verifier()
+    public function test_it_validates_token_using_token_verifier_with_signer_email_for_task_type()
     {
-        $this->token_verifier = TokenVerifierStub::willFailWith(new \Exception('Anything'));
+        $this->task_type_config = TaskTypeConfigStub::withTaskType(
+            'my-custom-task',
+            ['signer_email' => 'foo@bar.serviceaccount.com']
+        );
+        $this->token_verifier   = TokenVerifierStub::willFailWith(
+            new \Exception('Anything')
+        );
         $this->newSubject()
             ->process(
                 TaskRequestStub::with(
-                    ['headers' => ['Authorization' => 'Bearer abc215.1242121asd2.ad7215724']]
+                    [
+                        'headers'   => ['Authorization' => 'Bearer abc215.1242121asd2.ad7215724'],
+                        'task_type' => 'my-custom-task',
+                    ]
                 ),
                 TestTaskChain::nextNeverCalled()
             );
 
-        // @todo: here's where we verify the extra constraints including passing users for task type
-        $this->token_verifier->assertVerifiedOnce('abc215.1242121asd2.ad7215724');
+        $this->token_verifier->assertVerifiedOnce(
+            'abc215.1242121asd2.ad7215724',
+            [
+                'email_exact' => 'foo@bar.serviceaccount.com',
+            ]
+        );
     }
 
     public function test_it_returns_auth_invalid_if_token_is_not_properly_signed()
@@ -115,7 +130,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             [
                 'code'        => CoreTaskResult::AUTH_INVALID,
                 'msg'         => 'Token failed (Firebase\JWT\SignatureInvalidException: Sig verification failed)',
-                'log_context' => ['exception' => $exception]
+                'log_context' => ['exception' => $exception],
             ],
             $result->toArray()
         );
@@ -164,7 +179,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             [
                 'code'        => 'OK',
                 'msg'         => 'foo@some.iam.gserviceaccount.com',
-                'log_context' => []
+                'log_context' => [],
             ],
             $result->toArray()
         );
@@ -184,12 +199,16 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->token_verifier = TokenVerifierStub::notCalled();
+        $this->task_type_config = TaskTypeConfigStub::withAnyTaskType();
+        $this->token_verifier   = TokenVerifierStub::notCalled();
     }
 
     protected function newSubject(): TaskRequestAuthenticatingMiddleware
     {
-        return new TaskRequestAuthenticatingMiddleware($this->token_verifier);
+        return new TaskRequestAuthenticatingMiddleware(
+            $this->task_type_config,
+            $this->token_verifier
+        );
     }
 
 }

@@ -9,20 +9,21 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
+use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 
 class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 {
-    /**
-     * @var \Ingenerator\OIDCTokenVerifier\TokenVerifier
-     */
+    protected TaskTypeConfigProvider $task_type_config;
     protected TokenVerifier $token_verifier;
 
     public function __construct(
+        TaskTypeConfigProvider $task_type_config,
         TokenVerifier $oidc_token_verifier
     ) {
-        $this->token_verifier = $oidc_token_verifier;
+        $this->task_type_config = $task_type_config;
+        $this->token_verifier   = $oidc_token_verifier;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
@@ -45,7 +46,7 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
             return CoreTaskResult::authInvalid('`Authorization` must be a bearer token');
         }
 
-        $result = $this->token_verifier->verify($matches[1]);
+        $result = $this->verifyTokenForTaskRequest($matches[1], $request);
         if ( ! $result->isVerified()) {
             return $this->createAuthFailureResult($result);
         }
@@ -54,6 +55,19 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
         $request->setCallerEmail($result->getPayload()->email ?? NULL);
 
         return $chain->nextHandler($request);
+    }
+
+    protected function verifyTokenForTaskRequest(string $token, TaskRequest $request): TokenVerificationResult
+    {
+        $expect_signer = $this->task_type_config->getConfig($request->getTaskType())['signer_email'];
+        $result        = $this->token_verifier->verify(
+            $token,
+            [
+                'email_exact' => $expect_signer,
+            ]
+        );
+
+        return $result;
     }
 
     protected function createAuthFailureResult(TokenVerificationResult $result): TaskHandlerResult
