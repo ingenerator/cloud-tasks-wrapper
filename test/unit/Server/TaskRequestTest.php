@@ -31,7 +31,7 @@ class TaskRequestTest extends TestCase
     }
 
     /**
-     * @testWith [{"X-CloudTasks-TaskETA":"1501912403.555197"}, "2017-08-05 06:53:23.555197 +01:00"]
+     * @testWith [{"X-CloudTasks-TaskETA":"1501912403.555197"}, "2017-08-05T06:53:23.555197+01:00"]
      *           [{}, null]
      */
     public function test_it_provides_cloud_tasks_eta_as_datetime_or_null($hdrs, $expect)
@@ -43,7 +43,7 @@ class TaskRequestTest extends TestCase
             $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar', $hdrs);
             $this->assertSame(
                 $expect,
-                DateString::format($this->newSubject()->getScheduledTime(), 'Y-m-d H:i:s.u P', NULL)
+                DateString::isoMS($this->newSubject()->getScheduledTime(), NULL)
             );
         } finally {
             \date_default_timezone_set($dtz);

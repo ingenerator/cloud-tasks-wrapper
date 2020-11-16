@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\Server;
 
 
+use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -129,16 +130,7 @@ class TaskRequest
         }
 
         // @todo: throw if unexpected / invalid format?
-        // @todo: this needs to go to php-utils
-        // Work round some PHP edge cases.
-        // First, a float with a .00 casts to string with no decimal point, which causes the createFromFormat to fail
-        // on exact seconds. Use sprintf to ensure there's always a decimal present
-        $dt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6F', (float) $time));
-
-        // Second, creating from unix timestamp of any kind always sets the TZ to UTC (*even* if you specify a timezone
-        // in the constructor).
-        // So cast it back to the default timezone for consistency with other date time constructor formats
-        return $dt->setTimezone(new \DateTimeZone(\date_default_timezone_get()));
+        return DateTimeImmutableFactory::atMicrotime($time);
     }
 
     public function getHttpRequest(): ServerRequestInterface
