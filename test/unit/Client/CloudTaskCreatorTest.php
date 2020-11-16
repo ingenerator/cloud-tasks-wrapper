@@ -13,7 +13,7 @@ use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\Client\CloudTaskCreator;
 use Ingenerator\CloudTasksWrapper\Client\CloudTasksQueueMapper;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
-use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
+use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -30,18 +30,7 @@ class CloudTaskCreatorTest extends TestCase
      */
     protected $logger;
 
-    protected $task_config = [
-        '_default'  => [
-            'queue'        => [
-                'project'  => 'good-proj',
-                'location' => 'the-moon',
-                'name'     => 'priority',
-            ],
-            'signer_email' => 'neil@armstrong.serviceaccount.test',
-            'handler_url'  => 'https://moon.test/my-task',
-        ],
-        'some-task' => [],
-    ];
+    protected TaskTypeConfigStub $task_config;
 
     public function test_it_is_initialisable()
     {
@@ -140,7 +129,7 @@ class CloudTaskCreatorTest extends TestCase
         $expect_has_oidc,
         $expect_oidc_email
     ) {
-        $this->task_config['do-something']['signer_email'] = $signer;
+        $this->task_config = TaskTypeConfigStub::withTaskType('do-something', ['signer_email' => $signer]);
         $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
@@ -161,7 +150,10 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_sets_task_to_post_to_provided_url_optionally_adding_query_params($opts, $expect)
     {
-        $this->task_config['do-something']['handler_url'] = 'https://my.handler.foo/something';
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'do-something',
+            ['handler_url' => 'https://my.handler.foo/something']
+        );
         $this->newSubject()->create('do-something', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, $task->getHttpRequest()->getUrl());
@@ -174,7 +166,6 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_task_name_if_provided($opts, $expect)
     {
-        $this->task_config['some-task'] = [];
         $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, $task->getName());
@@ -197,7 +188,6 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_http_headers_if_provided($opts, $expect)
     {
-        $this->task_config['some-task'] = [];
         $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, \iterator_to_array($task->getHttpRequest()->getHeaders()));
@@ -226,7 +216,6 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_timestamp_for_scheduled_time_if_provided($opts, $expect)
     {
-        $this->task_config['any-old-job'] = [];
         $this->newSubject()->create('any-old-job', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
         if ($expect === NULL) {
@@ -243,11 +232,16 @@ class CloudTaskCreatorTest extends TestCase
 
     public function test_it_submits_to_the_configured_queue_url_for_the_task_options()
     {
-        $this->task_config['something']['queue'] = [
-            'project'  => 'mine',
-            'location' => 'mars',
-            'name'     => 'archival',
-        ];
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'something',
+            [
+                'queue' => [
+                    'project'  => 'mine',
+                    'location' => 'mars',
+                    'name'     => 'archival',
+                ],
+            ]
+        );
         $this->newSubject()->create('something');
         $this->tasks_client->assertCreatedOneTaskInQueue(
             CloudTasksClient::queueName('mine', 'mars', 'archival')
@@ -256,23 +250,21 @@ class CloudTaskCreatorTest extends TestCase
 
     public function test_it_logs_nothing_on_success()
     {
-        $this->task_config['anything'] = [];
-        $this->logger                  = new TestLogger();
+        $this->logger = new TestLogger();
         $this->newSubject()->create('anything');
         $this->assertSame([], $this->logger->records);
     }
 
     public function test_it_logs_and_throws_on_failure()
     {
-        $this->task_config['anything'] = [];
-        $this->logger                  = new TestLogger();
-        $this->logger                  = new TestLogger();
-        $api_exception                 = ApiException::createFromApiResponse(
+        $this->logger       = new TestLogger();
+        $this->logger       = new TestLogger();
+        $api_exception      = ApiException::createFromApiResponse(
             'Create task broke!',
             Code::UNKNOWN
         );
-        $this->tasks_client            = TasksClientSpy::willThrowOnCreate($api_exception);
-        $subject                       = $this->newSubject();
+        $this->tasks_client = TasksClientSpy::willThrowOnCreate($api_exception);
+        $subject            = $this->newSubject();
         try {
             $subject->create('anything');
             $this->fail('Expected exception, none got');
@@ -298,13 +290,14 @@ class CloudTaskCreatorTest extends TestCase
         parent::setUp();
         $this->tasks_client = new TasksClientSpy;
         $this->logger       = new NullLogger;
+        $this->task_config  = TaskTypeConfigStub::withAnyTaskType();
     }
 
     protected function newSubject()
     {
         return new CloudTaskCreator(
             $this->tasks_client,
-            new TaskTypeConfigProvider($this->task_config),
+            $this->task_config,
             $this->logger
         );
     }
