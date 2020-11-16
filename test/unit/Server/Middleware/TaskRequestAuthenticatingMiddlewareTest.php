@@ -9,17 +9,15 @@ use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMid
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
-use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
-use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
-use Ingenerator\OIDCTokenVerifier\TokenVerifier;
-use PHPUnit\Framework\Assert;
+use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
+use Ingenerator\OIDCTokenVerifier\TestHelpers\MockTokenVerifier;
 use PHPUnit\Framework\TestCase;
 
 class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 {
-    protected TokenVerifier $token_verifier;
+    protected MockTokenVerifier $token_verifier;
     protected TaskTypeConfigStub $task_type_config;
 
     public function test_it_is_initialisable()
@@ -94,7 +92,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             'my-custom-task',
             ['signer_email' => 'foo@bar.serviceaccount.com']
         );
-        $this->token_verifier   = TokenVerifierStub::willFailWith(
+        $this->token_verifier   = MockTokenVerifier::willFailWith(
             new \Exception('Anything')
         );
         $this->newSubject()
@@ -119,7 +117,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     public function test_it_returns_auth_invalid_if_token_is_not_properly_signed()
     {
         $exception            = new SignatureInvalidException('Sig verification failed');
-        $this->token_verifier = TokenVerifierStub::willFailWith($exception);
+        $this->token_verifier = MockTokenVerifier::willFailWith($exception);
         $result               = $this->newSubject()
             ->process(
                 TaskRequestStub::withAuthToken(),
@@ -160,7 +158,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 
     public function test_it_adds_token_info_to_request_and_returns_next_handler_result_on_success()
     {
-        $this->token_verifier = TokenVerifierStub::willSucceedWith(
+        $this->token_verifier = MockTokenVerifier::willSucceedWith(
             ['email' => 'foo@some.iam.gserviceaccount.com']
         );
         $request              = TaskRequestStub::withAuthToken();
@@ -200,7 +198,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     {
         parent::setUp();
         $this->task_type_config = TaskTypeConfigStub::withAnyTaskType();
-        $this->token_verifier   = TokenVerifierStub::notCalled();
+        $this->token_verifier   = MockTokenVerifier::notCalled();
     }
 
     protected function newSubject(): TaskRequestAuthenticatingMiddleware
@@ -213,46 +211,3 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 
 }
 
-class TokenVerifierStub implements TokenVerifier
-{
-    protected $calls = [];
-    protected ?TokenVerificationResult $result;
-
-    public static function willFailWith(\Exception $e)
-    {
-        return new static(TokenVerificationResult::createFailure($e));
-    }
-
-    public static function willSucceedWith(array $token_props)
-    {
-        $obj = (object) $token_props;
-
-        return new static(TokenVerificationResult::createSuccess($obj));
-    }
-
-    public static function notCalled()
-    {
-        return new static(NULL);
-    }
-
-    protected function __construct(?TokenVerificationResult $result)
-    {
-        $this->result = $result;
-    }
-
-    public function verify(string $token, array $extra_constraints = []): TokenVerificationResult
-    {
-        $this->calls[] = [$token, $extra_constraints];
-        if ($this->result) {
-            return $this->result;
-        }
-
-        throw new \BadMethodCallException('Unexpected call to '.__METHOD__);
-    }
-
-    public function assertVerifiedOnce(string $token, array $extra_constraints = [])
-    {
-        Assert::assertSame([[$token, $extra_constraints]], $this->calls);
-    }
-
-}
