@@ -52,17 +52,17 @@ class CloudTaskCreator implements TaskCreator
                 'query'               => NULL,
                 // Optionally specify when the task should first be executed
                 'schedule_send_after' => NULL,
-                // Optional, specify a task name for server-side dedupe by Cloud Tasks. Note per the
+                // Optional, specify a task ID for server-side dedupe by Cloud Tasks. Note per the
                 // docs this significantly reduces throughput especially if it is not a
                 // well-distributed hash value. For fastest dispatch allow Cloud Tasks to duplicate
                 // and deal with de-duping on receipt (necessary anyway as Tasks is always
                 // at-least-once delivery).
-                'task_name'           => NULL,
-                // Optional, *instead* of task_name, specify task_name_from to have the library automatically
-                // calculate the task_name as an SHA256 hash of the application-provided string. Supports the
+                'task_id'             => NULL,
+                // Optional, *instead* of task_id, specify task_id_from to have the library automatically
+                // calculate the task_id as an SHA256 hash of the application-provided string. Supports the
                 // common case where you want to use a known string for deduping, but want the throughput of
                 // well-distributed random-like task names.
-                'task_name_from'      => NULL,
+                'task_id_from'        => NULL,
             ],
             $options
         );
