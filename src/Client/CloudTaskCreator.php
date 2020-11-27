@@ -77,7 +77,7 @@ class CloudTaskCreator implements TaskCreator
         $task = $this->createObj(
             Task::class,
             [
-                'name'          => $this->getTaskName($options),
+                'name'          => $this->getTaskName($task_type->getQueuePath(), $options),
                 'http_request'  => $this->createObj(
                     HttpRequest::class,
                     [
@@ -196,16 +196,30 @@ class CloudTaskCreator implements TaskCreator
         return $options;
     }
 
-    protected function getTaskName(array $options): ?string
+    /**
+     * Return the fully-qualified task name (which must include the queue path) if any
+     *
+     * @param string $queue_path
+     * @param array  $options
+     *
+     * @return string|null
+     */
+    protected function getTaskName(string $queue_path, array $options): ?string
     {
-        if (isset($options['task_name_from'])) {
-            if (isset($options['task_name'])) {
-                throw new \InvalidArgumentException('Cannot set both task_name_from and task_name');
+        if (isset($options['task_id_from'])) {
+            if (isset($options['task_id'])) {
+                throw new \InvalidArgumentException('Cannot set both task_id_from and task_id');
             }
 
-            return \hash('sha256', $options['task_name_from']);
+            $task_id = \hash('sha256', $options['task_id_from']);
+        } else {
+            $task_id = $options['task_id'] ?? NULL;
         }
 
-        return $options['task_name'] ?? NULL;
+        if (empty($task_id)) {
+            return NULL;
+        }
+
+        return $queue_path.'/tasks/'.$task_id;
     }
 }

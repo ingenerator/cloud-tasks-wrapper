@@ -64,14 +64,14 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function test_it_throws_if_specifying_name_and_name_from()
+    public function test_it_throws_if_specifying_id_and_id_from()
     {
         $subject = $this->newSubject();
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('task_name_from');
+        $this->expectExceptionMessage('task_id_from');
         $subject->create(
             'some-task',
-            ['task_name' => 'something', 'task_name_from' => 'something else']
+            ['task_id' => 'something', 'task_id_from' => 'something else']
         );
     }
 
@@ -163,24 +163,46 @@ class CloudTaskCreatorTest extends TestCase
 
     /**
      * @testWith [{}, ""]
-     *           [{"task_name": "absad237"}, "absad237"]
+     *           [{"task_id": "absad237"}, "absad237"]
      */
-    public function test_it_adds_task_name_if_provided($opts, $expect)
+    public function test_it_adds_task_name_from_id_if_provided($opts, $expect_id)
     {
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'some-task',
+            [
+                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival'],
+            ]
+        );
         $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect, $task->getName());
+        if ($expect_id) {
+            $expect_name = CloudTasksClient::taskName('mine', 'mars', 'archival', $expect_id);
+        } else {
+            $expect_name = "";
+        }
+        $this->assertSame($expect_name, $task->getName());
     }
 
     /**
      * @testWith [{}, ""]
-     *           [{"task_name_from": "some application string"}, "4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e"]
+     *           [{"task_id_from": "some application string"}, "4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e"]
      */
-    public function test_it_adds_hashed_task_name_if_name_from_provided($opts, $expect)
+    public function test_it_adds_hashed_task_name_if_id_from_provided($opts, $expect_id)
     {
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'some-task',
+            [
+                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival'],
+            ]
+        );
         $this->newSubject()->create('some-task', $opts);
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect, $task->getName());
+        if ($expect_id) {
+            $expect_name = CloudTasksClient::taskName('mine', 'mars', 'archival', $expect_id);
+        } else {
+            $expect_name = "";
+        }
+        $this->assertSame($expect_name, $task->getName());
     }
 
     /**
@@ -349,7 +371,7 @@ class TasksClientSpy extends CloudTasksClient
         }
         $this->created[] = ['parent' => $parent, 'task' => $task, 'args' => $optionalArgs];
         $result          = clone $task;
-        $result->setName('created-task-name');
+        $result->setName($parent.'/tasks/created-task-name');
 
         return $result;
     }
