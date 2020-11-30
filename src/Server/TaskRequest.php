@@ -148,6 +148,13 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    public function optionalQueryParam(string $param): ?string
+    {
+        $params = $this->request->getQueryParams();
+
+        return $params[$param] ?? NULL;
+    }
+
     /**
      * Requires a non-empty value from the task URL query string
      *
@@ -162,12 +169,12 @@ class TaskRequest
      */
     public function requireQueryParam(string $param): string
     {
-        $params = $this->request->getQueryParams();
-        if (empty($params[$param] ?? NULL)) {
+        $var = $this->optionalQueryParam($param);
+        if (empty($var)) {
             throw new CloudTaskCannotBeValidException('Required param `'.$param.'` missing from task URL');
         }
 
-        return $params[$param];
+        return $var;
     }
 
 }

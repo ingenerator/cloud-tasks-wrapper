@@ -126,6 +126,17 @@ class TaskRequestTest extends TestCase
         $this->assertSame($expect, $this->newSubject()->getRetryReason());
     }
 
+    /**
+     * @testWith [[], null]
+     *           [{"foo": "bar"}, null]
+     *           [{"param": "this"}, "this"]
+     */
+    public function test_its_optional_query_provides_value_or_null($vars, $expect)
+    {
+        $this->http_req = $this->http_req->withQueryParams($vars);
+        $this->assertSame($expect, $this->newSubject()->optionalQueryParam('param'));
+    }
+
     public function test_its_require_query_provides_value_if_present()
     {
         $this->http_req = $this->http_req->withQueryParams(['foo' => 'bar']);
