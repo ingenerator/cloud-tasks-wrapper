@@ -12,6 +12,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
+use Ingenerator\CloudTasksWrapper\Server\UnknownTaskTypeException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -47,6 +48,23 @@ class TaskControllerTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('does not match');
         $subject->handle(new ServerRequest('POST', '/not-a-task'));
+    }
+
+    public function test_it_returns_404_if_task_handler_factory_throws_unknown_task()
+    {
+        $this->url_pattern     = '#^/_tasks/(?P<task_type>.+)$#';
+        $this->handler_factory = new TaskHandlerFactoryStub(['any' => TestTaskHandler::neverCalled()]);
+        $response              = $this->newSubject()->handle(
+            new ServerRequest('POST', 'https://any.thing/_tasks/some-task')
+        );
+        $this->assertSame(
+            [
+                'code'        => CoreTaskResult::HANDLER_NOT_FOUND,
+                'msg'         => 'No task handler for `some-task`',
+                'log_context' => [],
+            ],
+            $response->getResult()->toArray()
+        );
     }
 
     public function test_it_creates_and_runs_task_handler_for_type_parsed_from_url()
@@ -118,7 +136,7 @@ class TaskHandlerFactoryStub implements TaskHandlerFactory
             return $this->handlers[$task_type];
         }
 
-        throw new \InvalidArgumentException('No handler defined for task type '.$task_type);
+        throw new UnknownTaskTypeException('No handler defined for task type '.$task_type);
     }
 
 }

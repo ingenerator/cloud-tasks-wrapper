@@ -39,6 +39,11 @@ class TaskResultCodeMapper
             'http_status' => 403,
             'loglevel'    => LogLevel::WARNING,
         ],
+        CoreTaskResult::HANDLER_NOT_FOUND => [
+            'http_status' => 404,
+            // Not actually logged normally, these are fired before the middleware
+            'loglevel' => LogLevel::WARNING,
+        ],
         CoreTaskResult::MUTEX_TIMEOUT      => [
             'http_status' => 409,
             'loglevel'    => LogLevel::WARNING,

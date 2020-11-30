@@ -3,6 +3,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\Server;
 
+use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Psr\Http\Message\ServerRequestInterface;
 
 class TaskController
@@ -31,8 +32,12 @@ class TaskController
     public function handle(ServerRequestInterface $request): TaskResponse
     {
         $task_req = $this->createTaskRequest($request);
-        $handler  = $this->handler_factory->getHandler($task_req->getTaskType());
-        $result   = $this->chain->process($task_req, $handler);
+        try {
+            $handler  = $this->handler_factory->getHandler($task_req->getTaskType());
+            $result   = $this->chain->process($task_req, $handler);
+        } catch (UnknownTaskTypeException $e) {
+            $result = CoreTaskResult::handlerNotFound($task_req->getTaskType());
+        }
 
         return $this->result_mapper->getHttpResponse($result);
     }

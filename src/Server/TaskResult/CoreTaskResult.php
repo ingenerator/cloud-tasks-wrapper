@@ -10,14 +10,15 @@ use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 
 class CoreTaskResult extends TaskHandlerResult
 {
-    const AUTH_EXPIRED = 'authExpired';
-    const AUTH_INVALID = 'authInvalid';
-    const AUTH_NOT_PROVIDED = 'authNotProvided';
-    const BAD_HTTP_METHOD = 'badHttpMethod';
-    const CANNOT_BE_VALID = 'cannotBeValid';
+    const AUTH_EXPIRED       = 'authExpired';
+    const AUTH_INVALID       = 'authInvalid';
+    const AUTH_NOT_PROVIDED  = 'authNotProvided';
+    const BAD_HTTP_METHOD    = 'badHttpMethod';
+    const CANNOT_BE_VALID    = 'cannotBeValid';
+    const HANDLER_NOT_FOUND  = 'handlerNotFound';
     const DUPLICATE_DELIVERY = 'duplicateDelivery';
-    const MUTEX_TIMEOUT = 'mutexTimeout';
-    const SUCCESS = 'success';
+    const MUTEX_TIMEOUT      = 'mutexTimeout';
+    const SUCCESS            = 'success';
     const UNCAUGHT_EXCEPTION = 'uncaughtException';
 
     public static function authExpired(string $msg = 'Auth token has expired'): TaskHandlerResult
@@ -48,6 +49,11 @@ class CoreTaskResult extends TaskHandlerResult
     public static function duplicateDelivery(string $msg): TaskHandlerResult
     {
         return new static(static::DUPLICATE_DELIVERY, $msg);
+    }
+
+    public static function handlerNotFound(string $task_type): TaskHandlerResult
+    {
+        return new static(static::HANDLER_NOT_FOUND, 'No task handler for `'.$task_type.'`');
     }
 
     public static function mutexTimeout(MutexTimedOutException $e): TaskHandlerResult

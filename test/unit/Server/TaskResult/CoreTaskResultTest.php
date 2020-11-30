@@ -60,6 +60,10 @@ class CoreTaskResultTest extends TestCase
                     ['You sent this!'],
                     ['msg' => 'You sent this!', 'log_context' => []],
                 ],
+                CoreTaskResult::HANDLER_NOT_FOUND => [
+                    ['any-task'],
+                    ['msg' => 'No task handler for `any-task`', 'log_context' => []],
+                ],
                 CoreTaskResult::MUTEX_TIMEOUT      => [
                     [$mutex_exception],
                     [
