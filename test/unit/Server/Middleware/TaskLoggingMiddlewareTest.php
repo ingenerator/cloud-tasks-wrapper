@@ -4,7 +4,6 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
-use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
@@ -19,11 +18,13 @@ use Psr\Log\Test\TestLogger;
 
 class TaskLoggingMiddlewareTest extends TestCase
 {
-    protected LoggerInterface $logger;
+    protected LoggerInterface      $logger;
 
     protected TaskResultCodeMapper $code_mapper;
 
-    protected StoppedMockClock $clock;
+    protected StoppedMockClock     $clock;
+
+    protected                      $default_context = [];
 
     public function test_it_is_initialisable()
     {
@@ -80,6 +81,32 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
+    public function test_it_includes_optional_context_in_all_logs()
+    {
+        $this->default_context = [
+            'foo'  => 'bar',
+            'data' => 'will be overwritten',
+        ];
+        $this->code_mapper     = new TaskResultCodeMapper(['code' => ['loglevel' => LogLevel::INFO]]);
+
+        $this->newSubject()->process(
+            TaskRequestStub::any(),
+            TestTaskChain::withArbitraryResult('code', 'I worked', ['data' => 'Overwrote default']),
+        );
+
+        $log = $this->assertLoggedOnce(LogLevel::INFO);
+        $this->assertSame(
+            [
+                'foo'  => 'bar',
+                'data' => 'Overwrote default',
+            ],
+            [
+                'foo'  => $log['context']['foo'],
+                'data' => $log['context']['data'],
+            ]
+        );
+    }
+
     public function test_it_includes_timing_in_log()
     {
         $this->code_mapper = new TaskResultCodeMapper(
@@ -116,7 +143,8 @@ class TaskLoggingMiddlewareTest extends TestCase
         return new TaskLoggingMiddleware(
             $this->clock,
             $this->logger,
-            $this->code_mapper
+            $this->code_mapper,
+            $this->default_context
         );
     }
 

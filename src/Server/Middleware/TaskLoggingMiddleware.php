@@ -18,6 +18,9 @@ use Psr\Log\LoggerInterface;
  */
 class TaskLoggingMiddleware implements TaskHandlerMiddleware
 {
+
+    protected array $default_context;
+
     /**
      * @var \Ingenerator\PHPUtils\DateTime\Clock\RealtimeClock
      */
@@ -30,11 +33,13 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
     public function __construct(
         RealtimeClock $clock,
         LoggerInterface $logger,
-        TaskResultCodeMapper $code_mapper
+        TaskResultCodeMapper $code_mapper,
+        array $default_log_context = []
     ) {
         $this->logger      = $logger;
         $this->code_mapper = $code_mapper;
         $this->clock       = $clock;
+        $this->default_context = $default_log_context;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
@@ -55,7 +60,11 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         $this->logger->log(
             $this->code_mapper->getLogLevel($result),
             \sprintf('Task: [%s] %s', $result->getCode(), $result->getMsg()),
-            array_merge(['time_ms' => $time_ms], $result->getLogContext())
+            array_merge(
+                $this->default_context,
+                ['time_ms' => $time_ms],
+                $result->getLogContext()
+            )
         );
     }
 

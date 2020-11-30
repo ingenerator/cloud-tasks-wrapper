@@ -15,9 +15,11 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class TaskRequest
 {
-    protected ?string $caller_email = NULL;
+    protected ?string                $caller_email = NULL;
+
     protected ServerRequestInterface $request;
-    protected string $task_type;
+
+    protected string                 $task_type;
 
     public function __construct(ServerRequestInterface $request, string $task_type)
     {
