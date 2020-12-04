@@ -14,6 +14,7 @@ interface TaskHandlerFactory
      * @param string $task_type
      *
      * @return \Ingenerator\CloudTasksWrapper\Server\TaskHandler
+     * @throws UnknownTaskTypeException if there is no handler for this task type
      */
     public function getHandler(string $task_type): TaskHandler;
 

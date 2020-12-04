@@ -13,6 +13,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\CloudTasksWrapper\Server\UnknownTaskTypeException;
+use Ingenerator\CloudTasksWrapper\TestHelpers\Server\ArrayTaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -53,7 +54,7 @@ class TaskControllerTest extends TestCase
     public function test_it_returns_404_if_task_handler_factory_throws_unknown_task()
     {
         $this->url_pattern     = '#^/_tasks/(?P<task_type>.+)$#';
-        $this->handler_factory = new TaskHandlerFactoryStub(['any' => TestTaskHandler::neverCalled()]);
+        $this->handler_factory = new ArrayTaskHandlerFactory(['any' => TestTaskHandler::neverCalled()]);
         $response              = $this->newSubject()->handle(
             new ServerRequest('POST', 'https://any.thing/_tasks/some-task')
         );
@@ -70,7 +71,7 @@ class TaskControllerTest extends TestCase
     public function test_it_creates_and_runs_task_handler_for_type_parsed_from_url()
     {
         $this->url_pattern     = '#^/_tasks/(?P<task_type>.+)$#';
-        $this->handler_factory = new TaskHandlerFactoryStub(
+        $this->handler_factory = new ArrayTaskHandlerFactory(
             [
                 'this-task'  => new TestTaskHandler(
                     function (TaskRequest $req) {
@@ -99,7 +100,7 @@ class TaskControllerTest extends TestCase
     {
         parent::setUp();
         $this->chain           = new TaskHandlerChain;
-        $this->handler_factory = new TaskHandlerFactoryStub;
+        $this->handler_factory = new ArrayTaskHandlerFactory([]);
         $this->result_mapper   = new TaskResultCodeMapper;
     }
 
@@ -114,30 +115,3 @@ class TaskControllerTest extends TestCase
     }
 
 }
-
-class TaskHandlerFactoryStub implements TaskHandlerFactory
-{
-    /**
-     * @var \Ingenerator\CloudTasksWrapper\Server\TaskHandler[]
-     */
-    private array $handlers;
-
-    /**
-     * @param TaskHandler[] $handlers
-     */
-    public function __construct(array $handlers = [])
-    {
-        $this->handlers = $handlers;
-    }
-
-    public function getHandler(string $task_type): TaskHandler
-    {
-        if (isset($this->handlers[$task_type])) {
-            return $this->handlers[$task_type];
-        }
-
-        throw new UnknownTaskTypeException('No handler defined for task type '.$task_type);
-    }
-
-}
-
