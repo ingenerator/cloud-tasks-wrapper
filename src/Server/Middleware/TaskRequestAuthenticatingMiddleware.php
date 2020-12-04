@@ -10,6 +10,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
+use Ingenerator\OIDCTokenVerifier\TokenConstraints;
 use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 
@@ -66,9 +67,11 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 
         $result = $this->token_verifier->verify(
             $token,
-            [
-                'email_exact' => $expect_signer,
-            ]
+            new TokenConstraints(
+                [
+                    'email_exact' => $expect_signer,
+                ]
+            )
         );
 
         return $result;
