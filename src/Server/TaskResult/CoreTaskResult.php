@@ -10,7 +10,6 @@ use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 
 class CoreTaskResult extends TaskHandlerResult
 {
-    const AUTH_EXPIRED       = 'authExpired';
     const AUTH_INVALID       = 'authInvalid';
     const AUTH_NOT_PROVIDED  = 'authNotProvided';
     const BAD_HTTP_METHOD    = 'badHttpMethod';
@@ -20,11 +19,6 @@ class CoreTaskResult extends TaskHandlerResult
     const MUTEX_TIMEOUT      = 'mutexTimeout';
     const SUCCESS            = 'success';
     const UNCAUGHT_EXCEPTION = 'uncaughtException';
-
-    public static function authExpired(string $msg = 'Auth token has expired'): TaskHandlerResult
-    {
-        return new static(static::AUTH_EXPIRED, $msg);
-    }
 
     public static function authInvalid(string $msg, array $log_context = []): TaskHandlerResult
     {

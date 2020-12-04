@@ -4,6 +4,7 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
@@ -114,10 +115,26 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_returns_auth_invalid_if_token_is_not_properly_signed()
+    public function provider_auth_failures()
     {
-        $exception            = new SignatureInvalidException('Sig verification failed');
-        $this->token_verifier = MockTokenVerifier::willFailWith($exception);
+        return [
+            [
+                new SignatureInvalidException('Sig verification failed'),
+                'Token failed ('.SignatureInvalidException::class.': Sig verification failed)',
+            ],
+            [
+                new ExpiredException('Expired token'),
+                'Token failed ('.ExpiredException::class.': Expired token)',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provider_auth_failures
+     */
+    public function test_it_returns_auth_invalid_if_token_verification_fails(\Throwable $e, $expect_msg)
+    {
+        $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result               = $this->newSubject()
             ->process(
                 TaskRequestStub::withAuthToken(),
@@ -127,27 +144,11 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $this->assertSame(
             [
                 'code'        => CoreTaskResult::AUTH_INVALID,
-                'msg'         => 'Token failed (Firebase\JWT\SignatureInvalidException: Sig verification failed)',
-                'log_context' => ['exception' => $exception],
+                'msg'         => $expect_msg,
+                'log_context' => ['exception' => $e],
             ],
             $result->toArray()
         );
-    }
-
-    public function test_it_returns_auth_expired_if_auth_token_expired()
-    {
-        $this->markTestIncomplete();
-        // So, we have a bit of a conflict here:
-        // - if the token has expired, there is no point retrying
-        // - if the token is not yet valid, it's potentially a timing issue and we *should* retry
-        // - if there's some arbitrary error (sig validation etc) then it may be that we've got old
-        //   or wrong keys and a retry would eventually work
-        // - it could also be a deployment issue - e.g. a service has accidentally dropped
-        //   permission for a particular service account to call it - and so we'd want to retain
-        //   and rery failing tasks until we get a deployment out to authorise them again?
-        // - so we may occasionally want to actually retry a task where auth failed, even though in
-        //   most cases we'd want to fail it fast.
-        // - hmmm
     }
 
     public function test_it_returns_auth_failed_if_auth_token_not_for_authorised_user()

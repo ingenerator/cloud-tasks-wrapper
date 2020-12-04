@@ -33,10 +33,6 @@ class CoreTaskResultTest extends TestCase
         $map = array_merge(
             $codes,
             [
-                CoreTaskResult::AUTH_EXPIRED       => [
-                    [],
-                    ['msg' => 'Auth token has expired', 'log_context' => []],
-                ],
                 CoreTaskResult::AUTH_INVALID       => [
                     ['Invalid!'],
                     ['msg' => 'Invalid!', 'log_context' => []],

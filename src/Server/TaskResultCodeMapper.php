@@ -19,14 +19,6 @@ class TaskResultCodeMapper
             'http_status' => 296,
             'loglevel'    => LogLevel::WARNING,
         ],
-        CoreTaskResult::AUTH_INVALID       => [
-            'http_status' => 297,
-            'loglevel'    => LogLevel::ERROR,
-        ],
-        CoreTaskResult::AUTH_EXPIRED       => [
-            'http_status' => 298,
-            'loglevel'    => LogLevel::ERROR,
-        ],
         CoreTaskResult::CANNOT_BE_VALID    => [
             'http_status' => 299,
             'loglevel'    => LogLevel::CRITICAL,
@@ -36,8 +28,12 @@ class TaskResultCodeMapper
             'loglevel'    => LogLevel::WARNING,
         ],
         CoreTaskResult::AUTH_NOT_PROVIDED  => [
-            'http_status' => 403,
+            'http_status' => 401,
             'loglevel'    => LogLevel::WARNING,
+        ],
+        CoreTaskResult::AUTH_INVALID       => [
+            'http_status' => 403,
+            'loglevel'    => LogLevel::ERROR,
         ],
         CoreTaskResult::HANDLER_NOT_FOUND => [
             'http_status' => 404,
