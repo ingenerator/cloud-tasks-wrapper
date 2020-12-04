@@ -69,7 +69,8 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
             $token,
             new TokenConstraints(
                 [
-                    'email_exact' => $expect_signer,
+                    'audience_exact' => $request->getFullUrl(),
+                    'email_exact'    => $expect_signer,
                 ]
             )
         );

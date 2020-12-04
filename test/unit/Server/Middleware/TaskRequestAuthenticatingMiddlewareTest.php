@@ -87,7 +87,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_validates_token_using_token_verifier_with_signer_email_for_task_type()
+    public function test_it_validates_token_with_task_type_signer_email_and_task_url_as_audience()
     {
         $this->task_type_config = TaskTypeConfigStub::withTaskType(
             'my-custom-task',
@@ -100,6 +100,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             ->process(
                 TaskRequestStub::with(
                     [
+                        'url'       => 'http://foo.bar.com/_task?foo=bar&data=some%20thing',
                         'headers'   => ['Authorization' => 'Bearer abc215.1242121asd2.ad7215724'],
                         'task_type' => 'my-custom-task',
                     ]
@@ -110,7 +111,8 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $this->token_verifier->assertVerifiedOnce(
             'abc215.1242121asd2.ad7215724',
             [
-                'email_exact' => 'foo@bar.serviceaccount.com',
+                'audience_exact' => 'http://foo.bar.com/_task?foo=bar&data=some%20thing',
+                'email_exact'    => 'foo@bar.serviceaccount.com',
             ]
         );
     }
@@ -149,12 +151,6 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             ],
             $result->toArray()
         );
-    }
-
-    public function test_it_returns_auth_failed_if_auth_token_not_for_authorised_user()
-    {
-        $this->markTestIncomplete();
-        // So, here we need to provide a mapping of TaskType to the allowed users??
     }
 
     public function test_it_adds_token_info_to_request_and_returns_next_handler_result_on_success()
