@@ -13,6 +13,7 @@ use Google\Cloud\Tasks\V2\OidcToken;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Internal\Message;
 use Google\Protobuf\Timestamp;
+use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Psr\Log\LoggerInterface;
 
@@ -44,10 +45,11 @@ class CloudTaskCreator implements TaskCreator
             $handler_url .= '?'.\http_build_query($options->getQuery());
         }
 
-        $task = $this->createObj(
+        $task_name = $options->buildTaskName($task_type->getQueuePath());
+        $task      = $this->createObj(
             Task::class,
             [
-                'name'          => $options->buildTaskName($task_type->getQueuePath()),
+                'name'          => $task_name,
                 'http_request'  => $this->createObj(
                     HttpRequest::class,
                     [
@@ -79,6 +81,13 @@ class CloudTaskCreator implements TaskCreator
             return $result->getName();
 
         } catch (ApiException $e) {
+
+            if (($e->getCode() === Code::ALREADY_EXISTS) and ! $options->shouldThrowOnDuplicate()) {
+                // This is an expected failure, we are using server-side-task-dedupe and the caller has asked
+                // for us to silently ignore failures to create duplicates of tasks that have already been queued.
+                return $task_name;
+            }
+
             $this->logger->error(
                 'Failed to create cloud task: '.$e->getBasicMessage(),
                 [

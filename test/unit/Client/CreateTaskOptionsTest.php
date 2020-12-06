@@ -131,4 +131,16 @@ class CreateTaskOptionsTest extends TestCase
         $this->assertSame($expect, $subject->buildTaskName('/some/queue/path'));
     }
 
+    /**
+     * @testWith [{}, true]
+     *           [{"task_id": "foo"}, true]
+     *           [{"task_id_from": "bar"}, true]
+     *           [{"task_id": "foo", "throw_on_duplicate": false}, false]
+     */
+    public function test_it_defaults_to_throw_on_duplicate_task_id_but_can_override($opts, $expect)
+    {
+        $subject = new CreateTaskOptions($opts);
+        $this->assertSame($expect, $subject->shouldThrowOnDuplicate());
+    }
+
 }

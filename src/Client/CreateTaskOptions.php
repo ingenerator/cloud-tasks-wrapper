@@ -71,6 +71,18 @@ class CreateTaskOptions
     private ?string $task_id_from = NULL;
 
     /**
+     * Whether to throw on a duplicate task (ALREADY_EXISTS) error, or to treat this as a safe condition.
+     *
+     * In many cases if you are setting a task_id (or task_id_from) to support server-side deduplication,
+     * then it's expected that you may get an `ALREADY_EXISTS` error when a task is deduplicated. Often
+     * this can be silently ignored by your app (if you just care it ran once) - set this flag to FALSE
+     * to have the wrapper swallow that error.
+     *
+     * @var bool
+     */
+    private bool $throw_on_duplicate = TRUE;
+
+    /**
      * Create an instance.
      *
      * See the class property list for the allowed keys and documentation
@@ -182,6 +194,14 @@ class CreateTaskOptions
     public function getRawOptions(): array
     {
         return $this->_raw_options;
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldThrowOnDuplicate(): bool
+    {
+        return $this->throw_on_duplicate;
     }
 
 }

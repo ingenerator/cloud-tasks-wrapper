@@ -173,7 +173,11 @@ class CloudTaskCreatorTest extends TestCase
                 ],
             ]
         );
-        $this->newSubject()->create('something');
+        $result            = $this->newSubject()->create('something');
+        $this->assertSame(
+            CloudTasksClient::taskName('mine', 'mars', 'archival', 'created-task-name'),
+            $result
+        );
         $this->tasks_client->assertCreatedOneTaskInQueue(
             CloudTasksClient::queueName('mine', 'mars', 'archival')
         );
@@ -188,7 +192,6 @@ class CloudTaskCreatorTest extends TestCase
 
     public function test_it_logs_and_throws_on_failure()
     {
-        $this->logger       = new TestLogger();
         $this->logger       = new TestLogger();
         $api_exception      = ApiException::createFromApiResponse(
             'Create task broke!',
@@ -210,6 +213,62 @@ class CloudTaskCreatorTest extends TestCase
             )
         );
     }
+
+    public function test_it_bubbles_already_exists_if_set_to_throw_on_duplicate()
+    {
+        $this->logger       = new TestLogger();
+        $api_exception      = ApiException::createFromApiResponse(
+            'Already got it!',
+            Code::ALREADY_EXISTS
+        );
+        $this->tasks_client = TasksClientSpy::willThrowOnCreate($api_exception);
+        $subject            = $this->newSubject();
+        try {
+            $subject->create(
+                'anything',
+                new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => TRUE])
+            );
+            $this->fail('Expected exception, none got');
+        } catch (TaskCreationFailedException $e) {
+            $this->assertSame('Failed to create task: Already got it!', $e->getMessage());
+            $this->assertSame($api_exception, $e->getPrevious());
+        }
+
+        $this->assertTrue(
+            $this->logger->hasErrorThatMatches(
+                '/^Failed to create cloud task: Already got it!$/'
+            )
+        );
+    }
+
+    public function test_it_swallows_already_exists_if_set_not_to_throw_on_duplicate()
+    {
+        $this->task_config  = TaskTypeConfigStub::withTaskType(
+            'anything',
+            [
+                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival',],
+            ]
+        );
+        $this->logger       = new TestLogger();
+        $this->tasks_client = TasksClientSpy::willThrowOnCreate(
+            ApiException::createFromApiResponse(
+                'Already got it!',
+                Code::ALREADY_EXISTS
+            )
+        );
+        $subject            = $this->newSubject();
+        $result             = $subject->create(
+            'anything',
+            new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => FALSE])
+        );
+        $this->assertSame(
+            CloudTasksClient::taskName('mine', 'mars', 'archival', 'foobar'),
+            $result,
+            'returns full task name'
+        );
+        $this->assertSame([], $this->logger->records);
+    }
+
 
     public function test_it_provides_retry_options_when_sending_task()
     {
