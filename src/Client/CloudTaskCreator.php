@@ -14,7 +14,6 @@ use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Internal\Message;
 use Google\Protobuf\Timestamp;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
-use Ingenerator\PHPUtils\StringEncoding\JSON;
 use Psr\Log\LoggerInterface;
 
 class CloudTaskCreator implements TaskCreator
@@ -35,60 +34,31 @@ class CloudTaskCreator implements TaskCreator
         $this->logger      = $logger;
     }
 
-    public function create(string $task_type_name, array $options = []): string
+    public function create(string $task_type_name, ?CreateTaskOptions $options = NULL): string
     {
         $task_type = $this->task_config->getConfig($task_type_name);
-
-        $options = array_merge(
-            [
-                // Data to be sent in the body, can be JSON or form-encoded:
-                // - to send JSON, 'body' => ['json' => [//data]]
-                // - to send form, 'body' => ['form' => [//data]]
-                'body'                => NULL,
-                // Extra headers to send with the HTTP request
-                'headers'             => [],
-                // Optionally add GET parameters to the handler URL. The handler URL itself comes from
-                // config.
-                'query'               => NULL,
-                // Optionally specify when the task should first be executed
-                'schedule_send_after' => NULL,
-                // Optional, specify a task ID for server-side dedupe by Cloud Tasks. Note per the
-                // docs this significantly reduces throughput especially if it is not a
-                // well-distributed hash value. For fastest dispatch allow Cloud Tasks to duplicate
-                // and deal with de-duping on receipt (necessary anyway as Tasks is always
-                // at-least-once delivery).
-                'task_id'             => NULL,
-                // Optional, *instead* of task_id, specify task_id_from to have the library automatically
-                // calculate the task_id as an SHA256 hash of the application-provided string. Supports the
-                // common case where you want to use a known string for deduping, but want the throughput of
-                // well-distributed random-like task names.
-                'task_id_from'        => NULL,
-            ],
-            $options
-        );
+        $options   ??= new CreateTaskOptions([]);
 
         $handler_url = $task_type->getHandlerUrl();
-        if ($options['query']) {
-            $handler_url .= '?'.\http_build_query($options['query']);
+        if ($options->hasQuery()) {
+            $handler_url .= '?'.\http_build_query($options->getQuery());
         }
-
-        $options = $this->prepareBody($options);
 
         $task = $this->createObj(
             Task::class,
             [
-                'name'          => $this->getTaskName($task_type->getQueuePath(), $options),
+                'name'          => $options->buildTaskName($task_type->getQueuePath()),
                 'http_request'  => $this->createObj(
                     HttpRequest::class,
                     [
                         'url'         => $handler_url,
                         'http_method' => HttpMethod::POST,
                         'oidc_token'  => $this->oidcTokenUnlessAnonymous($task_type->getSignerEmail()),
-                        'headers'     => $options['headers'],
-                        'body'        => $options['body'],
+                        'headers'     => $options->getHeaders(),
+                        'body'        => $options->getBodyContent(),
                     ]
                 ),
-                'schedule_time' => $this->toTimestampOrNull($options['schedule_send_after']),
+                'schedule_time' => $this->toTimestampOrNull($options->getScheduleSendAfter()),
             ]
         );
 
@@ -169,57 +139,4 @@ class CloudTaskCreator implements TaskCreator
         return new $class(array_filter($vars));
     }
 
-    protected function prepareBody(array $options): array
-    {
-        if ($options['body'] === NULL) {
-            return $options;
-        }
-
-        if (\is_array($options['body'])) {
-            $type = \array_keys($options['body']);
-            if ($type === ['json']) {
-                $options['body']                    = JSON::encode($options['body']['json'], FALSE);
-                $options['headers']['Content-Type'] = 'application/json';
-            } elseif ($type === ['form']) {
-                $options['body']                    = \http_build_query($options['body']['form']);
-                $options['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
-            } else {
-                throw new \InvalidArgumentException('Invalid body type: '.JSON::encode($type, FALSE));
-            }
-        }
-
-        if ( ! \is_string($options['body'])) {
-            throw new \InvalidArgumentException('Invalid body type: '.\get_debug_type($options['body']));
-        }
-
-
-        return $options;
-    }
-
-    /**
-     * Return the fully-qualified task name (which must include the queue path) if any
-     *
-     * @param string $queue_path
-     * @param array  $options
-     *
-     * @return string|null
-     */
-    protected function getTaskName(string $queue_path, array $options): ?string
-    {
-        if (isset($options['task_id_from'])) {
-            if (isset($options['task_id'])) {
-                throw new \InvalidArgumentException('Cannot set both task_id_from and task_id');
-            }
-
-            $task_id = \hash('sha256', $options['task_id_from']);
-        } else {
-            $task_id = $options['task_id'] ?? NULL;
-        }
-
-        if (empty($task_id)) {
-            return NULL;
-        }
-
-        return $queue_path.'/tasks/'.$task_id;
-    }
 }

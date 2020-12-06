@@ -13,6 +13,7 @@ use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\Client\CloudTaskCreator;
 use Ingenerator\CloudTasksWrapper\Client\CloudTasksQueueMapper;
+use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use PHPUnit\Framework\Assert;
@@ -38,87 +39,16 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
-    public function test_it_throws_if_specifying_multiple_body_types()
-    {
-        $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid body type');
-        $subject->create(
-            'some-task',
-            [
-                'body' => ['form' => ['foo' => 'bar'], 'json' => ['any' => 'json']],
-            ]
-        );
-    }
-
-    public function test_it_throws_if_specifying_invalid_body()
-    {
-        $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid body type');
-        $subject->create(
-            'some-task',
-            [
-                'body' => new \stdClass,
-            ]
-        );
-    }
-
-    public function test_it_throws_if_specifying_id_and_id_from()
-    {
-        $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('task_id_from');
-        $subject->create(
-            'some-task',
-            ['task_id' => 'something', 'task_id_from' => 'something else']
-        );
-    }
-
-    public function provider_body_encoding()
-    {
-        return [
-            [
-                ['form' => ['foo' => 'bar', 'child' => ['any' => 'thing']]],
-                'foo=bar&child%5Bany%5D=thing',
-                'application/x-www-form-urlencoded',
-            ],
-            [
-                ['json' => ['foo' => 'bar', 'child' => ['any' => 'thing']]],
-                '{"foo":"bar","child":{"any":"thing"}}',
-                'application/json',
-            ],
-            [
-                'My custom payload',
-                'My custom payload',
-                NULL,
-            ],
-            [
-                NULL,
-                '',
-                NULL,
-            ],
-        ];
-    }
-
     /**
-     * @dataProvider provider_body_encoding
+     * @testWith [{}, ""]
+     *           [{"body":"any body"}, "any body"]
+     *           // tests for JSON / form etc are covered by the tests on CreateTaskOptions
      */
-    public function test_it_adds_json_or_form_body_with_headers($opt_body, $expect_body, $expect_content_type)
+    public function test_it_adds_body_and_headers_if_provided($opts, $expect_body)
     {
-        $this->newSubject()->create('some-task', ['body' => $opt_body, 'headers' => ['X-something' => 'Else']]);
+        $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
-        $this->assertSame(
-            $expect_content_type,
-            $task->getHttpRequest()->getHeaders()['Content-Type'] ?? NULL,
-            'Sets content type'
-        );
-        $this->assertSame(
-            'Else',
-            $task->getHttpRequest()->getHeaders()['X-something'],
-            'Doesn\'t overwrite other headers'
-        );
     }
 
     /**
@@ -155,7 +85,7 @@ class CloudTaskCreatorTest extends TestCase
             'do-something',
             ['handler_url' => 'https://my.handler.foo/something']
         );
-        $this->newSubject()->create('do-something', $opts);
+        $this->newSubject()->create('do-something', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, $task->getHttpRequest()->getUrl());
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
@@ -173,29 +103,7 @@ class CloudTaskCreatorTest extends TestCase
                 'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival'],
             ]
         );
-        $this->newSubject()->create('some-task', $opts);
-        $task = $this->tasks_client->assertCreatedOneTask();
-        if ($expect_id) {
-            $expect_name = CloudTasksClient::taskName('mine', 'mars', 'archival', $expect_id);
-        } else {
-            $expect_name = "";
-        }
-        $this->assertSame($expect_name, $task->getName());
-    }
-
-    /**
-     * @testWith [{}, ""]
-     *           [{"task_id_from": "some application string"}, "4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e"]
-     */
-    public function test_it_adds_hashed_task_name_if_id_from_provided($opts, $expect_id)
-    {
-        $this->task_config = TaskTypeConfigStub::withTaskType(
-            'some-task',
-            [
-                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival'],
-            ]
-        );
-        $this->newSubject()->create('some-task', $opts);
+        $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         if ($expect_id) {
             $expect_name = CloudTasksClient::taskName('mine', 'mars', 'archival', $expect_id);
@@ -211,7 +119,7 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_http_headers_if_provided($opts, $expect)
     {
-        $this->newSubject()->create('some-task', $opts);
+        $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect, \iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
@@ -239,7 +147,7 @@ class CloudTaskCreatorTest extends TestCase
      */
     public function test_it_adds_timestamp_for_scheduled_time_if_provided($opts, $expect)
     {
-        $this->newSubject()->create('any-old-job', $opts);
+        $this->newSubject()->create('any-old-job', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         if ($expect === NULL) {
             $this->assertSame($expect, $task->getScheduleTime());

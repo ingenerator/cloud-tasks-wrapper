@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Client;
 
 
+use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreator;
 use PHPUnit\Framework\Assert;
@@ -22,11 +23,12 @@ class MockCloudTaskCreator implements TaskCreator
         return $i;
     }
 
-    public function create(string $task_type, array $options = []): string
+    public function create(string $task_type, ?CreateTaskOptions $options = NULL): string
     {
+        $options       ??= new CreateTaskOptions([]);
         $this->calls[] = [
             'task_type' => $task_type,
-            'options'   => $options,
+            'options'   => $options->getRawOptions(),
         ];
 
         if ($this->will_throw) {
