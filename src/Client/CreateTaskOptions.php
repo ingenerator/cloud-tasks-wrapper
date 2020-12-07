@@ -4,11 +4,19 @@
 namespace Ingenerator\CloudTasksWrapper\Client;
 
 
+use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
 
 class CreateTaskOptions
 {
+
+    /**
+     * Time the object was created (mostly to provide consistent / testable time-based behaviour)
+     *
+     * @var \DateTimeImmutable
+     */
+    private \DateTimeImmutable $_create_time;
 
     /**
      * The originally externally-supplied options
@@ -71,6 +79,26 @@ class CreateTaskOptions
     private ?string $task_id_from = NULL;
 
     /**
+     * Number of seconds to delay execution after the end of a throttling window
+     *
+     * See main throttling docs for further details.
+     *
+     * @var int|null
+     */
+    private ?int $throttle_delay_secs = 60;
+
+    /**
+     * Optional, defer and throttle task execution to run on the provided interval.
+     *
+     * Use this where e.g. you want to queue a task on high-frequency changes but dedupe / group the
+     * executions together once the data for a given record has settled in some way. See main docs for
+     * details on usage.
+     *
+     * @var \DateInterval|null
+     */
+    private ?\DateInterval $throttle_interval = NULL;
+
+    /**
      * Whether to throw on a duplicate task (ALREADY_EXISTS) error, or to treat this as a safe condition.
      *
      * In many cases if you are setting a task_id (or task_id_from) to support server-side deduplication,
@@ -93,40 +121,114 @@ class CreateTaskOptions
     {
         // Copied to allow the MockTaskCreator to capture it
         $options['_raw_options'] = $options;
-        if (isset($options['task_id']) and isset($options['task_id_from'])) {
-            throw new \InvalidArgumentException('Cannot set both task_id and task_id_from');
-        }
-
-        if (is_array($options['body'] ?? NULL)) {
-            $options = $this->parseBodyOptions($options);
+        $options['_create_time'] ??= new \DateTimeImmutable;
+        $encoded                 = $this->encodeBodyOption($options['body'] ?? NULL);
+        if ($encoded) {
+            $options['body'] = $encoded['body'];
+            // ??= means only set this key if not already present / null
+            // equivalent to if (!isset($op['hdr']['CT']) { $op['hdr']['CT'] = $foo } or to using array_merge
+            // to set a default
+            $options['headers']['Content-Type'] ??= $encoded['Content-Type'];
         }
 
         ObjectPropertyPopulator::assignHash($this, $options);
+
+        if ($this->task_id and $this->task_id_from) {
+            throw new \InvalidArgumentException('Cannot set both task_id and task_id_from');
+        }
+
+        if (isset($options['throttle_delay_secs']) and ! $this->throttle_interval) {
+            // Only matters if they set it explicitly so we check $options not the property which has a default
+            throw new \InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
+        }
+
+        if ($this->throttle_interval) {
+            $this->parseThrottleOptions($options);
+        }
+    }
+
+    private function encodeBodyOption($body): ?array
+    {
+        if ( ! is_array($body)) {
+            return NULL;
+        }
+
+        $type = implode(',', \array_keys($body));
+        switch ($type) {
+            case 'json':
+                return [
+                    'body'         => JSON::encode($body['json'], FALSE),
+                    'Content-Type' => 'application/json',
+                ];
+            case 'form':
+                return [
+                    'body'         => \http_build_query($body['form']),
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ];
+            default:
+                throw new \InvalidArgumentException('Invalid body type: '.JSON::encode($type, FALSE));
+        }
+    }
+
+    private function parseThrottleOptions(): void
+    {
+        if ($this->schedule_send_after) {
+            throw new \InvalidArgumentException('Cannot set both schedule_send_after and throttle_interval');
+        }
+        if ( ! $this->task_id_from) {
+            throw new \InvalidArgumentException('Cannot set throttle_interval without task_id_from');
+        }
+
+        // Round up the curent time to the end of the next bucketing window.
+        // E.g. a task executed at 11:03:30 with a `PT5M` interval will be rounded up to 11:05:00.
+
+        $bucket_seconds = $this->calculateIntervalSeconds($this->throttle_interval);
+        $bucket_ends_ts = ($bucket_seconds * \ceil($this->_create_time->format('U.u') / $bucket_seconds));
+
+        // Then add the throttle_delay_seconds to get the time the task should actually run.
+        // So e.g. with the default 60 second delay, our 11:03:30 task will run at 11:06:00.
+        // The delay just needs to be long enough to guarantee that anything that created a task at 11:04:59.999999 will
+        // have completed / committed any work-in-progress by the time the deferred task is executed.
+        $exec_time = DateTimeImmutableFactory::atUnixSeconds($bucket_ends_ts + $this->throttle_delay_secs);
+
+        $this->schedule_send_after = $exec_time;
+        $this->task_id_from        .= '@'.$exec_time->format('U.u');
+
     }
 
     /**
-     * @param array $options
+     * @param \DateInterval|null $interval
      *
-     * @return array
+     * @return int
      */
-    private function parseBodyOptions(array $options): array
+    private function calculateIntervalSeconds(?\DateInterval $interval): int
     {
-        $type = \array_keys($options['body']);
-        if ($type === ['json']) {
-            $options['body']      = JSON::encode($options['body']['json'], FALSE);
-            $default_content_type = 'application/json';
-        } elseif ($type === ['form']) {
-            $options['body']      = \http_build_query($options['body']['form']);
-            $default_content_type = 'application/x-www-form-urlencoded';
+        $start = new \DateTimeImmutable;
+        $end   = $start->add($interval);
+        $delta = $end->getTimestamp() - $start->getTimestamp();
+
+        return $delta;
+    }
+
+    /**
+     * Return the fully-qualified task name (which must include the queue path) if any
+     *
+     * @param string $queue_path
+     * @param array  $options
+     *
+     * @return string|null
+     */
+    public function buildTaskName(string $queue_path): ?string
+    {
+        if ($this->task_id_from) {
+            $id = \hash('sha256', $this->task_id_from);
+        } elseif ($this->task_id) {
+            $id = $this->task_id;
         } else {
-            throw new \InvalidArgumentException('Invalid body type: '.JSON::encode($type, FALSE));
+            return NULL;
         }
 
-        if ( ! isset($options['headers']['Content-Type'])) {
-            $options['headers']['Content-Type'] = $default_content_type;
-        }
-
-        return $options;
+        return $queue_path.'/tasks/'.$id;
     }
 
     /**
@@ -153,10 +255,12 @@ class CreateTaskOptions
         return $this->query;
     }
 
-    public function hasQuery(): bool
+    /**
+     * @return array
+     */
+    public function getRawOptions(): array
     {
-        return ! empty($this->query);
-
+        return $this->_raw_options;
     }
 
     /**
@@ -167,33 +271,10 @@ class CreateTaskOptions
         return $this->schedule_send_after;
     }
 
-    /**
-     * Return the fully-qualified task name (which must include the queue path) if any
-     *
-     * @param string $queue_path
-     * @param array  $options
-     *
-     * @return string|null
-     */
-    public function buildTaskName(string $queue_path): ?string
+    public function hasQuery(): bool
     {
-        if ($this->task_id_from) {
-            $id = \hash('sha256', $this->task_id_from);
-        } elseif ($this->task_id) {
-            $id = $this->task_id;
-        } else {
-            return NULL;
-        }
+        return ! empty($this->query);
 
-        return $queue_path.'/tasks/'.$id;
-    }
-
-    /**
-     * @return array
-     */
-    public function getRawOptions(): array
-    {
-        return $this->_raw_options;
     }
 
     /**
