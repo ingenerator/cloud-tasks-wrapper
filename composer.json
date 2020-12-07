@@ -1,7 +1,7 @@
 {
     "name": "ingenerator/cloud-tasks-wrapper",
     "description": "Library for dispatching and processing Google Cloud Tasks from PHP",
-    "homepage": "https://github.com/ingenerator/oidc-token-verifier",
+    "homepage": "https://github.com/ingenerator/cloud-tasks-wrapper",
     "type": "library",
     "license": "BSD-3-Clause",
     "authors": [
