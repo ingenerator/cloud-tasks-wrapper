@@ -386,6 +386,70 @@ class CustomTaskResult extends TaskHandlerResult
 Once you have bootstrapped the controller / middleware chain, adding new task types just involves adding a new type to
 the `TaskTypeConfigProvider` and implementing a `TaskHandler`.
 
+#### Task request authentication and authorization
+
+By default, we assume that you will use [OIDC tokens](https://cloud.google.com/tasks/docs/creating-http-target-tasks#token) to
+authenticate incoming HTTP requests. If you want to use an alternative authentication mechanism, omit the 
+`TaskRequestAuthenticatingMiddleware` from the handler chain and either add your own middleware or perform authentication in
+your task handlers.
+
+The default middleware:
+* Uses [ingenerator/oidc-token-verifier](https://github.com/ingenerator/oidc-token-verifier) to validate the token. That package
+  fetches the issuer's public certificates over HTTP, caching as required, and uses them to verify the JWT signature. Note that
+  the issuer must be configured in advance, we do not support fetching certificates for arbitrary issuers for obvious reasons.
+* Verifies that the token `audience` matches the task handler URL (e.g. it was not issued for a different task request)
+* Verifies that the token `email` matches the `signer_email` configured for the task type (any GCS user can create OIDC tokens
+  signed by Google for any audience, so it's critical to authorize the token email address rather than just authenticating it).
+* Populates the email address into the `TaskRequest` object that is passed down the stack - this makes it available for logging, 
+  audit trailing, or other application-level logic. You can access the email address within a `TaskHandler` as
+  `$request->getCallerEmail()`.
+
+Authentication failures (missing header / invalid token / problems fetching certificates / etc) will be reported with suitable
+`401` or `403` error codes. Transient failures - e.g. the issuer's public certificate endpoint is down - will therefore be 
+retried by Cloud Tasks.
+
+#### Task request logging
+
+All task requests, their result, and their execution time will be logged by the TaskLoggingMiddleware into the PSR logger you 
+provide. The result code mapping config allows you to specify different loglevels for different result codes - e.g. `debug` for
+success, `warning` for certain kinds of transient failure, etc. The `TaskHandlerResult` you return can also carry custom log 
+context values to pass through to your PSR logger if you require additional structured debug / audit / etc information.
+
+#### Concurrency and race condition protection
+
+There are four cases where you may get duplicate calls to the same task handler URL (with the same query parameters / payload):
+
+* Cloud Tasks executes the same `Task` more than once - this is rare, but Cloud Tasks is officially at-least-once delivery
+* Cloud Tasks times out waiting for your handler, and retries it while the previous request is still running at your end
+* Your application fails to detect a successful task creation (e.g. connection is dropped after the request is sent but
+  before it is acknowledged) and retries, creating duplicate `Task` entities in the Cloud Tasks queue.
+* An end-user performs multiple actions that trigger the same task - e.g. they send 3 concurrent AJAX requests to 
+  update different properties / relations of the same entity, causing the app to queue 3 identical `recalculate-deletion-date` 
+  tasks for that entity. This can't generally be handled by server-side deduplication (though our throttling implementation may
+  help) as it would be valid to perform that task more than once over a period of time.
+  
+Therefore the default handler provides a `TaskMutexLockingMiddleware` to ensure that only *one* request to a given task URL
+is active at any one time. Out of the box we use a database-backed mutex based on mysql named locks, but you can implement 
+the interface to use different backing storage if required.
+
+With this middleware:
+
+* The first request to a given URL e.g. `https://my.app/_do_task/recalculate-deletion-date?person_id=15` will take the lock
+  and execute as normal, holding the lock until it completes (success or failure).
+* Further requests to `https://my.app/_do_task/recalculate-deletion-date?person_id=15` will wait for up to 1 second (the 
+  underlying mysql connection has a minimum 1-second timeout) for the lock to clear. If that times out, a 
+  `429 Too Many Requests` is returned and Cloud Tasks will then retry according to the queue configuration.
+* Requests with a different URL payload (e.g. `https://my.app/_do_task/recalculate-deletion-date?person_id=2`) will continue
+  to execute as normal.
+  
+Note that therefore the middleware protects against **concurrent** execution but your task handlers will still need to allow
+for **duplicate** execution. This may mean:
+
+* If the handler is idempotent - e.g. recalculating a value based on current database content - then it can probably just 
+  run twice.
+* If the handler is not idempotent - e.g. sending an email - then you will e.g. need a persistent flag to mark that it has
+  already completed. The wrapper protects this flag from race conditions.
+  
 # Contributing
 
 Contributions are welcome but please contact us (e.g. by filing an issue) before you start work on anything substantial
