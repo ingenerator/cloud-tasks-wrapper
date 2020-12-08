@@ -284,9 +284,21 @@ A very simple setup might look like:
 // index.php
 // Most commonly in real-world applications you would integrate this with your app/framework's config, dependency
 // management and HTTP processing layer.
-$task_types    = new TaskTypeConfigProvider(
+use Google\Auth\Cache\MemoryCacheItemPool;use Google\Auth\Cache\SysVCacheItemPool;use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;use Ingenerator\CloudTasksWrapper\TestHelpers\Server\ArrayTaskHandlerFactory;use Ingenerator\PHPUtils\Mutex\DbBackedMutexWrapper;
+$controller = TaskServerFactory::makeController(
+    new NullLogger, // Your app's PSR logger
+    new DbBackedMutexWrapper(new PDO('mysql:whatever')), // Your app's chosen mutex backend implementation
+    new MemoryCacheItemPool, // Your chosen PSR cache implementation - obv. not memory cache for production
+    new ArrayTaskHandlerFactory(
+        // This ships with the wrapper but you would usually implement yourself e.g. to fetch
+        // the handler dynamically from a dependency container using the task type as part of the name.
+        // However for simple cases (perhaps a Cloud Run covering a small number of task types) the
+        // array-backed handler factory might be sufficient.        
+        ['make-a-drink' => new MakeADrinkTaskHandler]
+    ),
     [
-        // This is the same as the client config above, but most options are not relevant for server-side handling
+        // The task_type config is the same as for the client above, but most options are not relevant for
+        // server-side handling.
         '_default'    => [
             // OIDC tokens will be verified as coming from this service account email address
             'signer_email' => 'app-task-publisher@my-app.iam.gserviceaccount.com',
@@ -294,47 +306,21 @@ $task_types    = new TaskTypeConfigProvider(
         'make-a-drink' => [
             // Uses defaults above (can override if required)
         ],
-    ]
-);
-$cache         = new CacheItemPoolInterface; // Use your preferred psr-6 cache here
-$log           = new NullLogger;
-$result_mapper = new TaskResultCodeMapper(
+    ],
     [
-        // This configuration defines how app-level `result` codes should map to HTTP status and log levels. It provides
-        // sane defaults for the CoreTaskResult values that ship with the wrapper
-        CustomTaskResult::IM_A_TEAPOT => [
-            // Note that you will often want to return "successy" codes for expected failures, where you don't want
-            // Cloud Tasks to bother retrying. Using custom high-numbered 2xx results still lets these show up in logs.
-            // If you think this is messy, vote on https://issuetracker.google.com/issues/162255862
-            'http_status' => 285,
-            // But you can log the operation as e.g. a warning / emergency to report internally that a task failed.
-            'loglevel'    => LogLevel::WARNING,
-
-        ]
+        // The server config merges sane defaults in the factory
+        'result_map' => [
+            // Adds an extra mapping for this application-level result code
+            CustomTaskResult::IM_A_TEAPOT => [
+                // Note that you will often want to return "successy" codes for expected failures, where you don't want
+                // Cloud Tasks to bother retrying. Using custom high-numbered 2xx results still lets these show up in
+                // logs. If you think this is messy, vote on https://issuetracker.google.com/issues/162255862
+                'http_status' => 285,
+                // But you can log the operation as e.g. a warning / emergency to report internally that a task failed.
+                'loglevel'    => LogLevel::WARNING,
+            ]
+        ],                   
     ]
-);
-$controller    = new TaskController(
-    TaskHandlerChain::makeDefault(
-        new TaskLoggingMiddleware(new RealtimeClock, $log, $result_mapper),
-        new TaskRequestAuthenticatingMiddleware(
-            $task_types,
-            // See our oidc-token-verifier package for details, including configuring to allow http:// issuers in
-            // developer environments.
-            new OIDCTokenVerifier(new OpenIDDiscoveryCertificateProvider(new GuzzleHttp\Client, $cache, $log))
-        ),
-        new TaskMutexLockingMiddleware(new DbBackedMutexWrapper(new PDO('mysql:whatever')))
-    ),
-    new ArrayTaskHandlerFactory(
-        // IRL you would probaly use a dependency container for this e.g. defining your handlers as services named
-        // like `task_handler.make-a-drink` and implementing a TaskHandlerFactory class that can get the appropriate 
-        // service from your DI container
-        ['make-a-drink' => new MakeADrinkTaskHandler]
-    ),
-    $result_mapper,
-    // The URL pattern should be a regex that can extract the task_type value from the URL. It must capture the
-    // a `task_type` named parameter as below. Note that the TaskController will throw an \InvalidArgumentException
-    // if the URL does not match this pattern.
-    '#^/_do_task/(?P<task_type>.+)$#'
 );
 
 $response = $controller->handle(ServerRequest::fromGlobals());
