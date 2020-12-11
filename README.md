@@ -116,6 +116,9 @@ latency). We support:
 * `task_id_from`: A string to convert (as an SHA256 hash) into a `task_id`. This simplifies your app providing
   known/unqiue values that are also well-distributed.
 
+* `task_id_hash_options`: If `TRUE`, the `query`, `headers` and `schedule_send_after` will be included in the hashed
+  task ID. Can be used with, or without, the `task_id_from`.
+
 The task_id will also take account of throttling behaviour (see below).
 
 #### Ignoring duplicate task submissions

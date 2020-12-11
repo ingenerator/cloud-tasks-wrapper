@@ -33,8 +33,14 @@ class CreateTaskOptionsTest extends TestCase
                 'body',
             ],
             [
+                // Can't specify `task_id` and `task_id_from`
                 ['task_id' => 'something', 'task_id_from' => 'something-else'],
                 'task_id',
+            ],
+            [
+                // Can't specify `task_id` and `task_id_hash_options`
+                ['task_id' => 'something', 'task_id_hash_options' => TRUE],
+                'task_id'
             ],
             [
                 // Can't specify explicit task_id with throttle_interval
@@ -145,9 +151,17 @@ class CreateTaskOptionsTest extends TestCase
      * @testWith [{}, null]
      *           [{"task_id": "absad237"}, "/some/queue/path/tasks/absad237"]
      *           [{"task_id_from": "some application string"}, "/some/queue/path/tasks/4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e"]
+     *           [{"task_id_hash_options": true, "query": {"foo": "bar"}}, "/some/queue/path/tasks/3df72e8aa366b11673ef39afe363cd090d6b60b55b274b236752b6decad590be"]
+     *           [{"task_id_from": "app-type", "task_id_hash_options": true}, "/some/queue/path/tasks/a81b205ac8b60d502d0c32271be3c131380384a10700f7b469f84d8e6bdf3f8e"]
+     *           [{"task_id_from": "app-type", "task_id_hash_options": true, "query": {"foo": "bar"}}, "/some/queue/path/tasks/59c9944a18e175c30831ce9b7ded47bc48aba09f8b0e920f21c44d7e72b6b2fe"]
+     *           [{"task_id_from": "app-type", "task_id_hash_options": true, "headers": {"X-foo":"bar"}}, "/some/queue/path/tasks/8dbbc54179cb185b6ff25c4765403adea4692aa35f69594af1ab3b254e3dcd15"]
+     *           [{"task_id_from": "app-type", "task_id_hash_options": true, "schedule_send_after": "2020-09-04"}, "/some/queue/path/tasks/90372598891aabbb05ea2461ff3164aba8fd7e9de42d9c9f5418309cb9a015dc"]
      */
     public function test_it_can_build_task_name_from_explicit_id_or_hashable_value($opts, $expect)
     {
+        if (isset($opts['schedule_send_after'])) {
+            $opts['schedule_send_after'] = new \DateTimeImmutable($opts['schedule_send_after']);
+        }
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->buildTaskName('/some/queue/path'));
     }
