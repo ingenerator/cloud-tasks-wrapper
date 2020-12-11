@@ -79,6 +79,16 @@ class CreateTaskOptions
     private ?string $task_id_from = NULL;
 
     /**
+     * Optional, combine with `task_id_from` to include header, query values and schedule_send_after in the hashed ID
+     *
+     * It's very common you just want to dedupe a particular execution at a particular time. This option hashes the
+     * values that usually make the submission unique. Can be used with, or without, the task_id_from option.
+     *
+     * @var bool
+     */
+    private bool $task_id_hash_options = FALSE;
+
+    /**
      * Number of seconds to delay execution after the end of a throttling window
      *
      * See main throttling docs for further details.
@@ -136,6 +146,9 @@ class CreateTaskOptions
         if ($this->task_id and $this->task_id_from) {
             throw new \InvalidArgumentException('Cannot set both task_id and task_id_from');
         }
+        if ($this->task_id and $this->task_id_hash_options) {
+            throw new \InvalidArgumentException('Cannot set both task_id and task_id_hash_options');
+        }
 
         if (isset($options['throttle_delay_secs']) and ! $this->throttle_interval) {
             // Only matters if they set it explicitly so we check $options not the property which has a default
@@ -144,6 +157,9 @@ class CreateTaskOptions
 
         if ($this->throttle_interval) {
             $this->parseThrottleOptions($options);
+        }
+        if ($this->task_id_hash_options) {
+            $this->appendOptionsToTaskIdFrom();
         }
     }
 
@@ -192,8 +208,7 @@ class CreateTaskOptions
         $exec_time = DateTimeImmutableFactory::atUnixSeconds($bucket_ends_ts + $this->throttle_delay_secs);
 
         $this->schedule_send_after = $exec_time;
-        $this->task_id_from        .= '@'.$exec_time->format('U.u');
-
+        $this->task_id_from        .= '@'.$this->schedule_send_after->format('U.u');
     }
 
     /**
@@ -208,6 +223,21 @@ class CreateTaskOptions
         $delta = $end->getTimestamp() - $start->getTimestamp();
 
         return $delta;
+    }
+
+    private function appendOptionsToTaskIdFrom(): void
+    {
+        $parts = [];
+        if ($this->schedule_send_after) {
+            $parts[] = '@'.$this->schedule_send_after->format('U.u');
+        }
+        if ($this->query) {
+            $parts[] = '?'.\http_build_query($this->query);
+        }
+        if ($this->headers) {
+            $parts[] = JSON::encode($this->headers);
+        }
+        $this->task_id_from .= \implode('', $parts);
     }
 
     /**
