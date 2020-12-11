@@ -63,8 +63,9 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
             array_merge(
                 $this->default_context,
                 [
-                    'time_ms' => $time_ms,
-                    'task'    => [
+                    'peak_mem' => sprintf('%0.3fMB', \memory_get_peak_usage() / 1_000_000),
+                    'time_ms'  => $time_ms,
+                    'task'     => [
                         'type'    => $request->getTaskType(),
                         'id'      => $request->getTaskName(),
                         'retries' => (string) $request->getRetryCount(),

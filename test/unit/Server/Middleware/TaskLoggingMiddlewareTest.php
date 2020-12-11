@@ -128,6 +128,30 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->assertSame(213, $log['context']['time_ms'], 'Should have logged time');
     }
 
+    public function test_it_includes_memory_in_log()
+    {
+        $this->code_mapper = new TaskResultCodeMapper(
+            ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
+        );
+
+        $this->newSubject()->process(
+            TaskRequestStub::any(),
+            TestTaskChain::withArbitraryResult('someCustomCode', 'OK whatever')
+        );
+
+        $log = $this->assertLoggedOnce(LogLevel::INFO);
+        $this->assertMatchesRegularExpression(
+            '/^[1-9][0-9]*\.[0-9]{3}MB$/',
+            $log['context']['peak_mem'],
+            'Should have a plausible value for peak memory'
+        );
+        // Can't be too strict, dependencies will change their usage over time, but roughly check we've divided to the
+        // correct unit scale.
+        $mem = (float) $log['context']['peak_mem'];
+        $this->assertGreaterThan(1, $mem, 'Should be more than 1MB');
+        $this->assertLessThan(100, $mem, 'Should be less than 100MB');
+    }
+
     public function test_it_includes_task_request_info_in_log()
     {
         $this->code_mapper = new TaskResultCodeMapper(['code' => ['loglevel' => LogLevel::INFO]]);
