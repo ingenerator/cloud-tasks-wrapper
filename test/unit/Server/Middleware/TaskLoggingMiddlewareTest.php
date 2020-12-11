@@ -18,13 +18,13 @@ use Psr\Log\Test\TestLogger;
 
 class TaskLoggingMiddlewareTest extends TestCase
 {
-    protected LoggerInterface      $logger;
+    protected LoggerInterface $logger;
 
     protected TaskResultCodeMapper $code_mapper;
 
-    protected StoppedMockClock     $clock;
+    protected StoppedMockClock $clock;
 
-    protected                      $default_context = [];
+    protected $default_context = [];
 
     public function test_it_is_initialisable()
     {
@@ -126,6 +126,36 @@ class TaskLoggingMiddlewareTest extends TestCase
 
         $log = $this->assertLoggedOnce(LogLevel::INFO);
         $this->assertSame(213, $log['context']['time_ms'], 'Should have logged time');
+    }
+
+    public function test_it_includes_task_request_info_in_log()
+    {
+        $this->code_mapper = new TaskResultCodeMapper(['code' => ['loglevel' => LogLevel::INFO]]);
+
+        $this->newSubject()->process(
+            TaskRequestStub::with(
+                [
+                    'task_type'    => 'my-task',
+                    'caller_email' => 'my@service.acct',
+                    'headers'      => [
+                        'X-CloudTasks-TaskRetryCount' => '5',
+                        'X-CloudTasks-TaskName'       => 'av8s72',
+                    ],
+                ]
+            ),
+            TestTaskChain::withArbitraryResult('code', 'I worked'),
+        );
+
+        $log = $this->assertLoggedOnce(LogLevel::INFO);
+        $this->assertSame(
+            [
+                'type'    => 'my-task',
+                'id'      => 'av8s72',
+                'retries' => '5',
+                'caller'  => 'my@service.acct',
+            ],
+            $log['context']['task']
+        );
     }
 
     protected function setUp(): void

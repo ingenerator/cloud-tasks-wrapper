@@ -36,9 +36,9 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         TaskResultCodeMapper $code_mapper,
         array $default_log_context = []
     ) {
-        $this->logger      = $logger;
-        $this->code_mapper = $code_mapper;
-        $this->clock       = $clock;
+        $this->logger          = $logger;
+        $this->code_mapper     = $code_mapper;
+        $this->clock           = $clock;
         $this->default_context = $default_log_context;
     }
 
@@ -62,7 +62,15 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
             \sprintf('Task: [%s] %s', $result->getCode(), $result->getMsg()),
             array_merge(
                 $this->default_context,
-                ['time_ms' => $time_ms],
+                [
+                    'time_ms' => $time_ms,
+                    'task'    => [
+                        'type'    => $request->getTaskType(),
+                        'id'      => $request->getTaskName(),
+                        'retries' => (string) $request->getRetryCount(),
+                        'caller'  => $request->getCallerEmail(),
+                    ],
+                ],
                 $result->getLogContext()
             )
         );
