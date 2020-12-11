@@ -37,7 +37,7 @@ class CoreTaskResult extends TaskHandlerResult
 
     public static function cannotBeValid(CloudTaskCannotBeValidException $e): TaskHandlerResult
     {
-        return new static(static::CANNOT_BE_VALID, $e->getMessage(), ['exception' => $e]);
+        return new static(static::CANNOT_BE_VALID, 'Cannot be valid: '.$e->getMessage(), ['exception' => $e]);
     }
 
     public static function duplicateDelivery(string $msg): TaskHandlerResult

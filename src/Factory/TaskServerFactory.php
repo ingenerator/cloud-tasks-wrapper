@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\Factory;
 
 
+use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
@@ -92,6 +93,7 @@ class TaskServerFactory
         return new TaskController(
             TaskHandlerChain::makeDefault(
                 new TaskLoggingMiddleware(new RealtimeClock, $logger, $result_mapper),
+                new ExceptionCatchingMiddleware(),
                 new TaskRequestAuthenticatingMiddleware(
                     $task_types,
                     new OIDCTokenVerifier(
