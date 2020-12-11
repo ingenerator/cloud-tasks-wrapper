@@ -21,11 +21,12 @@ class TaskRequestStub extends TaskRequest
     public static function with(array $options)
     {
         $defaults = [
-            'method'    => 'POST',
-            'url'       => 'http://foo.bar/anything',
-            'query'     => [],
-            'task_type' => 'some-task',
-            'headers'   => [],
+            'method'       => 'POST',
+            'url'          => 'http://foo.bar/anything',
+            'query'        => [],
+            'task_type'    => 'some-task',
+            'headers'      => [],
+            'caller_email' => NULL,
         ];
         $options  = AssociativeArrayUtils::deepMerge($defaults, $options);
 
@@ -35,10 +36,13 @@ class TaskRequestStub extends TaskRequest
             $options['headers']
         );
 
-        return new TaskRequest(
+        $req               = new TaskRequest(
             $request->withQueryParams($options['query']),
             $options['task_type']
         );
+        $req->caller_email = $options['caller_email'];
+
+        return $req;
     }
 
     public static function withAuthToken(string $token = 'abc1234')

@@ -48,7 +48,7 @@ class CoreTaskResultTest extends TestCase
                 CoreTaskResult::CANNOT_BE_VALID    => [
                     [$invalid_exception],
                     [
-                        'msg'         => 'It has no info',
+                        'msg'         => 'Cannot be valid: It has no info',
                         'log_context' => ['exception' => $invalid_exception]
                     ],
                 ],
