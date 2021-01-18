@@ -1,5 +1,7 @@
 ## Unreleased
 
+## v0.2.1 (2021-01-18)
+
 * Relax authentication rules for verifying JWT audience to ignore mismatched protocol or hostname.
   In a loadbalanced environment, the `ServerRequestInterface` may not always have accurate information on whether
   the request was http/s, or the external hostname that was routed to the appserver. Therefore only validate the
