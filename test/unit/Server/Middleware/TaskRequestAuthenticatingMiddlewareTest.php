@@ -87,7 +87,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_validates_token_with_task_type_signer_email_and_task_url_as_audience()
+    public function test_it_validates_token_with_task_type_signer_email_and_task_url_as_audience_path_and_query()
     {
         $this->task_type_config = TaskTypeConfigStub::withTaskType(
             'my-custom-task',
@@ -111,8 +111,8 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $this->token_verifier->assertVerifiedOnce(
             'abc215.1242121asd2.ad7215724',
             [
-                'audience_exact' => 'http://foo.bar.com/_task?foo=bar&data=some%20thing',
-                'email_exact'    => 'foo@bar.serviceaccount.com',
+                'audience_path_and_query' => 'http://foo.bar.com/_task?foo=bar&data=some%20thing',
+                'email_exact'             => 'foo@bar.serviceaccount.com',
             ]
         );
     }
