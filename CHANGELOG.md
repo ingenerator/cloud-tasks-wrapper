@@ -1,5 +1,8 @@
 ## Unreleased
 
+* Fix MockTaskCreator so that it can compare the DateTimeImmutable for schedule_send_after and DateInterval for
+  throttle_interval. These were previously compared by strict equality, which doesn't work.
+ 
 ## v0.2.1 (2021-01-18)
 
 * Relax authentication rules for verifying JWT audience to ignore mismatched protocol or hostname.
