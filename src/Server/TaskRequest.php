@@ -179,4 +179,27 @@ class TaskRequest
         return $var;
     }
 
+    /**
+     * Requires a non-empty value from the task body (which is assumed to be POST variables)
+     *
+     * Used for the common case where you need one or two simple values in form-encoded POST
+     * data sent with the request, and you can't do anything without them.
+     *
+     * The exception short-circuits further execution but will be mapped to an HTTP response
+     * that tells CloudTasks not to bother retrying.
+     *
+     * @param string $param
+     *
+     * @return string
+     */
+    public function requireBodyField(string $key)
+    {
+        $value = $this->request->getParsedBody()[$key] ?? NULL;
+        if (empty($value)) {
+            throw new CloudTaskCannotBeValidException('Required field `'.$key.'` missing from task body payload');
+        }
+
+        return $value;
+    }
+
 }

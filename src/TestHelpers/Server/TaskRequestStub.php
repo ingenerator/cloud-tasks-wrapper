@@ -27,6 +27,7 @@ class TaskRequestStub extends TaskRequest
             'task_type'    => 'some-task',
             'headers'      => [],
             'caller_email' => NULL,
+            'parsed_body'  => NULL,
         ];
         $options  = AssociativeArrayUtils::deepMerge($defaults, $options);
 
@@ -35,11 +36,12 @@ class TaskRequestStub extends TaskRequest
             $options['url'],
             $options['headers']
         );
+        $request = $request->withQueryParams($options['query']);
+        if (isset($options['parsed_body'])) {
+            $request = $request->withParsedBody($options['parsed_body']);
+        }
 
-        $req               = new TaskRequest(
-            $request->withQueryParams($options['query']),
-            $options['task_type']
-        );
+        $req               = new TaskRequest($request, $options['task_type']);
         $req->caller_email = $options['caller_email'];
 
         return $req;
