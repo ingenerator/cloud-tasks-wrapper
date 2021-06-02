@@ -60,6 +60,19 @@ class MockCloudTaskCreator implements TaskCreator
     }
 
     /**
+     * Assert that exactly one task was created, and that it had the expected type
+     *
+     * @param string $expect_task_type
+     */
+    public function assertQueuedExactlyOne(string $expect_task_type): void
+    {
+        Assert::assertSame(
+            [$expect_task_type],
+            \array_map(fn(array $t) => $t['task_type'], $this->calls)
+        );
+    }
+
+    /**
      * Convert all options values to scalars that can be compared with strict equality
      *
      * The testcase will almost never have the actual object instances that were passed for schedule_send_after

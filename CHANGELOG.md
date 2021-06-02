@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Provide assertQueuedExactlyOne() on MockCloudTaskCreator to assert creation of a single task with
+  expected type. Useful when other tests cover the task details and you just want
+  to be sure it fired / didn't fire.
+
 * Improve support for values sent in the POST body of a task request. These can now be included in
   TaskRequestStub instances (provide the `parsed_body` option to ::with()). The TaskRequest also
   includes a sugar method to grab a body (POST) value and throw if not present or empty.
