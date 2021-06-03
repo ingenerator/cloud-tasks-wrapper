@@ -1,5 +1,7 @@
 ## Unreleased
 
+## v0.2.3 (2021-06-03)
+
 * Provide assertQueuedExactlyOne() on MockCloudTaskCreator to assert creation of a single task with
   expected type. Useful when other tests cover the task details and you just want
   to be sure it fired / didn't fire.
