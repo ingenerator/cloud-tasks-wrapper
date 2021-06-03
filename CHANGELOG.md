@@ -1,5 +1,15 @@
 ## Unreleased
 
+## v0.2.3 (2021-06-03)
+
+* Provide assertQueuedExactlyOne() on MockCloudTaskCreator to assert creation of a single task with
+  expected type. Useful when other tests cover the task details and you just want
+  to be sure it fired / didn't fire.
+
+* Improve support for values sent in the POST body of a task request. These can now be included in
+  TaskRequestStub instances (provide the `parsed_body` option to ::with()). The TaskRequest also
+  includes a sugar method to grab a body (POST) value and throw if not present or empty.
+
 ## v0.2.2 (2021-04-09)
 
 * Fix MockTaskCreator so that it can compare the DateTimeImmutable for schedule_send_after and DateInterval for

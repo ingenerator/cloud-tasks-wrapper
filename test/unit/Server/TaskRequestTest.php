@@ -156,6 +156,28 @@ class TaskRequestTest extends TestCase
         $subject->requireQueryParam('foo');
     }
 
+    public function test_its_require_body_field_returns_value()
+    {
+        $this->http_req = $this->http_req->withParsedBody(['some_payload_field' => 'My value']);
+        $subject        = $this->newSubject();
+        $this->assertSame('My value', $subject->requireBodyField('some_payload_field'));
+    }
+
+    /**
+     * @testWith [null]
+     *           [[]]
+     *           [{"other": "things"}]
+     *           [{"anything": null}]
+     *           [{"anything": ""}]
+     */
+    public function test_its_require_body_field_throws_if_value_missing_or_empty($body)
+    {
+        $this->http_req = $this->http_req->withParsedBody($body);
+        $subject        = $this->newSubject();
+        $this->expectException(CloudTaskCannotBeValidException::class);
+        $subject->requireBodyField('anything');
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
