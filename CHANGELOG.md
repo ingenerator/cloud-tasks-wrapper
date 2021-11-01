@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.3.0 (2021-11-01)
+
+* Support PHP 8.0
+
 ## v0.2.3 (2021-06-03)
 
 * Provide assertQueuedExactlyOne() on MockCloudTaskCreator to assert creation of a single task with

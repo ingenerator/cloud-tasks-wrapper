@@ -11,18 +11,18 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^7.4 || ~8.0.0",
         "ext-bcmath": "^7",
         "google/cloud-tasks": "^1.8",
         "google/protobuf": "^3.13.0.1",
-        "ingenerator/oidc-token-verifier": "^0.1.1",
         "ingenerator/php-utils": "^1.7",
         "psr/http-message": "^1.0",
         "symfony/polyfill-php80": "^1.20"
     },
     "require-dev": {
         "guzzlehttp/psr7": "^1.7",
-        "phpunit/phpunit": "^9.4.2"
+        "ingenerator/oidc-token-verifier": "^0.2",
+        "phpunit/phpunit": "^9.5"
     },
     "repositories": [
         {"type": "composer", "url": "https://php-packages.ingenerator.com"}
