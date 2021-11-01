@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^7.4 || ~8.0.0",
         "ext-bcmath": "^7",
         "google/cloud-tasks": "^1.8",
         "google/protobuf": "^3.13.0.1",
