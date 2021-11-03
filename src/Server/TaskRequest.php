@@ -150,6 +150,10 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    public function setRequestParsedBody(array $body){
+        $this->request = $this->request->withParsedBody($body);
+    }
+
     public function optionalQueryParam(string $param): ?string
     {
         $params = $this->request->getQueryParams();
