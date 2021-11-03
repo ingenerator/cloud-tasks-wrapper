@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.3.1 (2021-11-03)
+
+* Fix inadvertently moved OIDC token verifier dependency
+
 ## v0.3.0 (2021-11-01)
 
 * Support PHP 8.0
