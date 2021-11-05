@@ -192,9 +192,9 @@ class TaskRequest
      * The exception short-circuits further execution but will be mapped to an HTTP response
      * that tells CloudTasks not to bother retrying.
      *
-     * @param string $param
+     * @param string $key
      *
-     * @return string
+     * @return mixed
      */
     public function requireBodyField(string $key)
     {
