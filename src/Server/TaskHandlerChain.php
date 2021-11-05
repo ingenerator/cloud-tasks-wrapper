@@ -40,9 +40,10 @@ class TaskHandlerChain
         ExceptionCatchingMiddleware $catcher,
         TaskRequestAuthenticatingMiddleware $auth,
         TaskMutexLockingMiddleware $mutex,
-        JsonBodyParsingMiddleware $json_parsing
+        JsonBodyParsingMiddleware $json_parsing,
+        TaskHandlerMiddleware...$additional_middlewares
     ): TaskHandlerChain {
-        return new static($logging, $catcher, $auth, $mutex, $json_parsing);
+        return new static($logging, $catcher, $auth, $mutex, $json_parsing, ...$additional_middlewares);
     }
 
     public function __construct(TaskHandlerMiddleware...$middlewares)

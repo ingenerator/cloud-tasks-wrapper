@@ -12,6 +12,7 @@ use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMid
 use Ingenerator\CloudTasksWrapper\Server\TaskController;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
+use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\OIDCTokenVerifier\OIDCTokenVerifier;
@@ -44,7 +45,8 @@ class TaskServerFactory
         CacheItemPoolInterface $certificate_cache,
         TaskHandlerFactory $handler_factory,
         array $task_types,
-        array $server_config
+        array $server_config,
+        TaskHandlerMiddleware...$additional_middlewares
     ): TaskController {
         $server_config = array_merge(
             [
@@ -108,7 +110,8 @@ class TaskServerFactory
                     )
                 ),
                 new TaskMutexLockingMiddleware($mutex_wrapper),
-                new JsonBodyParsingMiddleware()
+                new JsonBodyParsingMiddleware(),
+                ...$additional_middlewares
             ),
             $handler_factory,
             $result_mapper,
