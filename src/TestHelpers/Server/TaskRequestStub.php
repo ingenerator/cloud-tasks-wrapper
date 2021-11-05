@@ -5,6 +5,7 @@ namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Utils;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
@@ -27,6 +28,7 @@ class TaskRequestStub extends TaskRequest
             'task_type'    => 'some-task',
             'headers'      => [],
             'caller_email' => NULL,
+            'body'         => NULL,
             'parsed_body'  => NULL,
         ];
         $options  = AssociativeArrayUtils::deepMerge($defaults, $options);
@@ -39,6 +41,9 @@ class TaskRequestStub extends TaskRequest
         $request = $request->withQueryParams($options['query']);
         if (isset($options['parsed_body'])) {
             $request = $request->withParsedBody($options['parsed_body']);
+        }
+        if (isset($options['body'])) {
+            $request = $request->withBody(Utils::streamFor($options['body']));
         }
 
         $req               = new TaskRequest($request, $options['task_type']);

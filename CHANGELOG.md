@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Middleware to parse JSON body in request
+
 ## v0.3.1 (2021-11-03)
 
 * Fix inadvertently moved OIDC token verifier dependency

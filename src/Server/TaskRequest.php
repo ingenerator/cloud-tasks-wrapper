@@ -150,6 +150,10 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    public function setRequestParsedBody(array $body){
+        $this->request = $this->request->withParsedBody($body);
+    }
+
     public function optionalQueryParam(string $param): ?string
     {
         $params = $this->request->getQueryParams();
@@ -188,9 +192,9 @@ class TaskRequest
      * The exception short-circuits further execution but will be mapped to an HTTP response
      * that tells CloudTasks not to bother retrying.
      *
-     * @param string $param
+     * @param string $key
      *
-     * @return string
+     * @return mixed
      */
     public function requireBodyField(string $key)
     {
