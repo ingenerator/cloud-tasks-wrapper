@@ -5,16 +5,19 @@ namespace Ingenerator\CloudTasksWrapper\Server;
 
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
+use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
+use UnderflowException;
+use function array_shift;
 
 class TaskHandlerChain
 {
     protected ?TaskHandler $handler = NULL;
 
     /**
-     * @var \Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware[]
+     * @var TaskHandlerMiddleware[]
      */
     protected $middlewares = [];
 
@@ -31,20 +34,15 @@ class TaskHandlerChain
      *  - Auth next so that spam calls can't DDOS through the mutex implementation
      *  - Then mutex so that a given task is only processed once at a time
      *
-     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware               $logging
-     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware         $catcher
-     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware $auth
-     * @param \Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware          $mutex
-     *
-     * @return \Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain
      */
     public static function makeDefault(
         TaskLoggingMiddleware $logging,
         ExceptionCatchingMiddleware $catcher,
         TaskRequestAuthenticatingMiddleware $auth,
-        TaskMutexLockingMiddleware $mutex
+        TaskMutexLockingMiddleware $mutex,
+        JsonBodyParsingMiddleware $json_parsing
     ): TaskHandlerChain {
-        return new static($logging, $catcher, $auth, $mutex);
+        return new static($logging, $catcher, $auth, $mutex, $json_parsing);
     }
 
     public function __construct(TaskHandlerMiddleware...$middlewares)
@@ -63,9 +61,9 @@ class TaskHandlerChain
     public function nextHandler(TaskRequest $request): TaskHandlerResult
     {
         if ( ! $this->handler) {
-            throw new \UnderflowException('No TaskHandler was provided to '.__CLASS__);
+            throw new UnderflowException('No TaskHandler was provided to '.__CLASS__);
         }
-        if ($middleware = \array_shift($this->middlewares)) {
+        if ($middleware = array_shift($this->middlewares)) {
             return $middleware->process($request, $this);
         }
 
