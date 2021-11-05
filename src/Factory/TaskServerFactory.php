@@ -5,7 +5,6 @@ namespace Ingenerator\CloudTasksWrapper\Factory;
 
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
-use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
@@ -107,8 +106,7 @@ class TaskServerFactory
                         $server_config['token_issuer'],
                     )
                 ),
-                new TaskMutexLockingMiddleware($mutex_wrapper),
-                new JsonBodyParsingMiddleware()
+                new TaskMutexLockingMiddleware($mutex_wrapper)
             ),
             $handler_factory,
             $result_mapper,
