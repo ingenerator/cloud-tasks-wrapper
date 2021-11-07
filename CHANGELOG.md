@@ -1,6 +1,6 @@
 ## Unreleased
 
-## v0.4.0 (2021-11-05)
+## v0.4.0 (2021-11-07)
 
 * Allow multiple additional middlewares to be registered on the end of the default chain using the bundled factory method.
 
