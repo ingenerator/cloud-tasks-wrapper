@@ -1,6 +1,12 @@
 ## Unreleased
 
-* Middleware to parse JSON body in request
+## v0.4.0 (2021-11-07)
+
+* Allow multiple additional middlewares to be registered on the end of the default chain using the bundled factory method.
+
+* TransactionMarker Middleware - Blocks a task from execution until the transaction marker exists in the repository. Allows Cloud Tasks to retry the execution of the task up until the specified expiry.
+
+* Middleware to parse JSON body in request.
 
 ## v0.3.1 (2021-11-03)
 

@@ -4,6 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\Server;
 
 
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 use Psr\Log\LogLevel;
@@ -47,6 +48,14 @@ class TaskResultCodeMapper
         CoreTaskResult::UNCAUGHT_EXCEPTION => [
             'http_status' => 500,
             'loglevel'    => LogLevel::EMERGENCY,
+        ],
+        TransactionMarkerResult::NOT_YET_VISIBLE => [
+            'http_status' => 425,
+            'loglevel'    => LogLevel::NOTICE,
+        ],
+        TransactionMarkerResult::TRANSACTION_EXPIRED => [
+            'http_status' => 288,
+            'loglevel'    => LogLevel::WARNING,
         ],
     ];
 
