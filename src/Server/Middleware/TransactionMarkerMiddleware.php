@@ -15,6 +15,9 @@ use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 
 class TransactionMarkerMiddleware implements TaskHandlerMiddleware
 {
+    const TRANSACTION_MARKER_HEADER        = 'X-Transaction';
+    const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
+
     private TransactionMarkerRepository $transaction_marker_repo;
 
     public function __construct(TransactionMarkerRepository $transaction_marker_repo)
@@ -24,7 +27,7 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
     {
-        $uuid = $request->getHttpRequest()->getHeaderLine('X-Transaction');
+        $uuid = $request->getHttpRequest()->getHeaderLine(static::TRANSACTION_MARKER_HEADER);
 
         // go go go - if it's nothing to do with us / or it's ready to begin
         if (empty($uuid) or $this->transaction_marker_repo->exists($uuid)) {
@@ -32,7 +35,7 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
         }
 
         $expiry = DateTimeImmutableFactory::fromYmdHis(
-            $request->getHttpRequest()->getHeaderLine('X-Transaction-Expire')
+            $request->getHttpRequest()->getHeaderLine(static::TRANSACTION_MARKER_EXPIRE_HEADER)
         );
 
         // try again later, we're not ready yet

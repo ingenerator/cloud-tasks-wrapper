@@ -1,5 +1,10 @@
 ## Unreleased
 
+## v0.4.1 (2021-11-17)
+
+* Helper method TransactionMarkerMiddlewareHelper::addTransactionMarkerHeaders to add correct headers for transaction
+  marker middleware
+
 ## v0.4.0 (2021-11-07)
 
 * Allow multiple additional middlewares to be registered on the end of the default chain using the bundled factory method.
