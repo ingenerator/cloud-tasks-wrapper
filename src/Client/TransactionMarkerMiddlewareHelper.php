@@ -4,9 +4,10 @@
  * @licence   BSD-3-Clause
  */
 
-namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
+namespace Ingenerator\CloudTasksWrapper\Client;
 
 use DateTimeImmutable;
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerMiddleware;
 use Ingenerator\PHPUtils\DateTime\DateString;
 
 class TransactionMarkerMiddlewareHelper

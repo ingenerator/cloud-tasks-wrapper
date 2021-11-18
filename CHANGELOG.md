@@ -1,6 +1,6 @@
 ## Unreleased
 
-## v0.4.1 (2021-11-17)
+## v0.4.1 (2021-11-18)
 
 * Helper method TransactionMarkerMiddlewareHelper::addTransactionMarkerHeaders to add correct headers for transaction
   marker middleware

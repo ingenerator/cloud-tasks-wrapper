@@ -4,9 +4,9 @@
  * @licence   proprietary
  */
 
-namespace unit\Server\Middleware;
+namespace unit\Client;
 
-use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerMiddlewareHelper;
+use Ingenerator\CloudTasksWrapper\Client\TransactionMarkerMiddlewareHelper;
 use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use PHPUnit\Framework\TestCase;
 use function uniqid;
