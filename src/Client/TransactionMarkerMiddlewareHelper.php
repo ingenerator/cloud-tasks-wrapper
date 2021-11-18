@@ -12,13 +12,13 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 
 class TransactionMarkerMiddlewareHelper
 {
-    public static function addTransactionMarkerHeaders(array $task, string $uuid, DateTimeImmutable $expiry): array
+    public static function addTransactionMarkerHeaders(array $options, string $uuid, DateTimeImmutable $expiry): array
     {
-        $task['options']['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER] = $uuid;
-        $task['options']['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_EXPIRE_HEADER] = DateString::ymdhis(
+        $options['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER] = $uuid;
+        $options['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_EXPIRE_HEADER] = DateString::ymdhis(
             $expiry
         );
 
-        return $task;
+        return $options;
     }
 }
