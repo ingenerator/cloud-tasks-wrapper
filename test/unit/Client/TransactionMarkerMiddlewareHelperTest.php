@@ -6,7 +6,9 @@
 
 namespace unit\Client;
 
+use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TransactionMarkerMiddlewareHelper;
+use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerMiddleware;
 use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use PHPUnit\Framework\TestCase;
 use function uniqid;
@@ -22,11 +24,26 @@ class TransactionMarkerMiddlewareHelperTest extends TestCase
             [
                 'headers' => [
                     'X-CustomHeader'       => 'foo',
-                    'X-Transaction'        => $uuid,
-                    'X-Transaction-Expire' => '2019-10-11 11:13:14',
+                    TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER        => $uuid,
+                    TransactionMarkerMiddleware::TRANSACTION_MARKER_EXPIRE_HEADER => '2019-10-11 11:13:14',
                 ],
             ],
             TransactionMarkerMiddlewareHelper::addTransactionMarkerHeaders($options, $uuid, $expiry)
         );
+    }
+
+    public function test_options_are_compatible_with_CreateTaskOptions()
+    {
+        $uuid   = uniqid();
+        $expiry = DateTimeImmutableFactory::atUnixSeconds(1570792394);
+        $result = new CreateTaskOptions(
+            TransactionMarkerMiddlewareHelper::addTransactionMarkerHeaders([], $uuid, $expiry)
+        );
+
+        $this->assertInstanceOf(CreateTaskOptions::class, $result);
+        $this->assertSame([
+            TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER        => $uuid,
+            TransactionMarkerMiddleware::TRANSACTION_MARKER_EXPIRE_HEADER => '2019-10-11 11:13:14',
+        ], $result->getHeaders());
     }
 }
