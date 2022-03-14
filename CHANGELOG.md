@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.4.2 (2022-03-14)
+
+* Advertise support for bc-math:^8.0
+
 ## v0.4.1 (2021-11-18)
 
 * Helper method TransactionMarkerMiddlewareHelper::addTransactionMarkerHeaders to add correct headers for transaction
