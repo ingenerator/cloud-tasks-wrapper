@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Support PHP 8.1
+
 ## v0.4.2 (2022-03-14)
 
 * Advertise support for bc-math:^8.0
