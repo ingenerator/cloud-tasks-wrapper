@@ -47,7 +47,7 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         $start  = $this->clock->getMicrotime();
         $result = $chain->nextHandler($request);
         $end    = $this->clock->getMicrotime();
-        $this->logResult($request, $result, 1000 * ($end - $start));
+        $this->logResult($request, $result, intval(1000 * ($end - $start)));
 
         return $result;
     }
