@@ -24,6 +24,9 @@
         "guzzlehttp/psr7": "^1.7",
         "phpunit/phpunit": "^9.5.5"
     },
+    "conflict": {
+        "google/gax": "<1.16"
+    },
     "repositories": [
         {"type": "composer", "url": "https://php-packages.ingenerator.com"}
     ],
