@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Allow clients to specify a custom_handler_url when creating a task, to override the default handler_url provided
+  by the configuration for the task type. Useful when the handler url is dependent on something that can only be 
+  determined at runtime (e.g. routing to a subdomain).
+
 * Support a `custom_token_audience` in the TaskType options, to allow specifying a non-default `audience` in the JWT
   that Cloud Tasks issues to authorise the request.
 

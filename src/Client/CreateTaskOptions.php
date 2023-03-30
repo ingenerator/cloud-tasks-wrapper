@@ -7,6 +7,7 @@ namespace Ingenerator\CloudTasksWrapper\Client;
 use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
+use function str_contains;
 
 class CreateTaskOptions
 {
@@ -40,6 +41,11 @@ class CreateTaskOptions
      * @var array
      */
     private array $headers = [];
+
+    /**
+     * Optionally specify a complete URL the task should be sent to, otherwise this will come from the TaskTypeConfig
+     */
+    private ?string $custom_handler_url = NULL;
 
     /**
      * Optionally add GET parameters to the handler URL.
@@ -148,6 +154,12 @@ class CreateTaskOptions
         }
         if ($this->task_id and $this->task_id_hash_options) {
             throw new \InvalidArgumentException('Cannot set both task_id and task_id_hash_options');
+        }
+
+        if (str_contains($this->custom_handler_url ?? '', '?') and ! empty($this->query)) {
+            throw new \InvalidArgumentException(
+                'Cannot set a query if your custom_handler_url already includes a querystring'
+            );
         }
 
         if (isset($options['throttle_delay_secs']) and ! $this->throttle_interval) {
@@ -275,6 +287,11 @@ class CreateTaskOptions
     public function getHeaders(): array
     {
         return $this->headers;
+    }
+
+    public function getCustomHandlerUrl(): ?string
+    {
+        return $this->custom_handler_url;
     }
 
     /**
