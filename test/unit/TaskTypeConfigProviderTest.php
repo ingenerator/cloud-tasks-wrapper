@@ -69,8 +69,16 @@ class TaskTypeConfigProviderTest extends TestCase
         ];
         $cfg          = $this->newSubject()->getConfig('do-a-thing');
         $this->assertSame(
-            ['type' => 'do-a-thing', 'signer' => 'neil@armstrong.serviceaccount.test'],
-            ['type' => $cfg->getTaskType(), 'signer' => $cfg->getSignerEmail()],
+            [
+                'type'     => 'do-a-thing',
+                'signer'   => 'neil@armstrong.serviceaccount.test',
+                'audience' => NULL,
+            ],
+            [
+                'type'     => $cfg->getTaskType(),
+                'signer'   => $cfg->getSignerEmail(),
+                'audience' => $cfg->getCustomTokenAudience(),
+            ],
         );
     }
 
@@ -101,15 +109,34 @@ class TaskTypeConfigProviderTest extends TestCase
                 'queue_path' => CloudTasksClient::queueName('good-proj', 'the-moon', 'unimportant'),
                 'handler'    => 'https://glacier.test/background',
                 'signer'     => 'neil@armstrong.serviceaccount.test',
+                'audience' => null,
             ],
             [
                 'queue_path' => $cfg->getQueuePath(),
                 'handler'    => $cfg->getHandlerUrl(),
                 'signer'     => $cfg->getSignerEmail(),
+                'audience' => $cfg->getCustomTokenAudience(),
             ]
         );
     }
 
+    public function test_it_can_provide_custom_token_audience_if_configured()
+    {
+        $this->config = [
+            'do-a-thing' => [
+                'queue'                 => [
+                    'project'  => 'good-proj',
+                    'location' => 'the-moon',
+                    'name'     => 'slow-stuff',
+                ],
+                'signer_email'          => 'neil@armstrong.serviceaccount.test',
+                'handler_url'           => 'https://moon.test/my-task',
+                'custom_token_audience' => 'pick me!',
+            ],
+        ];
+        $cfg          = $this->newSubject()->getConfig('do-a-thing');
+        $this->assertSame('pick me!', $cfg->getCustomTokenAudience());
+    }
 
     public function test_it_provides_default_creation_retry_options_if_none_provided()
     {

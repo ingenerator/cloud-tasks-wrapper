@@ -76,6 +76,24 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     /**
+     * @testWith [{"custom_token_audience": null}, ""]
+     *           [{}, ""]
+     *           [{"custom_token_audience": "pick-me!"}, "pick-me!"]
+     */
+    public function test_it_configures_custom_audience_for_authenticated_task_if_configured($config, $expect)
+    {
+        $this->task_config = TaskTypeConfigStub::withTaskType(
+            'do-something',
+            ['signer_email' => 'someone@service.com', ...$config]
+        );
+        $this->newSubject()->create('do-something');
+
+        $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertTrue($task->getHttpRequest()->hasOidcToken(), 'should have oidc token');
+        $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
+    }
+
+    /**
      * @testWith [[], "https://my.handler.foo/something"]
      *           [{"query": {"id": 15, "scope": "any"}}, "https://my.handler.foo/something?id=15&scope=any"]
      */

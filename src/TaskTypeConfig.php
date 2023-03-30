@@ -41,6 +41,13 @@ class TaskTypeConfig
     protected string $signer_email;
 
     /**
+     * Optional value to use as the `audience` of the JWT issued to authorise requests as this task type.
+     *
+     * If left empty, cloud tasks will use the complete handler_url.
+     */
+    protected ?string $custom_token_audience = null;
+
+    /**
      * Internal application-specific identifier for this task type
      *
      * @var string
@@ -87,6 +94,11 @@ class TaskTypeConfig
     public function getSignerEmail(): string
     {
         return $this->signer_email;
+    }
+
+    public function getCustomTokenAudience(): ?string
+    {
+        return $this->custom_token_audience;
     }
 
     /**

@@ -1,6 +1,10 @@
 ## Unreleased
 
+* Support a `custom_token_audience` in the TaskType options, to allow specifying a non-default `audience` in the JWT
+  that Cloud Tasks issues to authorise the request.
+
 * Add support for PHP 8.2
+
 * Drop support for PHP 8.0
 
 ## v0.5.0 (2022-10-17)
