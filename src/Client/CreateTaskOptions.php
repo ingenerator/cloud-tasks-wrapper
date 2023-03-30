@@ -156,7 +156,7 @@ class CreateTaskOptions
         }
 
         if ($this->throttle_interval) {
-            $this->parseThrottleOptions($options);
+            $this->parseThrottleOptions();
         }
         if ($this->task_id_hash_options) {
             $this->appendOptionsToTaskIdFrom();

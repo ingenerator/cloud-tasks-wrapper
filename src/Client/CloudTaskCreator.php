@@ -55,7 +55,10 @@ class CloudTaskCreator implements TaskCreator
                     [
                         'url'         => $handler_url,
                         'http_method' => HttpMethod::POST,
-                        'oidc_token'  => $this->oidcTokenUnlessAnonymous($task_type->getSignerEmail()),
+                        'oidc_token' => $this->oidcTokenUnlessAnonymous(
+                            $task_type->getSignerEmail(),
+                            $task_type->getCustomTokenAudience()
+                        ),
                         'headers'     => $options->getHeaders(),
                         'body'        => $options->getBodyContent(),
                     ]
@@ -107,22 +110,20 @@ class CloudTaskCreator implements TaskCreator
         }
     }
 
-    /**
-     * @param string $internal_queue_name
-     *
-     * @return OidcToken
-     */
-    protected function oidcTokenUnlessAnonymous(string $email): ?OidcToken
+    protected function oidcTokenUnlessAnonymous(string $email, ?string $custom_audience): ?OidcToken
     {
         if ($email === 'anonymous') {
             return NULL;
         }
 
-        return new OidcToken(
-            [
-                'service_account_email' => $email,
-            ]
-        );
+        $options = [
+            'service_account_email' => $email,
+        ];
+        if ($custom_audience !== NULL) {
+            $options['audience'] = $custom_audience;
+        }
+
+        return new OidcToken($options);
     }
 
     protected function toTimestampOrNull(?DateTimeImmutable $datetime): ?Timestamp

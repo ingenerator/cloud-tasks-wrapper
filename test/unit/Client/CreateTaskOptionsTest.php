@@ -71,7 +71,7 @@ class CreateTaskOptionsTest extends TestCase
     public function test_it_throws_on_construction_with_invalid_args($args, $expect_msg)
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectErrorMessage($expect_msg);
+        $this->expectExceptionMessage($expect_msg);
         new CreateTaskOptions($args);
     }
 
