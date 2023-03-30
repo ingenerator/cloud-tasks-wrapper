@@ -93,11 +93,39 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
     }
 
+    public function provider_task_url()
+    {
+        return [
+            'just from config, no query'                                                 => [
+                [],
+                "https://my.handler.foo/something",
+            ],
+            'from config, with CreateTaskOptions.query'                                  => [
+                ['query' => ['id' => 15, 'scope' => 'any']],
+                "https://my.handler.foo/something?id=15&scope=any",
+            ],
+            'with CreateTaskOptions.custom_handler_url and no query'                     => [
+                ['custom_handler_url' => 'https://my-handler.com/whatever'],
+                "https://my-handler.com/whatever",
+            ],
+            'with CreateTaskOptions.custom_handler_url including own query and no query' => [
+                ['custom_handler_url' => 'https://my-handler.com/whatever?foo=bar'],
+                "https://my-handler.com/whatever?foo=bar",
+            ],
+            'with CreateTaskOptions.custom_handler_url and CreateTaskOptions.query'      => [
+                [
+                    'custom_handler_url' => 'https://my-handler.com/whatever',
+                    'query'              => ['id' => 15, 'scope' => 'any'],
+                ],
+                "https://my-handler.com/whatever?id=15&scope=any",
+            ],
+        ];
+    }
+
     /**
-     * @testWith [[], "https://my.handler.foo/something"]
-     *           [{"query": {"id": 15, "scope": "any"}}, "https://my.handler.foo/something?id=15&scope=any"]
+     * @dataProvider provider_task_url
      */
-    public function test_it_sets_task_to_post_to_provided_url_optionally_adding_query_params($opts, $expect)
+    public function test_it_sets_task_to_post_to_custom_or_config_url_optionally_adding_query_params($opts, $expect)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',

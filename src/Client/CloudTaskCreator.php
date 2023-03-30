@@ -40,7 +40,7 @@ class CloudTaskCreator implements TaskCreator
         $task_type = $this->task_config->getConfig($task_type_name);
         $options   ??= new CreateTaskOptions([]);
 
-        $handler_url = $task_type->getHandlerUrl();
+        $handler_url = $options->getCustomHandlerUrl() ?? $task_type->getHandlerUrl();
         if ($options->hasQuery()) {
             $handler_url .= '?'.\http_build_query($options->getQuery());
         }

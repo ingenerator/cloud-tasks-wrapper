@@ -6,6 +6,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class CreateTaskOptionsTest extends TestCase
@@ -86,6 +87,27 @@ class CreateTaskOptionsTest extends TestCase
         $this->assertSame($expect, $subject->hasQuery());
         if ($expect) {
             $this->assertSame($opts['query'], $subject->getQuery());
+        }
+    }
+
+    /**
+     * @testWith [{"query": {"foo": "bar"}, "custom_handler_url": "http://some.service/wherever"}, true]
+     *           [{"custom_handler_url": "http://some.service/wherever?hardcoded=query"}, true]
+     *           [{"query": {"foo": "bar"}, "custom_handler_url": "http://some.service/wherever?hardcoded=query"}, false]
+     */
+    public function test_it_only_allows_query_with_custom_url_if_url_does_not_contain_a_query($opts, $is_valid)
+    {
+        $e = NULL;
+        try {
+            $subject = new CreateTaskOptions($opts);
+        } catch (\InvalidArgumentException $e) {
+        }
+
+        if ($is_valid) {
+            $this->assertNull($e, (string ) $e);
+        } else {
+            $this->assertInstanceOf(InvalidArgumentException::class, $e);
+            $this->assertStringContainsString('querystring', $e->getMessage());
         }
     }
 
