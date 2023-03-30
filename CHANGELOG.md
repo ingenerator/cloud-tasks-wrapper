@@ -1,5 +1,7 @@
 ## Unreleased
 
+## v0.5.1 (2023-03-30)
+
 * Allow clients to specify a custom_handler_url when creating a task, to override the default handler_url provided
   by the configuration for the task type. Useful when the handler url is dependent on something that can only be 
   determined at runtime (e.g. routing to a subdomain).
