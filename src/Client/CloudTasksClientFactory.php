@@ -4,11 +4,12 @@
 namespace Ingenerator\CloudTasksWrapper\Client;
 
 
-use Google\Cloud\Core\AnonymousCredentials;
+use Google\Cloud\Core\InsecureCredentialsWrapper;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Psr\Cache\CacheItemPoolInterface;
+use RuntimeException;
 
 class CloudTasksClientFactory
 {
@@ -20,11 +21,15 @@ class CloudTasksClientFactory
         ];
 
         if ($config['use_emulator']) {
+            if (!class_exists(InsecureCredentialsWrapper::class)) {
+                throw new RuntimeException(
+                    'You need google/cloud-core >1.44.4 to use a cloud tasks emulator with insecure credentials');
+            }
             $options = array_merge(
                 $base_options,
                 [
                     'apiEndpoint'     => $config['emulator_endpoint'],
-                    'credentials'     => $config['credentials'] ?? new AnonymousCredentials,
+                    'credentials'     => $config['credentials'] ?? new InsecureCredentialsWrapper(),
                     'transportConfig' => [
                         'grpc' => [
                             'channel' => new Channel(
