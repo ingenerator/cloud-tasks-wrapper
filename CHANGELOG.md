@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.5.2 (2023-08-15)
+
+* Use InsecureCredentialsWrapper when authenticating with the emulator in dev 
+
 ## v0.5.1 (2023-03-30)
 
 * Allow clients to specify a custom_handler_url when creating a task, to override the default handler_url provided

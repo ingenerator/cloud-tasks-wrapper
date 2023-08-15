@@ -21,11 +21,15 @@
         "symfony/polyfill-php80": "^1.20"
     },
     "require-dev": {
+        "google/cloud-core": "^1.14.4",
         "guzzlehttp/psr7": "^1.7",
         "phpunit/phpunit": "^9.5.5"
     },
     "conflict": {
         "google/gax": "<1.16"
+    },
+    "suggest": {
+        "google/cloud-core": "You need google/cloud-core >1.44.4 to use a cloud tasks emulator with insecure credentials"
     },
     "repositories": [
         {"type": "composer", "url": "https://php-packages.ingenerator.com"}
