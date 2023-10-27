@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.5.3 (2023-10-27)
+
+* Additionally, support ingenerator/oidc-token-verifier:^1.0
+
 ## v0.5.2 (2023-08-15)
 
 * Use InsecureCredentialsWrapper when authenticating with the emulator in dev 
