@@ -16,7 +16,7 @@
         "google/cloud-tasks": "^1.8",
         "google/protobuf": "^3.22.0",
         "ingenerator/oidc-token-verifier": "^0.3 || ^1.0",
-        "ingenerator/php-utils": "^1.13",
+        "ingenerator/php-utils": "^1.13 || ^2.0",
         "psr/http-message": "^1.0",
         "symfony/polyfill-php80": "^1.20"
     },
