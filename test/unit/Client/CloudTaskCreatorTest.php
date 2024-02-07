@@ -12,7 +12,6 @@ use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\Client\CloudTaskCreator;
-use Ingenerator\CloudTasksWrapper\Client\CloudTasksQueueMapper;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
