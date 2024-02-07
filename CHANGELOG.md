@@ -1,5 +1,12 @@
 ## Unreleased
 
+## v0.5.4 (2024-02-07)
+
+* Support ingenerator/php-utils:^2.0
+* Fix TestLogger dev dependency
+* Remove polyfills no longer required
+
+
 ## v0.5.3 (2023-10-27)
 
 * Additionally, support ingenerator/oidc-token-verifier:^1.0
