@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.5.5 (2024-02-14)
+
+* Support psr/http-message:^2.0
+
 ## v0.5.4 (2024-02-07)
 
 * Support ingenerator/php-utils:^2.0
