@@ -4,7 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper\Client;
 
 
-use Google\Cloud\Core\InsecureCredentialsWrapper;
+use Google\ApiCore\InsecureCredentialsWrapper;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
@@ -21,10 +21,6 @@ class CloudTasksClientFactory
         ];
 
         if ($config['use_emulator']) {
-            if (!class_exists(InsecureCredentialsWrapper::class)) {
-                throw new RuntimeException(
-                    'You need google/cloud-core >1.44.4 to use a cloud tasks emulator with insecure credentials');
-            }
             $options = array_merge(
                 $base_options,
                 [

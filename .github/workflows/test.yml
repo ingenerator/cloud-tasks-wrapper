@@ -23,12 +23,32 @@ jobs:
             dependencies: 'lowest'
           - php_version: '8.2'
             dependencies: 'lowest'
+    env:
+      php_extensions: grpc, protobuf
     steps:
+
+      - name: Setup extension cache
+        id: extension_cache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php_version }}
+          extensions: ${{ env.php_extensions }}
+          # NB the extension cache has an indefinite expiry, manually bump this key to trigger extension updates
+          key: extensions-cache-v1
+
+      - name: Cache extensions
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.extension_cache.outputs.dir }}
+          key: ${{ steps.extension_cache.outputs.key }}
+          restore-keys: ${{ steps.extension_cache.outputs.key }}
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php_version }}
           tools: composer:v2
+          extensions: ${{ env.php_extensions }}
 
       - name: Checkout
         uses: actions/checkout@v2
