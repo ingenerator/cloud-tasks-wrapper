@@ -1,5 +1,13 @@
 ## Unreleased
 
+## v0.5.6 (2024-02-28)
+
+* Require google/gax:^1.29.1 for the new InsecureCredentialsWrapper class for emulator connections.
+  Google have moved this class to google/gax (from google/cloud-core) as part of the followup to the
+  gax release that broke the cloud-core version. We can now require that directly, because 
+  google/cloud-tasks already requires it. This also means that consuming projects no longer need to
+  explicitly require google/cloud-core just to use a Cloud Tasks emulator.
+
 ## v0.5.5 (2024-02-14)
 
 * Support psr/http-message:^2.0
