@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.5.7 (2024-10-01)
+
+* Support PHP 8.3
+
 ## v0.5.6 (2024-02-28)
 
 * Require google/gax:^1.29.1 for the new InsecureCredentialsWrapper class for emulator connections.
