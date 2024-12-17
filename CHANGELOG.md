@@ -3,6 +3,7 @@
 ## v0.5.8 (2024-12-17)
 
 * Require google/protobuf 4.x instead of 3.x
+* Drop support for psr/http-message<2, ingenerator/php-utils<2, ingenerator/oidc-token-verifier<1
 
 ## v0.5.7 (2024-10-01)
 
