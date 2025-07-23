@@ -14,68 +14,33 @@ jobs:
       fail-fast: false
       matrix:
         php_version:
-          - '8.2'
-          - '8.3'
-        dependencies:
-          - 'default'
-        include:
-          - php_version: '8.2'
-            dependencies: 'lowest'
-          - php_version: '8.3'
-            dependencies: 'lowest'
+        - '8.2'
+        - '8.3'
+        - '8.4'
+        dependency-versions:
+        - 'lowest'
+        - 'default'
     env:
       php_extensions: grpc, protobuf
+
     steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php_version }}
+        tools: composer:v2
+        extensions: ${{ env.php_extensions }}
 
-      - name: Setup extension cache
-        id: extension_cache
-        uses: shivammathur/cache-extensions@v1
-        with:
-          php-version: ${{ matrix.php_version }}
-          extensions: ${{ env.php_extensions }}
-          # NB the extension cache has an indefinite expiry, manually bump this key to trigger extension updates
-          key: extensions-cache-v1
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        show-progress: false
 
-      - name: Cache extensions
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.extension_cache.outputs.dir }}
-          key: ${{ steps.extension_cache.outputs.key }}
-          restore-keys: ${{ steps.extension_cache.outputs.key }}
+    - name: Install composer dependencies
+      uses: ramsey/composer-install@v3
+      with:
+        dependency-versions: ${{ matrix.dependency-versions }}
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php_version }}
-          tools: composer:v2
-          extensions: ${{ env.php_extensions }}
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ matrix.dependencies }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-${{ matrix.dependencies }}
-
-      - name: Install composer dependencies
-        env:
-          DEPENDENCIES: ${{ matrix.dependencies }}
-        run: |
-          if [ $DEPENDENCIES == 'lowest' ]
-          then
-            composer update --prefer-lowest --no-interaction --no-suggest --no-progress
-          else
-            composer install --no-interaction --no-suggest --no-progress
-          fi
-
-      - name: Run unit tests
-        run: |
-          vendor/bin/phpunit
+    - name: Run unit tests
+      run: |
+        vendor/bin/phpunit
