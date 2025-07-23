@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.5.9 (2025-07-23)
+
+* Support PHP 8.4
+
 ## v0.5.8 (2024-12-17)
 
 * Require google/protobuf 4.x instead of 3.x
