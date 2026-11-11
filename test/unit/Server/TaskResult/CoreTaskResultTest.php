@@ -4,6 +4,9 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TaskResult;
 
 
+use Error;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
@@ -12,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTaskResultTest extends TestCase
 {
-    public function provider_status_constructors()
+    public static function provider_status_constructors()
     {
         /**
          * This data provider and test is a sanity test that:
@@ -23,7 +26,7 @@ class CoreTaskResultTest extends TestCase
          */
         $mutex_exception   = new MutexTimedOutException('ab', '15', 1);
         $invalid_exception = new CloudTaskCannotBeValidException('It has no info');
-        $misc_e            = new \Error('That was an error');
+        $misc_e            = new Error('That was an error');
 
         $codes = \array_fill_keys(
             ConstantDirectory::forClass(CoreTaskResult::class)->listConstants(),
@@ -88,9 +91,7 @@ class CoreTaskResultTest extends TestCase
         return $cases;
     }
 
-    /**
-     * @dataProvider provider_status_constructors
-     */
+    #[DataProvider('provider_status_constructors')]
     public function test_it_has_named_constructor_for_each_status_and_can_be_created(
         string $method,
         ?array $args,
@@ -100,7 +101,7 @@ class CoreTaskResultTest extends TestCase
             $this->fail('No testcase defined for CoreTaskResult::'.$method);
         }
         $result = \call_user_func_array(CoreTaskResult::class.'::'.$method, $args);
-        /** @var \Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult $result */
+        /** @var TaskHandlerResult $result */
         $this->assertSame(
             array_merge(['code' => $method], $expect),
             $result->toArray()

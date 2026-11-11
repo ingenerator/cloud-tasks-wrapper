@@ -13,7 +13,7 @@ class CloudTasksClientFactoryTest extends TestCase
 
     public function test_it_can_create_client_when_called_with_emulator_configuration()
     {
-        $cache = $this->getMockBuilder(CacheItemPoolInterface::class)->getMock();
+        $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [
             'use_emulator' => true,
             'emulator_endpoint' => 'cloud_tasks_emulator:8123',
@@ -24,13 +24,13 @@ class CloudTasksClientFactoryTest extends TestCase
 
     public function test_it_can_create_client_when_called_with_production_configuration()
     {
-        $cache = $this->getMockBuilder(CacheItemPoolInterface::class)->getMock();
+        $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [
             'use_emulator' => false,
             // NB that the emulator_endpoint is not relevant here, but it doesn't matter
             // if a project still provides it.
             'emulator_endpoint' => 'cloud_tasks_emulator:8123',
-            'credentials' => $this->getMockBuilder(CredentialsWrapper::class)->disableOriginalConstructor()->getMock(),
+            'credentials' => $this->createStub(CredentialsWrapper::class),
         ]);
         $this->assertInstanceOf(CloudTasksClient::class, $client);
     }
