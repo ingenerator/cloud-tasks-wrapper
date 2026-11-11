@@ -24,7 +24,7 @@
         "ext-grpc": "*",
         "fig/log-test": "^1.1",
         "guzzlehttp/psr7": "^2.6",
-        "phpunit/phpunit": "^9.6.23"
+        "phpunit/phpunit": "^13.4"
     },
     "repositories": [
         {"type": "composer", "url": "https://php-packages.ingenerator.com"}

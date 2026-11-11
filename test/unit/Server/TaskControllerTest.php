@@ -4,15 +4,14 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 
+use InvalidArgumentException;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskController;
-use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
-use Ingenerator\CloudTasksWrapper\Server\UnknownTaskTypeException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\ArrayTaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use PHPUnit\Framework\TestCase;
@@ -37,8 +36,8 @@ class TaskControllerTest extends TestCase
     {
         $this->url_pattern = '#/all-my-tasks(.+)#';
         $subject           = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('task_type');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains('task_type');
         $subject->handle(new ServerRequest('POST', '/all-my-tasks/anything'));
     }
 
@@ -46,8 +45,8 @@ class TaskControllerTest extends TestCase
     {
         $this->url_pattern = '#/all-my-tasks/(?P<task_type>.+)$#';
         $subject           = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('does not match');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains('does not match');
         $subject->handle(new ServerRequest('POST', '/not-a-task'));
     }
 

@@ -4,6 +4,9 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 
+use DateTimeImmutable;
+use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
@@ -16,6 +19,8 @@ use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
@@ -23,11 +28,11 @@ use Psr\Log\Test\TestLogger;
 class CloudTaskCreatorTest extends TestCase
 {
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject
+     * @var MockObject
      */
     protected $tasks_client;
     /**
-     * @var \Psr\Log\NullLogger
+     * @var NullLogger
      */
     protected $logger;
 
@@ -38,11 +43,8 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
-    /**
-     * @testWith [{}, ""]
-     *           [{"body":"any body"}, "any body"]
-     *           // tests for JSON / form etc are covered by the tests on CreateTaskOptions
-     */
+    #[TestWith([[], ""])]
+    #[TestWith([["body" => "any body"], "any body"])]
     public function test_it_adds_body_and_headers_if_provided($opts, $expect_body)
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
@@ -50,10 +52,8 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
     }
 
-    /**
-     * @testWith ["someone@service.com",true, "someone@service.com"]
-     *           ["anonymous", false, null]
-     */
+    #[TestWith(["someone@service.com", TRUE, "someone@service.com"])]
+    #[TestWith(["anonymous", FALSE, NULL])]
     public function test_it_adds_oidc_token_for_task_unless_task_type_is_configured_anonymous(
         $signer,
         $expect_has_oidc,
@@ -74,11 +74,9 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    /**
-     * @testWith [{"custom_token_audience": null}, ""]
-     *           [{}, ""]
-     *           [{"custom_token_audience": "pick-me!"}, "pick-me!"]
-     */
+    #[TestWith([["custom_token_audience" => null], ""])]
+    #[TestWith([[], ""])]
+    #[TestWith([["custom_token_audience" => "pick-me!"], "pick-me!"])]
     public function test_it_configures_custom_audience_for_authenticated_task_if_configured($config, $expect)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
@@ -92,7 +90,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
     }
 
-    public function provider_task_url()
+    public static function provider_task_url(): array
     {
         return [
             'just from config, no query'                                                 => [
@@ -121,9 +119,7 @@ class CloudTaskCreatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provider_task_url
-     */
+    #[DataProvider('provider_task_url')]
     public function test_it_sets_task_to_post_to_custom_or_config_url_optionally_adding_query_params($opts, $expect)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
@@ -136,10 +132,8 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
-    /**
-     * @testWith [{}, ""]
-     *           [{"task_id": "absad237"}, "absad237"]
-     */
+    #[TestWith([[], ""])]
+    #[TestWith([["task_id" => "absad237"], "absad237"])]
     public function test_it_adds_task_name_from_id_if_provided($opts, $expect_id)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
@@ -158,10 +152,8 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect_name, $task->getName());
     }
 
-    /**
-     * @testWith [{}, []]
-     *           [{"headers": {"X-SomeThing": "This"}}, {"X-SomeThing": "This"}]
-     */
+    #[TestWith([[], []])]
+    #[TestWith([["headers" => ["X-SomeThing" => "This"]], ["X-SomeThing" => "This"]])]
     public function test_it_adds_http_headers_if_provided($opts, $expect)
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
@@ -169,7 +161,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect, \iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
-    public function provider_schedule_time()
+    public static function provider_schedule_time(): array
     {
         $ts = time() + 500;
 
@@ -177,7 +169,7 @@ class CloudTaskCreatorTest extends TestCase
             [[], NULL],
             [
                 [
-                    'schedule_send_after' => \DateTimeImmutable::createFromFormat(
+                    'schedule_send_after' => DateTimeImmutable::createFromFormat(
                         'U.u',
                         "$ts.123456"
                     ),
@@ -187,9 +179,7 @@ class CloudTaskCreatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provider_schedule_time
-     */
+    #[DataProvider('provider_schedule_time')]
     public function test_it_adds_timestamp_for_scheduled_time_if_provided($opts, $expect)
     {
         $this->newSubject()->create('any-old-job', new CreateTaskOptions($opts));
@@ -368,7 +358,7 @@ class TasksClientSpy extends CloudTasksClient
 
     public function __construct() { }
 
-    public static function willThrowOnCreate(\Exception $e)
+    public static function willThrowOnCreate(Exception $e)
     {
         $i                    = new static;
         $i->create_will_throw = $e;

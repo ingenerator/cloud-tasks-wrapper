@@ -4,6 +4,8 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
@@ -51,7 +53,7 @@ class TaskResultCodeMapperTest extends TestCase
     {
         $result  = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $subject->getHttpResponse($result);
     }
 
@@ -59,20 +61,18 @@ class TaskResultCodeMapperTest extends TestCase
     {
         $result  = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $subject->getLogLevel($result);
     }
 
-    public function provider_core_task_results(): array
+    public static function provider_core_task_results(): array
     {
         $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
 
         return array_map(function (string $code) { return [$code]; }, $consts);
     }
 
-    /**
-     * @dataProvider provider_core_task_results
-     */
+    #[DataProvider('provider_core_task_results')]
     public function test_its_default_mapping_defines_values_for_all_core_task_results($code)
     {
         $result   = new ArbitraryTaskResult($code);
@@ -91,7 +91,7 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public function provider_code_overrides(): array
+    public static function provider_code_overrides(): array
     {
         return [
             [
@@ -100,7 +100,7 @@ class TaskResultCodeMapperTest extends TestCase
                 ['http' => 281, 'loglevel' => LogLevel::WARNING] // Uses default loglevel
             ],
             [
-                [\Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
+                [CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
                 CoreTaskResult::MUTEX_TIMEOUT,
                 ['http' => 409, 'loglevel' => LogLevel::EMERGENCY] // Uses default http code
             ],
@@ -117,9 +117,7 @@ class TaskResultCodeMapperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provider_code_overrides
-     */
+    #[DataProvider('provider_code_overrides')]
     public function test_users_can_override_behaviour_of_core_codes($custom_codes, $code, $expect)
     {
         $this->custom_codes = $custom_codes;

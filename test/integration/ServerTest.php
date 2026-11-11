@@ -4,6 +4,9 @@
 namespace test\integration;
 
 
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
+use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Psr\Http\Message\ServerRequestInterface;
 use Firebase\JWT\JWT;
 use Google\Auth\Cache\MemoryCacheItemPool;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -72,8 +75,8 @@ class ServerTest extends TestCase
         return new class implements TaskHandler {
 
             public function handle(
-                \Ingenerator\CloudTasksWrapper\Server\TaskRequest $request
-            ): \Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult {
+                TaskRequest $request
+            ): TaskHandlerResult {
                 return new ArbitraryTaskResult(
                     'customTaskResult',
                     'Got task from '.$request->getCallerEmail(),
@@ -117,7 +120,7 @@ class ServerTest extends TestCase
      * @param string $handler_url
      * @param string $signer_email
      *
-     * @return ServerRequest|\Psr\Http\Message\ServerRequestInterface
+     * @return ServerRequest|ServerRequestInterface
      */
     private function makeServerRequest(string $handler_url, string $signer_email)
     {

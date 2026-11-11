@@ -4,7 +4,7 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 
-use GuzzleHttp\Psr7\ServerRequest;
+use UnderflowException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
@@ -26,7 +26,7 @@ class TaskHandlerChainTest extends TestCase
     {
         $this->middlewares = [TestMiddleware::neverCalled()];
         $subject           = $this->newSubject();
-        $this->expectException(\UnderflowException::class);
+        $this->expectException(UnderflowException::class);
         $subject->nextHandler(TaskRequestStub::any());
     }
 

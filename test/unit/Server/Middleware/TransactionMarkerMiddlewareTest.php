@@ -58,7 +58,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
 
     public function test_it_does_not_run_if_request_is_before_expiry()
     {
-        $future = DateString::ymdhis(new \DateTimeImmutable('tomorrow'));
+        $future = DateString::ymdhis(new DateTimeImmutable('tomorrow'));
 
         $request = TaskRequestStub::with(
             ['headers' => ['X-Transaction' => 'abcd-1234', 'X-Transaction-Expire' => $future]]
