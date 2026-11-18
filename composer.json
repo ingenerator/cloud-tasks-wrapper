@@ -13,7 +13,7 @@
     "require": {
         "php": "~8.4.0 || ~8.5.0 || ~8.6.0",
         "ext-bcmath": "*",
-        "google/cloud-tasks": "^1.15.2",
+        "google/cloud-tasks": "^2.0",
         "google/gax": "^1.29.1",
         "google/protobuf": "^v5.34",
         "ingenerator/oidc-token-verifier": "^1.6",
