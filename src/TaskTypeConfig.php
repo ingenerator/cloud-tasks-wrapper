@@ -4,7 +4,7 @@
 namespace Ingenerator\CloudTasksWrapper;
 
 
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 
 /**
