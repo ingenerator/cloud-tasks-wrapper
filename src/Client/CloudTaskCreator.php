@@ -6,7 +6,7 @@ namespace Ingenerator\CloudTasksWrapper\Client;
 
 use DateTimeImmutable;
 use Google\ApiCore\ApiException;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\HttpRequest;
 use Google\Cloud\Tasks\V2\OidcToken;
@@ -19,18 +19,20 @@ use Psr\Log\LoggerInterface;
 
 class CloudTaskCreator implements TaskCreator
 {
-    protected CloudTasksClient $client;
+    protected CloudTasksClientInterface $client;
 
     protected TaskTypeConfigProvider $task_config;
 
     protected LoggerInterface $logger;
 
     public function __construct(
-        CloudTasksClient $client,
+        CloudTasksClient|CloudTasksClientInterface $client,
         TaskTypeConfigProvider $task_config,
         LoggerInterface $logger
     ) {
-        $this->client      = $client;
+        $this->client      = $client instanceof CloudTasksClientInterface
+            ? $client
+            : new CloudTasksClientAdapter($client);
         $this->task_config = $task_config;
         $this->logger      = $logger;
     }

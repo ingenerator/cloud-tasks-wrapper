@@ -3,7 +3,7 @@
 namespace test\integration;
 
 use Google\ApiCore\CredentialsWrapper;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Ingenerator\CloudTasksWrapper\Client\CloudTasksClientFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;

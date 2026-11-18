@@ -5,7 +5,7 @@ namespace Ingenerator\CloudTasksWrapper\Client;
 
 
 use Google\ApiCore\InsecureCredentialsWrapper;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Psr\Cache\CacheItemPoolInterface;
