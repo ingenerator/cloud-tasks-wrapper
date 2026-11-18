@@ -8,7 +8,7 @@ use UnderflowException;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Google\ApiCore\ApiStatus;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use PHPUnit\Framework\TestCase;
 
 class TaskTypeConfigProviderTest extends TestCase
