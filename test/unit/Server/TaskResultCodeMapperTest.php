@@ -89,6 +89,9 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
+    /**
+     * @return array<int, array<array<string, array<string, int|string>|int|string>|string>>
+     */
     public static function provider_code_overrides(): array
     {
         return [

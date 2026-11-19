@@ -17,6 +17,9 @@ class TaskRequestStub extends TaskRequest
         );
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public static function with(array $options): TaskRequest
     {
         $defaults = [

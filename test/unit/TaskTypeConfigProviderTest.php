@@ -158,6 +158,9 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
+    /**
+     * @return array<int, array<string, array<array<string, int>|string>|bool|float|int>[]>
+     */
     public static function provider_custom_retry(): array
     {
         return [

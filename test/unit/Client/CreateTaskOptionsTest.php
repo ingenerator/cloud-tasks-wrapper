@@ -18,6 +18,9 @@ class CreateTaskOptionsTest extends TestCase
         $this->assertInstanceOf(CreateTaskOptions::class, new CreateTaskOptions([]));
     }
 
+    /**
+     * @return array<int, mixed[]>
+     */
     public static function provider_invalid_args(): array
     {
         return [
@@ -75,6 +78,9 @@ class CreateTaskOptionsTest extends TestCase
         new CreateTaskOptions($args);
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     #[TestWith([['query' => ['foo' => 'bar']], true])]
     #[TestWith([['query' => null], false])]
     #[TestWith([[], false])]
@@ -106,6 +112,9 @@ class CreateTaskOptionsTest extends TestCase
         }
     }
 
+    /**
+     * @return array<int, mixed[]>
+     */
     public static function provider_body_encoding(): array
     {
         return [
@@ -161,6 +170,9 @@ class CreateTaskOptionsTest extends TestCase
         $this->assertSame($expect_raw_body, $subject->getBodyContent());
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     #[TestWith([[], null])]
     #[TestWith([['task_id' => 'absad237'], '/some/queue/path/tasks/absad237'])]
     #[TestWith([['task_id_from' => 'some application string'], '/some/queue/path/tasks/4b8c4feeb019bce54dc03b087553ae8d5066115ccf5221a1dca26a8fdec9c50e'])]

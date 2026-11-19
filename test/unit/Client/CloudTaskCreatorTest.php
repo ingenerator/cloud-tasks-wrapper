@@ -91,6 +91,9 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
     }
 
+    /**
+     * @return array<string, mixed[]>
+     */
     public static function provider_task_url(): array
     {
         return [
@@ -162,6 +165,9 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect, iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
+    /**
+     * @return array<int, bool[][]|DateTimeImmutable[][]|int[][]|null[]>
+     */
     public static function provider_schedule_time(): array
     {
         $ts = time() + 500;

@@ -46,6 +46,9 @@ abstract class TaskHandlerResult
         return $this->code;
     }
 
+    /**
+     * @return array<string, mixed[]|string>
+     */
     public function toArray(): array
     {
         return [

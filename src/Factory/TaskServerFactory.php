@@ -30,6 +30,8 @@ class TaskServerFactory
      *
      * For more advanced customisation you can of course replace this with an equivalent implementation / dependency
      * container config.
+     *
+     * @param array<string, mixed> $server_config
      */
     public static function makeController(
         LoggerInterface $logger,

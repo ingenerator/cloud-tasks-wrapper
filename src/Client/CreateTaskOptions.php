@@ -111,6 +111,8 @@ class CreateTaskOptions
      * Create an instance.
      *
      * See the class property list for the allowed keys and documentation
+     *
+     * @param array<string, mixed> $options
      */
     public function __construct(array $options)
     {

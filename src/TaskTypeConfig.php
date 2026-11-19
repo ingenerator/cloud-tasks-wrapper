@@ -39,6 +39,9 @@ class TaskTypeConfig
      */
     protected ?string $custom_token_audience = null;
 
+    /**
+     * @param array<string, mixed> $cfg
+     */
     public function __construct(
         /**
          * Internal application-specific identifier for this task type.

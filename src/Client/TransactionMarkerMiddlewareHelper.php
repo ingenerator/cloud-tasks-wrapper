@@ -16,6 +16,9 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 
 class TransactionMarkerMiddlewareHelper
 {
+    /**
+     * @param array<string, mixed> $options
+     */
     public static function addTransactionMarkerHeaders(array $options, string $uuid, DateTimeImmutable $expiry): array
     {
         $options['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER] = $uuid;

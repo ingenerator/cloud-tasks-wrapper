@@ -14,6 +14,9 @@ use function uniqid;
 
 class MockCloudTaskCreator implements TaskCreator
 {
+    /**
+     * @var array<string, mixed[]|string>[]
+     */
     protected array $calls = [];
 
     protected ?Throwable $will_throw = null;
@@ -46,6 +49,9 @@ class MockCloudTaskCreator implements TaskCreator
         Assert::assertSame([], $this->calls);
     }
 
+    /**
+     * @param mixed[][] $expect
+     */
     public function assertQueuedExactly(array $expect): void
     {
         Assert::assertSame(
@@ -68,7 +74,7 @@ class MockCloudTaskCreator implements TaskCreator
     {
         Assert::assertSame(
             [$expect_task_type],
-            \array_map(fn (array $t) => $t['task_type'], $this->calls)
+            \array_map(fn (array $t): string|array => $t['task_type'], $this->calls)
         );
     }
 
@@ -77,6 +83,8 @@ class MockCloudTaskCreator implements TaskCreator
      *
      * The testcase will almost never have the actual object instances that were passed for schedule_send_after
      * or throttle_interval. So they need to be converted to some sort of scalar that we can compare.
+     *
+     * @param array<string, mixed> $opts
      */
     private function convertOptionsToScalars(array $opts): array
     {
