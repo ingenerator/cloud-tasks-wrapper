@@ -165,9 +165,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) {
-                    return new ArbitraryTaskResult('OK', $request->getCallerEmail());
-                }
+                fn (TaskRequest $request) => new ArbitraryTaskResult('OK', $request->getCallerEmail())
             )
         );
 

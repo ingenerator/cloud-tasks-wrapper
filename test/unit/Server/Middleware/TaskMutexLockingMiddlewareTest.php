@@ -29,9 +29,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $result = $this->newSubject()->process(
             TaskRequestStub::with(['url' => $url]),
             TestTaskChain::will(
-                function () {
-                    return new ArbitraryTaskResult('mutex-name', $this->mutex->getCurrentLockName());
-                }
+                fn () => new ArbitraryTaskResult('mutex-name', $this->mutex->getCurrentLockName())
             )
         );
         $this->assertSame($expect_lock_name, $result->getMsg());

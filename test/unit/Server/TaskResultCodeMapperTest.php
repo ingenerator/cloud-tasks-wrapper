@@ -67,7 +67,7 @@ class TaskResultCodeMapperTest extends TestCase
     {
         $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
 
-        return array_map(function (string $code) { return [$code]; }, $consts);
+        return array_map(fn (string $code) => [$code], $consts);
     }
 
     #[DataProvider('provider_core_task_results')]

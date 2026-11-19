@@ -39,9 +39,7 @@ class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
                 // than that we keep lots of blocking locks on our own mysql - NB this entirely independent of
                 // the expected execution time of any particular handler
                 1,
-                function () use ($request, $chain) {
-                    return $chain->nextHandler($request);
-                }
+                fn () => $chain->nextHandler($request)
             );
         } catch (MutexTimedOutException $e) {
             // No problem, we'll let cloud tasks try again shortly

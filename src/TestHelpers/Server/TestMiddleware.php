@@ -18,9 +18,7 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function callsNext(): TestMiddleware
     {
         return new static(
-            function (TaskRequest $req, TaskHandlerChain $chain) {
-                return $chain->nextHandler($req);
-            }
+            fn (TaskRequest $req, TaskHandlerChain $chain) => $chain->nextHandler($req)
         );
     }
 
@@ -34,7 +32,7 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function returnsResult(TaskHandlerResult $result): TestMiddleware
     {
         return new static(
-            function () use ($result) { return $result; }
+            fn () => $result
         );
     }
 

@@ -2,11 +2,11 @@
 
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
-use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use BadMethodCallException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Throwable;
 

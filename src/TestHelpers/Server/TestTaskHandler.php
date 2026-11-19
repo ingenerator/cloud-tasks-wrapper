@@ -34,7 +34,7 @@ class TestTaskHandler implements TaskHandler
 
     public static function returnsResult(TaskHandlerResult $result): TestTaskHandler
     {
-        return new static(function () use ($result) { return $result; });
+        return new static(fn () => $result);
     }
 
     public function __construct(callable $callable)

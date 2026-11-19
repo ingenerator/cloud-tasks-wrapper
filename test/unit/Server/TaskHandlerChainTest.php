@@ -40,7 +40,7 @@ class TaskHandlerChainTest extends TestCase
         $subject->process(
             TaskRequestStub::any(),
             new TestTaskHandler(
-                function () { return new ArbitraryTaskResult('anything'); }
+                fn () => new ArbitraryTaskResult('anything')
             )
         );
         $this->assertSame(

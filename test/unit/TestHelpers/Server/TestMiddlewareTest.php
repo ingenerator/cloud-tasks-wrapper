@@ -43,7 +43,7 @@ class TestMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->callable = function () { return new ArbitraryTaskResult('anything'); };
+        $this->callable = (fn () => new ArbitraryTaskResult('anything'));
     }
 
     protected function newSubject(): TestMiddleware

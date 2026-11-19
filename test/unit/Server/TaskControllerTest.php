@@ -70,9 +70,7 @@ class TaskControllerTest extends TestCase
         $this->handler_factory = new ArrayTaskHandlerFactory(
             [
                 'this-task' => new TestTaskHandler(
-                    function (TaskRequest $req) {
-                        return CoreTaskResult::success($req->getTaskType());
-                    }
+                    fn (TaskRequest $req) => CoreTaskResult::success($req->getTaskType())
                 ),
                 'other-task' => TestTaskHandler::neverCalled(),
             ]
