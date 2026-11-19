@@ -114,6 +114,7 @@ class CreateTaskOptions
     ) {
         $this->_create_time = $this->_raw_options['_create_time'] ?? new DateTimeImmutable();
         $options = $this->_raw_options;
+        unset($options['_create_time']);
         $encoded = $this->encodeBodyOption($options['body'] ?? null);
         if ($encoded) {
             $options['body'] = $encoded['body'];
