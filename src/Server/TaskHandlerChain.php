@@ -59,7 +59,7 @@ class TaskHandlerChain
 
     public function nextHandler(TaskRequest $request): TaskHandlerResult
     {
-        if (!$this->handler) {
+        if (!$this->handler instanceof TaskHandler) {
             throw new UnderflowException('No TaskHandler was provided to '.self::class);
         }
         if ($middleware = array_shift($this->middlewares)) {

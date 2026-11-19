@@ -34,7 +34,7 @@ class MockCloudTaskCreator implements TaskCreator
             'options' => $this->convertOptionsToScalars($options->getRawOptions()),
         ];
 
-        if ($this->will_throw) {
+        if ($this->will_throw instanceof Throwable) {
             throw $this->will_throw;
         }
 

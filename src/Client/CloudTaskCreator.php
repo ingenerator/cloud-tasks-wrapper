@@ -122,7 +122,7 @@ class CloudTaskCreator implements TaskCreator
 
     protected function toTimestampOrNull(?DateTimeImmutable $datetime): ?Timestamp
     {
-        if ($datetime === null) {
+        if (!$datetime instanceof DateTimeImmutable) {
             return null;
         }
 
