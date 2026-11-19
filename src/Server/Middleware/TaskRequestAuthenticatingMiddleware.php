@@ -17,15 +17,8 @@ use function sprintf;
 
 class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
 {
-    protected TaskTypeConfigProvider $task_type_config;
-    protected TokenVerifier $token_verifier;
-
-    public function __construct(
-        TaskTypeConfigProvider $task_type_config,
-        TokenVerifier $oidc_token_verifier,
-    ) {
-        $this->task_type_config = $task_type_config;
-        $this->token_verifier = $oidc_token_verifier;
+    public function __construct(protected TaskTypeConfigProvider $task_type_config, protected TokenVerifier $token_verifier)
+    {
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult

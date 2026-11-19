@@ -13,26 +13,20 @@ namespace Ingenerator\CloudTasksWrapper\Server;
  */
 abstract class TaskHandlerResult
 {
-    /**
-     * @var string internal status code
-     */
-    protected string $code;
-
-    /**
-     * @var string short status message for logging etc
-     */
-    protected string $msg;
-
-    /**
-     * @var array any extra values to pass along to the logger
-     */
-    protected array $log_context;
-
-    protected function __construct(string $code, string $msg, array $log_context = [])
-    {
-        $this->code = $code;
-        $this->msg = $msg;
-        $this->log_context = $log_context;
+    protected function __construct(
+        /**
+         * @var string internal status code
+         */
+        protected string $code,
+        /**
+         * @var string short status message for logging etc
+         */
+        protected string $msg,
+        /**
+         * @var array any extra values to pass along to the logger
+         */
+        protected array $log_context = [],
+    ) {
     }
 
     public function getMsg(): string

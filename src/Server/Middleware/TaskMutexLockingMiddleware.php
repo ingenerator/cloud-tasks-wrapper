@@ -22,11 +22,8 @@ use function hash;
  */
 class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
 {
-    protected MutexWrapper $mutex;
-
-    public function __construct(MutexWrapper $mutex)
+    public function __construct(protected MutexWrapper $mutex)
     {
-        $this->mutex = $mutex;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult

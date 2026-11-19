@@ -20,11 +20,8 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
     public const TRANSACTION_MARKER_HEADER = 'X-Transaction';
     public const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
 
-    private TransactionMarkerRepository $transaction_marker_repo;
-
-    public function __construct(TransactionMarkerRepository $transaction_marker_repo)
+    public function __construct(private TransactionMarkerRepository $transaction_marker_repo)
     {
-        $this->transaction_marker_repo = $transaction_marker_repo;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult

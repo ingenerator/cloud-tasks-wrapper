@@ -10,24 +10,8 @@ use function preg_match;
 
 class TaskController
 {
-    protected TaskHandlerChain $chain;
-
-    protected TaskHandlerFactory $handler_factory;
-
-    protected TaskResultCodeMapper $result_mapper;
-
-    protected string $url_pattern;
-
-    public function __construct(
-        TaskHandlerChain $chain,
-        TaskHandlerFactory $handler_factory,
-        TaskResultCodeMapper $result_mapper,
-        string $url_pattern,
-    ) {
-        $this->chain = $chain;
-        $this->handler_factory = $handler_factory;
-        $this->url_pattern = $url_pattern;
-        $this->result_mapper = $result_mapper;
+    public function __construct(protected TaskHandlerChain $chain, protected TaskHandlerFactory $handler_factory, protected TaskResultCodeMapper $result_mapper, protected string $url_pattern)
+    {
     }
 
     public function handle(ServerRequestInterface $request): TaskResponse

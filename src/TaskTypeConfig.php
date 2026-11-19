@@ -39,16 +39,15 @@ class TaskTypeConfig
      */
     protected ?string $custom_token_audience = null;
 
-    /**
-     * Internal application-specific identifier for this task type.
-     */
-    protected string $task_type;
-
-    public function __construct(string $task_type, array $cfg)
-    {
-        $this->task_type = $task_type;
+    public function __construct(
+        /**
+         * Internal application-specific identifier for this task type.
+         */
+        protected string $task_type,
+        array $cfg,
+    ) {
         if (isset($cfg['handler_url'])) {
-            $cfg['handler_url'] = str_replace('{TASK_TYPE}', $task_type, $cfg['handler_url']);
+            $cfg['handler_url'] = str_replace('{TASK_TYPE}', $this->task_type, $cfg['handler_url']);
         }
         ObjectPropertyPopulator::assignHash($this, $cfg);
     }

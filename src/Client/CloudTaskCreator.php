@@ -21,20 +21,14 @@ class CloudTaskCreator implements TaskCreator
 {
     protected CloudTasksClientInterface $client;
 
-    protected TaskTypeConfigProvider $task_config;
-
-    protected LoggerInterface $logger;
-
     public function __construct(
         CloudTasksClient|CloudTasksClientInterface $client,
-        TaskTypeConfigProvider $task_config,
-        LoggerInterface $logger,
+        protected TaskTypeConfigProvider $task_config,
+        protected LoggerInterface $logger,
     ) {
         $this->client = $client instanceof CloudTasksClientInterface
             ? $client
             : new CloudTasksClientAdapter($client);
-        $this->task_config = $task_config;
-        $this->logger = $logger;
     }
 
     public function create(string $task_type_name, ?CreateTaskOptions $options = null): string
