@@ -29,7 +29,7 @@ class TestMiddlewareTest extends TestCase
     {
         $result = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();
-        $this->callable = function (TaskRequest $r) use ($request, $result) {
+        $this->callable = function (TaskRequest $r) use ($request, $result): ArbitraryTaskResult {
             $this->assertSame($request, $r);
 
             return $result;

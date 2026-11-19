@@ -17,7 +17,7 @@ class TestTaskHandler implements TaskHandler
         TaskHandlerResult $result,
     ): TestTaskHandler {
         return new static(
-            function ($got_req) use ($expect_req, $result) {
+            function ($got_req) use ($expect_req, $result): TaskHandlerResult {
                 Assert::assertSame($expect_req, $got_req);
 
                 return $result;

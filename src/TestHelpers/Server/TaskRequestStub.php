@@ -50,12 +50,12 @@ class TaskRequestStub extends TaskRequest
         return $req;
     }
 
-    public static function withAuthToken(string $token = 'abc1234')
+    public static function withAuthToken(string $token = 'abc1234'): TaskRequest
     {
         return static::with(['headers' => ['Authorization' => 'Bearer '.$token]]);
     }
 
-    public static function withQuery(array $query)
+    public static function withQuery(array $query): TaskRequest
     {
         return static::with(['query' => $query]);
     }

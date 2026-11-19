@@ -78,7 +78,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar']], true])]
     #[TestWith([['query' => null], false])]
     #[TestWith([[], false])]
-    public function testItCanHaveQuery($opts, $expect): void
+    public function testItCanHaveQuery(array $opts, $expect): void
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->hasQuery());
@@ -169,7 +169,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'query' => ['foo' => 'bar']], '/some/queue/path/tasks/59c9944a18e175c30831ce9b7ded47bc48aba09f8b0e920f21c44d7e72b6b2fe'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'headers' => ['X-foo' => 'bar']], '/some/queue/path/tasks/8dbbc54179cb185b6ff25c4765403adea4692aa35f69594af1ab3b254e3dcd15'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'schedule_send_after' => '2020-09-04 00:00:00 +01:00'], '/some/queue/path/tasks/90372598891aabbb05ea2461ff3164aba8fd7e9de42d9c9f5418309cb9a015dc'])]
-    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue($opts, $expect): void
+    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue(array $opts, $expect): void
     {
         if (isset($opts['schedule_send_after'])) {
             $opts['schedule_send_after'] = new DateTimeImmutable($opts['schedule_send_after']);

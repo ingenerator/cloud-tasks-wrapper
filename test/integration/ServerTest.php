@@ -7,7 +7,6 @@ use Google\Auth\Cache\MemoryCacheItemPool;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
-use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\ArrayTaskHandlerFactory;
@@ -74,7 +73,7 @@ class ServerTest extends TestCase
         return new class implements TaskHandler {
             public function handle(
                 TaskRequest $request,
-            ): TaskHandlerResult {
+            ): ArbitraryTaskResult {
                 return new ArbitraryTaskResult(
                     'customTaskResult',
                     'Got task from '.$request->getCallerEmail(),
@@ -116,7 +115,7 @@ class ServerTest extends TestCase
     /**
      * @return ServerRequest|ServerRequestInterface
      */
-    private function makeServerRequest(string $handler_url, string $signer_email)
+    private function makeServerRequest(string $handler_url, string $signer_email): ServerRequestInterface
     {
         $req = new ServerRequest(
             'POST',

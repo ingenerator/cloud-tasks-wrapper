@@ -43,7 +43,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) use ($parsed_body) {
+                function (TaskRequest $request) use ($parsed_body): ArbitraryTaskResult {
                     // assert here to test parsed body is correct on the way in
                     $this->assertSame($parsed_body, $request->getHttpRequest()->getParsedBody());
 
@@ -75,7 +75,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $actual_result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) use ($result) {
+                function (TaskRequest $request) use ($result): ArbitraryTaskResult {
                     $this->assertSame(
                         ['A' => [1, 2, 3]],
                         $request->getHttpRequest()->getParsedBody(),

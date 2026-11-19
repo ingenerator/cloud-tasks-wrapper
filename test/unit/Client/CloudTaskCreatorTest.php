@@ -360,7 +360,7 @@ class TasksClientSpy implements CloudTasksClientInterface
     {
     }
 
-    public static function willThrowOnCreate(Exception $e)
+    public static function willThrowOnCreate(Exception $e): static
     {
         $i = new static();
         $i->create_will_throw = $e;

@@ -18,7 +18,7 @@ class MockCloudTaskCreator implements TaskCreator
 
     protected ?Throwable $will_throw = null;
 
-    public static function willThrow(?Throwable $e = null)
+    public static function willThrow(?Throwable $e = null): static
     {
         $i = new static();
         $i->will_throw = $e ?? new TaskCreationFailedException('Failed to create task');
@@ -50,7 +50,7 @@ class MockCloudTaskCreator implements TaskCreator
     {
         Assert::assertSame(
             array_map(
-                function ($call) {
+                function (array $call): array {
                     $call['options'] = $this->convertOptionsToScalars($call['options']);
 
                     return $call;

@@ -116,7 +116,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->newSubject()->process(
             TaskRequestStub::any(),
             TestTaskChain::will(
-                function () {
+                function (): ArbitraryTaskResult {
                     $this->clock->tickMicroseconds(213204);
 
                     return new ArbitraryTaskResult('someCustomCode');
