@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
@@ -12,7 +14,7 @@ use Ingenerator\PHPUtils\Mutex\MockMutexWrapper;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
-class TaskMutexLockingMiddlewareTest extends TestCase
+final class TaskMutexLockingMiddlewareTest extends TestCase
 {
     protected MockMutexWrapper $mutex;
 

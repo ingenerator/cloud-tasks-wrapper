@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
@@ -16,7 +18,7 @@ use Psr\Log\Test\TestLogger;
 
 use function array_shift;
 
-class TaskLoggingMiddlewareTest extends TestCase
+final class TaskLoggingMiddlewareTest extends TestCase
 {
     protected LoggerInterface $logger;
 

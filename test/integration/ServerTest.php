@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\integration;
 
 use Firebase\JWT\JWT;
@@ -21,7 +23,7 @@ use function file_get_contents;
 use function parse_str;
 use function parse_url;
 
-class ServerTest extends TestCase
+final class ServerTest extends TestCase
 {
     public function testItCanProcessSuccessfulTasks(): void
     {

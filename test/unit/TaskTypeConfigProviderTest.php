@@ -7,11 +7,12 @@ namespace Ingenerator\CloudTasksWrapper;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use InvalidArgumentException;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
 
-class TaskTypeConfigProviderTest extends TestCase
+final class TaskTypeConfigProviderTest extends TestCase
 {
     protected array $config = [
         '_default' => [
@@ -159,38 +160,36 @@ class TaskTypeConfigProviderTest extends TestCase
     }
 
     /**
-     * @return array<int, array<string, array<array<string, int>|string>|bool|float|int>[]>
+     * @return Iterator<int, array<string, array<array<string, int>|string>|bool|float|int>[]>
      */
-    public static function provider_custom_retry(): array
+    public static function provider_custom_retry(): Iterator
     {
-        return [
+        yield [
+            // Override one prop for all methods
             [
-                // Override one prop for all methods
-                [
-                    '_default' => ['create_retry_settings' => ['retryDelayMultiplier' => 5]],
-                    'some-task' => [],
-                ],
-                [
-                    'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier' => 5,
-                    'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled' => true,
-                ],
+                '_default' => ['create_retry_settings' => ['retryDelayMultiplier' => 5]],
+                'some-task' => [],
             ],
             [
-                // Override for a single task type
-                [
-                    '_default' => ['create_retry_settings' => ['maxRetryDelayMillis' => 5000]],
-                    'some-task' => ['create_retry_settings' => ['maxRetryDelayMillis' => 20000]],
-                ],
-                [
-                    'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier' => 1.3,
-                    'maxRetryDelayMillis' => 20000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled' => true,
-                ],
+                'initialRetryDelayMillis' => 100,
+                'retryDelayMultiplier' => 5,
+                'maxRetryDelayMillis' => 10000,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                'retriesEnabled' => true,
+            ],
+        ];
+        yield [
+            // Override for a single task type
+            [
+                '_default' => ['create_retry_settings' => ['maxRetryDelayMillis' => 5000]],
+                'some-task' => ['create_retry_settings' => ['maxRetryDelayMillis' => 20000]],
+            ],
+            [
+                'initialRetryDelayMillis' => 100,
+                'retryDelayMultiplier' => 1.3,
+                'maxRetryDelayMillis' => 20000,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                'retriesEnabled' => true,
             ],
         ];
     }

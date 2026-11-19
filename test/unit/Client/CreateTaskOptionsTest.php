@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 use DateInterval;
@@ -7,11 +9,12 @@ use DateTimeImmutable;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
 use InvalidArgumentException;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
-class CreateTaskOptionsTest extends TestCase
+final class CreateTaskOptionsTest extends TestCase
 {
     public function testItIsInitialisable(): void
     {
@@ -19,54 +22,52 @@ class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return array<int, mixed[]>
+     * @return Iterator<int, mixed[]>
      */
-    public static function provider_invalid_args(): array
+    public static function provider_invalid_args(): Iterator
     {
-        return [
-            [
-                ['unknown_prop' => 'anything'],
-                'unknown_prop',
-            ],
-            [
-                ['body' => ['unexpected']],
-                'body',
-            ],
-            [
-                // Can't specify both `form` and `json` body types
-                ['body' => ['form' => ['foo' => 'bar'], 'json' => ['any' => 'json']]],
-                'body',
-            ],
-            [
-                // Can't specify `task_id` and `task_id_from`
-                ['task_id' => 'something', 'task_id_from' => 'something-else'],
-                'task_id',
-            ],
-            [
-                // Can't specify `task_id` and `task_id_hash_options`
-                ['task_id' => 'something', 'task_id_hash_options' => true],
-                'task_id',
-            ],
-            [
-                // Can't specify explicit task_id with throttle_interval
-                ['task_id' => 'anything', 'throttle_interval' => new DateInterval('PT5M')],
-                'throttle_interval',
-            ],
-            [
-                // Can't specify schedule_send_after with throttle_interval
-                ['schedule_send_after' => new DateTimeImmutable(), 'throttle_interval' => new DateInterval('PT5M')],
-                'throttle_interval',
-            ],
-            [
-                // Can't specify throttle_interval without task_id_from
-                ['throttle_interval' => new DateInterval('PT5M')],
-                'task_id_from',
-            ],
-            [
-                // Can't specify throttle_delay_secs without throttle_interval
-                ['throttle_delay_secs' => 30],
-                'throttle_delay_secs',
-            ],
+        yield [
+            ['unknown_prop' => 'anything'],
+            'unknown_prop',
+        ];
+        yield [
+            ['body' => ['unexpected']],
+            'body',
+        ];
+        yield [
+            // Can't specify both `form` and `json` body types
+            ['body' => ['form' => ['foo' => 'bar'], 'json' => ['any' => 'json']]],
+            'body',
+        ];
+        yield [
+            // Can't specify `task_id` and `task_id_from`
+            ['task_id' => 'something', 'task_id_from' => 'something-else'],
+            'task_id',
+        ];
+        yield [
+            // Can't specify `task_id` and `task_id_hash_options`
+            ['task_id' => 'something', 'task_id_hash_options' => true],
+            'task_id',
+        ];
+        yield [
+            // Can't specify explicit task_id with throttle_interval
+            ['task_id' => 'anything', 'throttle_interval' => new DateInterval('PT5M')],
+            'throttle_interval',
+        ];
+        yield [
+            // Can't specify schedule_send_after with throttle_interval
+            ['schedule_send_after' => new DateTimeImmutable(), 'throttle_interval' => new DateInterval('PT5M')],
+            'throttle_interval',
+        ];
+        yield [
+            // Can't specify throttle_interval without task_id_from
+            ['throttle_interval' => new DateInterval('PT5M')],
+            'task_id_from',
+        ];
+        yield [
+            // Can't specify throttle_delay_secs without throttle_interval
+            ['throttle_delay_secs' => 30],
+            'throttle_delay_secs',
         ];
     }
 
@@ -113,49 +114,47 @@ class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return array<int, mixed[]>
+     * @return Iterator<int, mixed[]>
      */
-    public static function provider_body_encoding(): array
+    public static function provider_body_encoding(): Iterator
     {
-        return [
+        yield [
+            ['body' => ['form' => ['foo' => 'bar', 'child' => ['any' => 'thing']]]],
+            ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'foo=bar&child%5Bany%5D=thing',
+        ];
+        yield [
+            ['body' => ['json' => ['foo' => 'bar', 'child' => ['any' => 'thing']]]],
+            ['Content-Type' => 'application/json'],
+            '{"foo":"bar","child":{"any":"thing"}}',
+        ];
+        yield [
+            // Merges content-type header with options
             [
-                ['body' => ['form' => ['foo' => 'bar', 'child' => ['any' => 'thing']]]],
-                ['Content-Type' => 'application/x-www-form-urlencoded'],
-                'foo=bar&child%5Bany%5D=thing',
+                'body' => ['form' => ['foo' => 'bar']],
+                'headers' => ['X-foo' => 'bar'],
             ],
+            ['X-foo' => 'bar', 'Content-Type' => 'application/x-www-form-urlencoded'],
+            'foo=bar',
+        ];
+        yield [
+            // Custom content-type overrides default
             [
-                ['body' => ['json' => ['foo' => 'bar', 'child' => ['any' => 'thing']]]],
-                ['Content-Type' => 'application/json'],
-                '{"foo":"bar","child":{"any":"thing"}}',
+                'body' => ['form' => ['foo' => 'bar']],
+                'headers' => ['Content-Type' => 'text/plain'],
             ],
-            [
-                // Merges content-type header with options
-                [
-                    'body' => ['form' => ['foo' => 'bar']],
-                    'headers' => ['X-foo' => 'bar'],
-                ],
-                ['X-foo' => 'bar', 'Content-Type' => 'application/x-www-form-urlencoded'],
-                'foo=bar',
-            ],
-            [
-                // Custom content-type overrides default
-                [
-                    'body' => ['form' => ['foo' => 'bar']],
-                    'headers' => ['Content-Type' => 'text/plain'],
-                ],
-                ['Content-Type' => 'text/plain'],
-                'foo=bar',
-            ],
-            [
-                ['body' => 'My custom payload'],
-                [],
-                'My custom payload',
-            ],
-            [
-                [],
-                [],
-                null,
-            ],
+            ['Content-Type' => 'text/plain'],
+            'foo=bar',
+        ];
+        yield [
+            ['body' => 'My custom payload'],
+            [],
+            'My custom payload',
+        ];
+        yield [
+            [],
+            [],
+            null,
         ];
     }
 
@@ -224,7 +223,7 @@ class CreateTaskOptionsTest extends TestCase
         // task name doesn't meet expectation (because from the public interface we can only see the
         // SHA of the resultant value). We still assert the hash as the final source of truth.
         $this->assertEquals($expect_id_from, ObjectPropertyRipper::ripOne($subject, 'task_id_from'));
-        $this->assertEquals(
+        $this->assertSame(
             'q/tasks/'.hash('sha256', $expect_id_from),
             $subject->buildTaskName('q')
         );
@@ -241,7 +240,7 @@ class CreateTaskOptionsTest extends TestCase
         );
         $scheduled = $subject->getScheduleSendAfter();
         // Actual value is asserted above, this just tests that the flow didn't require an explicit date
-        $this->assertNotNull($scheduled);
+        $this->assertInstanceOf(DateTimeImmutable::class, $scheduled);
         $this->assertSame($scheduled, $subject->getScheduleSendAfter(), 'Scheduled send after is immutable');
         // If real time is right at the end of bucketing window, the event will fire as little as 60 seconds in the future
         $this->assertGreaterThan(new DateTimeImmutable('+59 seconds'), $scheduled);

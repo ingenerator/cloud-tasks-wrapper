@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
@@ -7,11 +9,12 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\PHPUtils\Object\ConstantDirectory;
 use InvalidArgumentException;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
-class TaskResultCodeMapperTest extends TestCase
+final class TaskResultCodeMapperTest extends TestCase
 {
     protected $custom_codes = [];
 
@@ -90,31 +93,29 @@ class TaskResultCodeMapperTest extends TestCase
     }
 
     /**
-     * @return array<int, array<array<string, array<string, int|string>|int|string>|string>>
+     * @return Iterator<int, array<array<string, array<string, int|string>|int|string>|string>>
      */
-    public static function provider_code_overrides(): array
+    public static function provider_code_overrides(): Iterator
     {
-        return [
+        yield [
+            [CoreTaskResult::AUTH_NOT_PROVIDED => ['http_status' => 281]],
+            CoreTaskResult::AUTH_NOT_PROVIDED,
+            ['http' => 281, 'loglevel' => LogLevel::WARNING], // Uses default loglevel
+        ];
+        yield [
+            [CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
+            CoreTaskResult::MUTEX_TIMEOUT,
+            ['http' => 409, 'loglevel' => LogLevel::EMERGENCY], // Uses default http code
+        ];
+        yield [
             [
-                [CoreTaskResult::AUTH_NOT_PROVIDED => ['http_status' => 281]],
-                CoreTaskResult::AUTH_NOT_PROVIDED,
-                ['http' => 281, 'loglevel' => LogLevel::WARNING], // Uses default loglevel
-            ],
-            [
-                [CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
-                CoreTaskResult::MUTEX_TIMEOUT,
-                ['http' => 409, 'loglevel' => LogLevel::EMERGENCY], // Uses default http code
-            ],
-            [
-                [
-                    CoreTaskResult::BAD_HTTP_METHOD => [
-                        'http_status' => 297,
-                        'loglevel' => LogLevel::EMERGENCY,
-                    ],
+                CoreTaskResult::BAD_HTTP_METHOD => [
+                    'http_status' => 297,
+                    'loglevel' => LogLevel::EMERGENCY,
                 ],
-                CoreTaskResult::BAD_HTTP_METHOD,
-                ['http' => 297, 'loglevel' => LogLevel::EMERGENCY], // Uses both overrides
             ],
+            CoreTaskResult::BAD_HTTP_METHOD,
+            ['http' => 297, 'loglevel' => LogLevel::EMERGENCY], // Uses both overrides
         ];
     }
 

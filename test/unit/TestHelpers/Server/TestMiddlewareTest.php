@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use Closure;
@@ -10,7 +12,7 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestMiddleware;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\TestCase;
 
-class TestMiddlewareTest extends TestCase
+final class TestMiddlewareTest extends TestCase
 {
     /**
      * @var Closure

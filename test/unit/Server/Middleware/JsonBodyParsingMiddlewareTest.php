@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
@@ -11,7 +13,7 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\TestCase;
 
-class JsonBodyParsingMiddlewareTest extends TestCase
+final class JsonBodyParsingMiddlewareTest extends TestCase
 {
     public function testItIsInitialisable(): void
     {

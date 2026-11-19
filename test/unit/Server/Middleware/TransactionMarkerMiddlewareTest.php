@@ -22,7 +22,7 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 use PHPUnit\Framework\TestCase;
 use test\mock\Ingenerator\CloudTasksWrapper\Repository\ArrayTransactionMarkerRepository;
 
-class TransactionMarkerMiddlewareTest extends TestCase
+final class TransactionMarkerMiddlewareTest extends TestCase
 {
     private ArrayTransactionMarkerRepository $transaction_marker_repo;
 

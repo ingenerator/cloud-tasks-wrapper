@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
@@ -11,7 +13,7 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
-class ExceptionCatchingMiddlewareTest extends TestCase
+final class ExceptionCatchingMiddlewareTest extends TestCase
 {
     public function testItIsInitialisable(): void
     {

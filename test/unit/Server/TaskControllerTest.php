@@ -17,7 +17,7 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
-class TaskControllerTest extends TestCase
+final class TaskControllerTest extends TestCase
 {
     private TaskHandlerChain $chain;
 

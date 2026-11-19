@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\integration;
 
 use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;
@@ -14,7 +16,7 @@ use Psr\Log\LoggerInterface;
 
 use function array_pop;
 
-class TaskServerFactoryTest extends TestCase
+final class TaskServerFactoryTest extends TestCase
 {
     public function testCanCreateServerStack(): void
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
 
 use DateTimeImmutable;
@@ -16,6 +18,7 @@ use Ingenerator\CloudTasksWrapper\Client\CloudTasksClientInterface;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
+use Iterator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -26,7 +29,7 @@ use Psr\Log\Test\TestLogger;
 
 use function iterator_to_array;
 
-class CloudTaskCreatorTest extends TestCase
+final class CloudTaskCreatorTest extends TestCase
 {
     /**
      * @var MockObject
@@ -92,34 +95,32 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed[]>
+     * @return Iterator<string, mixed[]>
      */
-    public static function provider_task_url(): array
+    public static function provider_task_url(): Iterator
     {
-        return [
-            'just from config, no query' => [
-                [],
-                'https://my.handler.foo/something',
+        yield 'just from config, no query' => [
+            [],
+            'https://my.handler.foo/something',
+        ];
+        yield 'from config, with CreateTaskOptions.query' => [
+            ['query' => ['id' => 15, 'scope' => 'any']],
+            'https://my.handler.foo/something?id=15&scope=any',
+        ];
+        yield 'with CreateTaskOptions.custom_handler_url and no query' => [
+            ['custom_handler_url' => 'https://my-handler.com/whatever'],
+            'https://my-handler.com/whatever',
+        ];
+        yield 'with CreateTaskOptions.custom_handler_url including own query and no query' => [
+            ['custom_handler_url' => 'https://my-handler.com/whatever?foo=bar'],
+            'https://my-handler.com/whatever?foo=bar',
+        ];
+        yield 'with CreateTaskOptions.custom_handler_url and CreateTaskOptions.query' => [
+            [
+                'custom_handler_url' => 'https://my-handler.com/whatever',
+                'query' => ['id' => 15, 'scope' => 'any'],
             ],
-            'from config, with CreateTaskOptions.query' => [
-                ['query' => ['id' => 15, 'scope' => 'any']],
-                'https://my.handler.foo/something?id=15&scope=any',
-            ],
-            'with CreateTaskOptions.custom_handler_url and no query' => [
-                ['custom_handler_url' => 'https://my-handler.com/whatever'],
-                'https://my-handler.com/whatever',
-            ],
-            'with CreateTaskOptions.custom_handler_url including own query and no query' => [
-                ['custom_handler_url' => 'https://my-handler.com/whatever?foo=bar'],
-                'https://my-handler.com/whatever?foo=bar',
-            ],
-            'with CreateTaskOptions.custom_handler_url and CreateTaskOptions.query' => [
-                [
-                    'custom_handler_url' => 'https://my-handler.com/whatever',
-                    'query' => ['id' => 15, 'scope' => 'any'],
-                ],
-                'https://my-handler.com/whatever?id=15&scope=any',
-            ],
+            'https://my-handler.com/whatever?id=15&scope=any',
         ];
     }
 
@@ -166,23 +167,20 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     /**
-     * @return array<int, bool[][]|DateTimeImmutable[][]|int[][]|null[]>
+     * @return Iterator<int, bool[][]|DateTimeImmutable[][]|int[][]|null[]>
      */
-    public static function provider_schedule_time(): array
+    public static function provider_schedule_time(): Iterator
     {
         $ts = time() + 500;
-
-        return [
-            [[], null],
+        yield [[], null];
+        yield [
             [
-                [
-                    'schedule_send_after' => DateTimeImmutable::createFromFormat(
-                        'U.u',
-                        "$ts.123456"
-                    ),
-                ],
-                ['seconds' => $ts, 'nanos' => 123456000],
+                'schedule_send_after' => DateTimeImmutable::createFromFormat(
+                    'U.u',
+                    "$ts.123456"
+                ),
             ],
+            ['seconds' => $ts, 'nanos' => 123456000],
         ];
     }
 

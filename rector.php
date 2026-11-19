@@ -11,7 +11,14 @@ return RectorConfig::configure()
     __DIR__.'/test',
 ])
 ->withRootFiles()
-->withPreparedSets(codeQuality: true, typeDeclarations: true, typeDeclarationDocblocks: true)
+->withPreparedSets(
+    codeQuality: true,
+    typeDeclarations: true,
+    typeDeclarationDocblocks: true,
+    phpunitCodeQuality: true,
+    phpunitNarrowAsserts: true,
+    phpunitMockToStub: true,
+)
 ->withPhpSets()
 ->withSkip([
     // Don't make whole classes read-only in libraries, it makes BC awkward

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TaskResult;
 
 use Error;
@@ -14,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 use function array_fill_keys;
 use function call_user_func_array;
 
-class CoreTaskResultTest extends TestCase
+final class CoreTaskResultTest extends TestCase
 {
     /**
      * @return mixed[]
@@ -28,7 +30,7 @@ class CoreTaskResultTest extends TestCase
          *
          * It will fail if new codes are added without a corresponding method
          */
-        $mutex_exception = new MutexTimedOutException('ab', '15', 1);
+        $mutex_exception = new MutexTimedOutException('ab', 15, 1);
         $invalid_exception = new CloudTaskCannotBeValidException('It has no info');
         $misc_e = new Error('That was an error');
 

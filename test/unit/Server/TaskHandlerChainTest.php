@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
@@ -12,7 +14,7 @@ use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
 
-class TaskHandlerChainTest extends TestCase
+final class TaskHandlerChainTest extends TestCase
 {
     protected $middlewares = [];
 

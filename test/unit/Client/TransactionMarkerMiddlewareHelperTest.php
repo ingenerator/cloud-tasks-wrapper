@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 use function uniqid;
 
-class TransactionMarkerMiddlewareHelperTest extends TestCase
+final class TransactionMarkerMiddlewareHelperTest extends TestCase
 {
     public function testItAddsHeaderOptionsToTaskArray(): void
     {

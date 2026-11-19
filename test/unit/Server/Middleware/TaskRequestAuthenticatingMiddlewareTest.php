@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Exception;
@@ -13,13 +15,14 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use Ingenerator\OIDCTokenVerifier\TestHelpers\MockTokenVerifier;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
 use function base64_encode;
 
-class TaskRequestAuthenticatingMiddlewareTest extends TestCase
+final class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 {
     protected MockTokenVerifier $token_verifier;
     protected TaskTypeConfigStub $task_type_config;
@@ -120,17 +123,15 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public static function provider_auth_failures(): array
+    public static function provider_auth_failures(): Iterator
     {
-        return [
-            [
-                new SignatureInvalidException('Sig verification failed'),
-                'Token failed ('.SignatureInvalidException::class.': Sig verification failed)',
-            ],
-            [
-                new ExpiredException('Expired token'),
-                'Token failed ('.ExpiredException::class.': Expired token)',
-            ],
+        yield [
+            new SignatureInvalidException('Sig verification failed'),
+            'Token failed ('.SignatureInvalidException::class.': Sig verification failed)',
+        ];
+        yield [
+            new ExpiredException('Expired token'),
+            'Token failed ('.ExpiredException::class.': Expired token)',
         ];
     }
 
@@ -160,7 +161,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             ['email' => 'foo@some.iam.gserviceaccount.com']
         );
         $request = TaskRequestStub::withAuthToken();
-        $this->assertSame(null, $request->getCallerEmail(), 'Has no caller email before');
+        $this->assertNull($request->getCallerEmail(), 'Has no caller email before');
 
         $result = $this->newSubject()->process(
             $request,

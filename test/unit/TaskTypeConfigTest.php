@@ -7,7 +7,7 @@ namespace Ingenerator\CloudTasksWrapper;
 use Google\ApiCore\ValidationException;
 use PHPUnit\Framework\TestCase;
 
-class TaskTypeConfigTest extends TestCase
+final class TaskTypeConfigTest extends TestCase
 {
     protected array $vars = [];
     protected string $type = 'foo-task';

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\integration;
 
 use Google\ApiCore\CredentialsWrapper;
@@ -8,7 +10,7 @@ use Ingenerator\CloudTasksWrapper\Client\CloudTasksClientFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 
-class CloudTasksClientFactoryTest extends TestCase
+final class CloudTasksClientFactoryTest extends TestCase
 {
     public function testItCanCreateClientWhenCalledWithEmulatorConfiguration(): void
     {

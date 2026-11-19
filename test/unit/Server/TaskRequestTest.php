@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use GuzzleHttp\Psr7\ServerRequest;
@@ -13,7 +15,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use function date_default_timezone_get;
 use function date_default_timezone_set;
 
-class TaskRequestTest extends TestCase
+final class TaskRequestTest extends TestCase
 {
     protected ServerRequestInterface $http_req;
     protected string $type = 'foo-task';
