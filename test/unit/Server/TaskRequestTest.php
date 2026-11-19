@@ -1,28 +1,29 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
-
-use PHPUnit\Framework\Attributes\TestWith;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\PHPUtils\DateTime\DateString;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+
+use function date_default_timezone_get;
+use function date_default_timezone_set;
 
 class TaskRequestTest extends TestCase
 {
     protected ServerRequestInterface $http_req;
     protected string $type = 'foo-task';
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(TaskRequest::class, $this->newSubject());
     }
 
-    public function test_it_provides_complete_task_url_as_string()
+    public function testItProvidesCompleteTaskUrlAsString()
     {
         $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar');
         $this->assertSame(
@@ -33,65 +34,65 @@ class TaskRequestTest extends TestCase
 
     #[TestWith([['X-CloudTasks-TaskETA' => '1501912403.555197'], '2017-08-05T06:53:23.555197+01:00'])]
     #[TestWith([[], null])]
-    public function test_it_provides_cloud_tasks_eta_as_datetime_or_null($hdrs, $expect)
+    public function testItProvidesCloudTasksEtaAsDatetimeOrNull($hdrs, $expect)
     {
-        $dtz = \date_default_timezone_get();
+        $dtz = date_default_timezone_get();
         try {
-            \date_default_timezone_set('Europe/London');
+            date_default_timezone_set('Europe/London');
 
             $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar', $hdrs);
             $this->assertSame(
                 $expect,
-                DateString::isoMS($this->newSubject()->getScheduledTime(), NULL)
+                DateString::isoMS($this->newSubject()->getScheduledTime(), null)
             );
         } finally {
-            \date_default_timezone_set($dtz);
+            date_default_timezone_set($dtz);
         }
     }
 
-    public function test_it_provides_queue_name()
+    public function testItProvidesQueueName()
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
             [
-                'X-CloudTasks-QueueName' => 'my-queue'
+                'X-CloudTasks-QueueName' => 'my-queue',
             ]
         );
         $this->assertSame('my-queue', $this->newSubject()->getQueueName());
     }
 
-    public function test_it_provides_task_name()
+    public function testItProvidesTaskName()
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
             [
-                'X-CloudTasks-TaskName' => 'task12472315223'
+                'X-CloudTasks-TaskName' => 'task12472315223',
             ]
         );
         $this->assertSame('task12472315223', $this->newSubject()->getTaskName());
     }
 
-    public function test_it_provides_retry_count()
+    public function testItProvidesRetryCount()
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
             [
-                'X-CloudTasks-TaskRetryCount' => '5'
+                'X-CloudTasks-TaskRetryCount' => '5',
             ]
         );
         $this->assertSame(5, $this->newSubject()->getRetryCount());
     }
 
-    public function test_it_provides_execution_count()
+    public function testItProvidesExecutionCount()
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
             [
-                'X-CloudTasks-TaskExecutionCount' => '3'
+                'X-CloudTasks-TaskExecutionCount' => '3',
             ]
         );
         $this->assertSame(3, $this->newSubject()->getExecutionCount());
@@ -99,7 +100,7 @@ class TaskRequestTest extends TestCase
 
     #[TestWith([['X-CloudTasks-TaskPreviousResponse' => '499'], '499'])]
     #[TestWith([[], null])]
-    public function test_it_provides_previous_response_if_present($hdrs, $expect)
+    public function testItProvidesPreviousResponseIfPresent($hdrs, $expect)
     {
         $this->http_req = new ServerRequest(
             'POST',
@@ -111,7 +112,7 @@ class TaskRequestTest extends TestCase
 
     #[TestWith([['X-CloudTasks-TaskRetryReason' => "didn't work before"], "didn't work before"])]
     #[TestWith([[], null])]
-    public function test_it_provides_retry_reason_if_present($hdrs, $expect)
+    public function testItProvidesRetryReasonIfPresent($hdrs, $expect)
     {
         $this->http_req = new ServerRequest(
             'POST',
@@ -124,13 +125,13 @@ class TaskRequestTest extends TestCase
     #[TestWith([[], null])]
     #[TestWith([['foo' => 'bar'], null])]
     #[TestWith([['param' => 'this'], 'this'])]
-    public function test_its_optional_query_provides_value_or_null($vars, $expect)
+    public function testItsOptionalQueryProvidesValueOrNull($vars, $expect)
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
         $this->assertSame($expect, $this->newSubject()->optionalQueryParam('param'));
     }
 
-    public function test_its_require_query_provides_value_if_present()
+    public function testItsRequireQueryProvidesValueIfPresent()
     {
         $this->http_req = $this->http_req->withQueryParams(['foo' => 'bar']);
         $this->assertSame('bar', $this->newSubject()->requireQueryParam('foo'));
@@ -139,18 +140,18 @@ class TaskRequestTest extends TestCase
     #[TestWith([[]])]
     #[TestWith([['something' => 'else']])]
     #[TestWith([['foo' => '']])]
-    public function test_its_require_query_throws_if_value_missing_or_empty($vars)
+    public function testItsRequireQueryThrowsIfValueMissingOrEmpty($vars)
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
-        $subject        = $this->newSubject();
+        $subject = $this->newSubject();
         $this->expectException(CloudTaskCannotBeValidException::class);
         $subject->requireQueryParam('foo');
     }
 
-    public function test_its_require_body_field_returns_value()
+    public function testItsRequireBodyFieldReturnsValue()
     {
         $this->http_req = $this->http_req->withParsedBody(['some_payload_field' => 'My value']);
-        $subject        = $this->newSubject();
+        $subject = $this->newSubject();
         $this->assertSame('My value', $subject->requireBodyField('some_payload_field'));
     }
 
@@ -159,10 +160,10 @@ class TaskRequestTest extends TestCase
     #[TestWith([['other' => 'things']])]
     #[TestWith([['anything' => null]])]
     #[TestWith([['anything' => '']])]
-    public function test_its_require_body_field_throws_if_value_missing_or_empty($body)
+    public function testItsRequireBodyFieldThrowsIfValueMissingOrEmpty($body)
     {
         $this->http_req = $this->http_req->withParsedBody($body);
-        $subject        = $this->newSubject();
+        $subject = $this->newSubject();
         $this->expectException(CloudTaskCannotBeValidException::class);
         $subject->requireBodyField('anything');
     }
@@ -173,10 +174,8 @@ class TaskRequestTest extends TestCase
         $this->http_req = new ServerRequest('POST', 'http://foo.bar.com/anything');
     }
 
-
     protected function newSubject(): TaskRequest
     {
         return new TaskRequest($this->http_req, $this->type);
     }
-
 }

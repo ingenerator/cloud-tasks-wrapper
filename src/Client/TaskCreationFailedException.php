@@ -1,16 +1,15 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Client;
 
+use RuntimeException;
 
 /**
- * Wrapper for anything runtime that prevented us creating a task
+ * Wrapper for anything runtime that prevented us creating a task.
  *
  * Used to indicate that the error has already been caught / logged etc by the TaskCreator
  * so does not necessarily need to be reported elsewhere
  */
-class TaskCreationFailedException extends \RuntimeException
+class TaskCreationFailedException extends RuntimeException
 {
-
 }

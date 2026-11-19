@@ -52,3 +52,23 @@ jobs:
     - name: Run integration tests
       run: |
         vendor/bin/phpunit --testsuite=integration
+
+
+  coding-standard:
+    name: Coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          ini-values: "zend.exception_ignore_args=Off"
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --ignore-platform-req=ext-grpc
+
+      - name: Run PHP CS Fixer
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --verbose --diff

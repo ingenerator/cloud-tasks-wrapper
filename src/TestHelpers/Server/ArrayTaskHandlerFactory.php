@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
-
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
@@ -11,7 +9,7 @@ use Ingenerator\CloudTasksWrapper\Server\UnknownTaskTypeException;
 class ArrayTaskHandlerFactory implements TaskHandlerFactory
 {
     /**
-     * @var \Ingenerator\CloudTasksWrapper\Server\TaskHandler[]
+     * @var TaskHandler[]
      */
     private array $handlers;
 

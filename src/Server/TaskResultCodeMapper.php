@@ -1,61 +1,62 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server;
-
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
+use InvalidArgumentException;
 use Psr\Log\LogLevel;
+
+use function ucfirst;
 
 class TaskResultCodeMapper
 {
     protected array $code_map = [
-        CoreTaskResult::SUCCESS            => [
+        CoreTaskResult::SUCCESS => [
             'http_status' => 200,
-            'loglevel'    => LogLevel::INFO,
+            'loglevel' => LogLevel::INFO,
         ],
         CoreTaskResult::DUPLICATE_DELIVERY => [
             'http_status' => 296,
-            'loglevel'    => LogLevel::WARNING,
+            'loglevel' => LogLevel::WARNING,
         ],
-        CoreTaskResult::CANNOT_BE_VALID    => [
+        CoreTaskResult::CANNOT_BE_VALID => [
             'http_status' => 299,
-            'loglevel'    => LogLevel::CRITICAL,
+            'loglevel' => LogLevel::CRITICAL,
         ],
-        CoreTaskResult::BAD_HTTP_METHOD    => [
+        CoreTaskResult::BAD_HTTP_METHOD => [
             'http_status' => 400,
-            'loglevel'    => LogLevel::WARNING,
+            'loglevel' => LogLevel::WARNING,
         ],
-        CoreTaskResult::AUTH_NOT_PROVIDED  => [
+        CoreTaskResult::AUTH_NOT_PROVIDED => [
             'http_status' => 401,
-            'loglevel'    => LogLevel::WARNING,
+            'loglevel' => LogLevel::WARNING,
         ],
-        CoreTaskResult::AUTH_INVALID       => [
+        CoreTaskResult::AUTH_INVALID => [
             'http_status' => 403,
-            'loglevel'    => LogLevel::ERROR,
+            'loglevel' => LogLevel::ERROR,
         ],
         CoreTaskResult::HANDLER_NOT_FOUND => [
             'http_status' => 404,
             // Not actually logged normally, these are fired before the middleware
             'loglevel' => LogLevel::WARNING,
         ],
-        CoreTaskResult::MUTEX_TIMEOUT      => [
+        CoreTaskResult::MUTEX_TIMEOUT => [
             'http_status' => 409,
-            'loglevel'    => LogLevel::WARNING,
+            'loglevel' => LogLevel::WARNING,
         ],
         CoreTaskResult::UNCAUGHT_EXCEPTION => [
             'http_status' => 500,
-            'loglevel'    => LogLevel::EMERGENCY,
+            'loglevel' => LogLevel::EMERGENCY,
         ],
         TransactionMarkerResult::NOT_YET_VISIBLE => [
             'http_status' => 425,
-            'loglevel'    => LogLevel::NOTICE,
+            'loglevel' => LogLevel::NOTICE,
         ],
         TransactionMarkerResult::TRANSACTION_EXPIRED => [
             'http_status' => 288,
-            'loglevel'    => LogLevel::WARNING,
+            'loglevel' => LogLevel::WARNING,
         ],
     ];
 
@@ -71,7 +72,7 @@ class TaskResultCodeMapper
             return $this->code_map[$result_code];
         }
 
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'No response mapping defined for task response code '.$result_code
         );
     }
@@ -82,7 +83,7 @@ class TaskResultCodeMapper
 
         return new TaskResponse(
             $config['http_status'],
-            \ucfirst($result->getCode()),
+            ucfirst($result->getCode()),
             $result
         );
     }

@@ -1,11 +1,9 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server;
 
-
 /**
- * Represents the internal result of handling a task
+ * Represents the internal result of handling a task.
  *
  * This will be used for logging and other internal processing, then is mapped to a suitable
  * TaskResponse which carries the appropriate HTTP status back to your application controller /
@@ -15,7 +13,6 @@ namespace Ingenerator\CloudTasksWrapper\Server;
  */
 abstract class TaskHandlerResult
 {
-
     /**
      * @var string internal status code
      */
@@ -33,30 +30,21 @@ abstract class TaskHandlerResult
 
     protected function __construct(string $code, string $msg, array $log_context = [])
     {
-        $this->code        = $code;
-        $this->msg         = $msg;
+        $this->code = $code;
+        $this->msg = $msg;
         $this->log_context = $log_context;
     }
 
-    /**
-     * @return string
-     */
     public function getMsg(): string
     {
         return $this->msg;
     }
 
-    /**
-     * @return array
-     */
     public function getLogContext(): array
     {
         return $this->log_context;
     }
 
-    /**
-     * @return string
-     */
     public function getCode(): string
     {
         return $this->code;
@@ -65,10 +53,9 @@ abstract class TaskHandlerResult
     public function toArray(): array
     {
         return [
-            'code'        => $this->code,
-            'msg'         => $this->msg,
+            'code' => $this->code,
+            'msg' => $this->msg,
             'log_context' => $this->log_context,
         ];
     }
-
 }

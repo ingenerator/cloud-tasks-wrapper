@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Client;
-
 
 use DateTimeImmutable;
 use Google\ApiCore\ApiException;
@@ -17,6 +15,8 @@ use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Psr\Log\LoggerInterface;
 
+use function http_build_query;
+
 class CloudTaskCreator implements TaskCreator
 {
     protected CloudTasksClientInterface $client;
@@ -28,41 +28,41 @@ class CloudTaskCreator implements TaskCreator
     public function __construct(
         CloudTasksClient|CloudTasksClientInterface $client,
         TaskTypeConfigProvider $task_config,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
-        $this->client      = $client instanceof CloudTasksClientInterface
+        $this->client = $client instanceof CloudTasksClientInterface
             ? $client
             : new CloudTasksClientAdapter($client);
         $this->task_config = $task_config;
-        $this->logger      = $logger;
+        $this->logger = $logger;
     }
 
-    public function create(string $task_type_name, ?CreateTaskOptions $options = NULL): string
+    public function create(string $task_type_name, ?CreateTaskOptions $options = null): string
     {
         $task_type = $this->task_config->getConfig($task_type_name);
-        $options   ??= new CreateTaskOptions([]);
+        $options ??= new CreateTaskOptions([]);
 
         $handler_url = $options->getCustomHandlerUrl() ?? $task_type->getHandlerUrl();
         if ($options->hasQuery()) {
-            $handler_url .= '?'.\http_build_query($options->getQuery());
+            $handler_url .= '?'.http_build_query($options->getQuery());
         }
 
         $task_name = $options->buildTaskName($task_type->getQueuePath());
-        $task      = $this->createObj(
+        $task = $this->createObj(
             Task::class,
             [
-                'name'          => $task_name,
-                'http_request'  => $this->createObj(
+                'name' => $task_name,
+                'http_request' => $this->createObj(
                     HttpRequest::class,
                     [
-                        'url'         => $handler_url,
+                        'url' => $handler_url,
                         'http_method' => HttpMethod::POST,
                         'oidc_token' => $this->oidcTokenUnlessAnonymous(
                             $task_type->getSignerEmail(),
                             $task_type->getCustomTokenAudience()
                         ),
-                        'headers'     => $options->getHeaders(),
-                        'body'        => $options->getBodyContent(),
+                        'headers' => $options->getHeaders(),
+                        'body' => $options->getBodyContent(),
                     ]
                 ),
                 'schedule_time' => $this->toTimestampOrNull($options->getScheduleSendAfter()),
@@ -84,10 +84,8 @@ class CloudTaskCreator implements TaskCreator
             );
 
             return $result->getName();
-
         } catch (ApiException $e) {
-
-            if (($e->getCode() === Code::ALREADY_EXISTS) and ! $options->shouldThrowOnDuplicate()) {
+            if (($e->getCode() === Code::ALREADY_EXISTS) and !$options->shouldThrowOnDuplicate()) {
                 // This is an expected failure, we are using server-side-task-dedupe and the caller has asked
                 // for us to silently ignore failures to create duplicates of tasks that have already been queued.
                 return $task_name;
@@ -96,10 +94,10 @@ class CloudTaskCreator implements TaskCreator
             $this->logger->error(
                 'Failed to create cloud task: '.$e->getBasicMessage(),
                 [
-                    'exception'          => $e,
+                    'exception' => $e,
                     'exception_metadata' => $e->getMetadata(),
-                    'task_info'          => [
-                        'post_url'  => $handler_url,
+                    'task_info' => [
+                        'post_url' => $handler_url,
                         'task_type' => $task_type,
                     ],
                 ]
@@ -115,13 +113,13 @@ class CloudTaskCreator implements TaskCreator
     protected function oidcTokenUnlessAnonymous(string $email, ?string $custom_audience): ?OidcToken
     {
         if ($email === 'anonymous') {
-            return NULL;
+            return null;
         }
 
         $options = [
             'service_account_email' => $email,
         ];
-        if ($custom_audience !== NULL) {
+        if ($custom_audience !== null) {
             $options['audience'] = $custom_audience;
         }
 
@@ -130,14 +128,14 @@ class CloudTaskCreator implements TaskCreator
 
     protected function toTimestampOrNull(?DateTimeImmutable $datetime): ?Timestamp
     {
-        if ($datetime === NULL) {
-            return NULL;
+        if ($datetime === null) {
+            return null;
         }
 
         return new Timestamp(
             [
                 'seconds' => $datetime->getTimestamp(),
-                'nanos'   => 1000 * $datetime->format('u'),
+                'nanos' => 1000 * $datetime->format('u'),
             ]
         );
     }
@@ -150,5 +148,4 @@ class CloudTaskCreator implements TaskCreator
 
         return new $class(array_filter($vars));
     }
-
 }

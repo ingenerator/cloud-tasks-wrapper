@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
-
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
@@ -12,8 +10,10 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Mutex\MutexWrapper;
 
+use function hash;
+
 /**
- * Uses a mutex (usually database-backed) to prevent concurrent duplicate task processing
+ * Uses a mutex (usually database-backed) to prevent concurrent duplicate task processing.
  *
  * As tasks may be delivered more than once, (and in some cases apps may also trigger duplicates),
  * the processing is enclosed in a mutex. This prevents race conditions from concurrent execution of
@@ -22,9 +22,6 @@ use Ingenerator\PHPUtils\Mutex\MutexWrapper;
  */
 class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
 {
-    /**
-     * @var \Ingenerator\PHPUtils\Mutex\MutexWrapper
-     */
     protected MutexWrapper $mutex;
 
     public function __construct(MutexWrapper $mutex)
@@ -71,7 +68,6 @@ class TaskMutexLockingMiddleware implements TaskHandlerMiddleware
         // even concurrently queuing operations on the same entity will still mean they are
         // processed in sequence while also protecting against platform-level more-than-once
         // delivery.
-        return 'task-'.\hash('md5', (string) $request->getFullUrl());
+        return 'task-'.hash('md5', (string) $request->getFullUrl());
     }
-
 }

@@ -10,20 +10,18 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\PHPUtils\DateTime\Clock\RealtimeClock;
 use Psr\Log\LoggerInterface;
 
+use function memory_get_peak_usage;
+
 /**
- * Logs the result of each task handling operation
+ * Logs the result of each task handling operation.
  *
  * This is provided as a dependency to allow for custom logging strategies (e.g. only logging
  * certain types of results, logging stats as well as metrics, etc) in applications.
  */
 class TaskLoggingMiddleware implements TaskHandlerMiddleware
 {
-
     protected array $default_context;
 
-    /**
-     * @var \Ingenerator\PHPUtils\DateTime\Clock\RealtimeClock
-     */
     protected RealtimeClock $clock;
 
     protected LoggerInterface $logger;
@@ -34,24 +32,23 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         RealtimeClock $clock,
         LoggerInterface $logger,
         TaskResultCodeMapper $code_mapper,
-        array $default_log_context = []
+        array $default_log_context = [],
     ) {
-        $this->logger          = $logger;
-        $this->code_mapper     = $code_mapper;
-        $this->clock           = $clock;
+        $this->logger = $logger;
+        $this->code_mapper = $code_mapper;
+        $this->clock = $clock;
         $this->default_context = $default_log_context;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
     {
-        $start  = $this->clock->getMicrotime();
+        $start = $this->clock->getMicrotime();
         $result = $chain->nextHandler($request);
-        $end    = $this->clock->getMicrotime();
+        $end = $this->clock->getMicrotime();
         $this->logResult($request, $result, intval(1000 * ($end - $start)));
 
         return $result;
     }
-
 
     protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms)
     {
@@ -63,18 +60,17 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
             array_merge(
                 $this->default_context,
                 [
-                    'peak_mem' => sprintf('%0.3fMB', \memory_get_peak_usage() / 1_000_000),
-                    'time_ms'  => $time_ms,
-                    'task'     => [
-                        'type'    => $request->getTaskType(),
-                        'id'      => $request->getTaskName(),
+                    'peak_mem' => sprintf('%0.3fMB', memory_get_peak_usage() / 1_000_000),
+                    'time_ms' => $time_ms,
+                    'task' => [
+                        'type' => $request->getTaskType(),
+                        'id' => $request->getTaskName(),
                         'retries' => (string) $request->getRetryCount(),
-                        'caller'  => $request->getCallerEmail(),
+                        'caller' => $request->getCallerEmail(),
                     ],
                 ],
                 $result->getLogContext()
             )
         );
     }
-
 }

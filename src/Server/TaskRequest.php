@@ -1,36 +1,33 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server;
 
-
+use DateTimeImmutable;
 use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Encapsulates common details of the incoming task request from the underlying HTTP request
+ * Encapsulates common details of the incoming task request from the underlying HTTP request.
  *
  * Exposes the header properties per https://cloud.google.com/tasks/docs/creating-http-target-tasks
  * as well as application-specific metadata.
  */
 class TaskRequest
 {
-    protected ?string                $caller_email = NULL;
+    protected ?string $caller_email = null;
 
     protected ServerRequestInterface $request;
 
-    protected string                 $task_type;
+    protected string $task_type;
 
     public function __construct(ServerRequestInterface $request, string $task_type)
     {
-        $this->request   = $request;
+        $this->request = $request;
         $this->task_type = $task_type;
     }
 
     /**
-     * The complete external URL that was called to trigger this task handler
-     *
-     * @return string
+     * The complete external URL that was called to trigger this task handler.
      */
     public function getFullUrl(): string
     {
@@ -43,9 +40,8 @@ class TaskRequest
     }
 
     /**
-     * The name of the queue
+     * The name of the queue.
      *
-     * @return string
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getQueueName(): string
@@ -59,7 +55,6 @@ class TaskRequest
      * This is the my-task-id value in the complete task name, ie, task_name =
      * projects/my-project-id/locations/my-location/queues/my-queue-id/tasks/my-task-id.
      *
-     * @return string
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getTaskName(): string
@@ -73,7 +68,6 @@ class TaskRequest
      * This number includes attempts where the task failed due to 5XX error codes and never reached
      * the execution phase.
      *
-     * @return int
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getRetryCount(): int
@@ -88,7 +82,6 @@ class TaskRequest
      * handler responses were failures. This number does not include failures due to 5XX error
      * codes.
      *
-     * @return int
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getExecutionCount(): int
@@ -99,36 +92,33 @@ class TaskRequest
     /**
      * The HTTP response code from the previous retry.
      *
-     * @return string|null
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getPreviousResponse(): ?string
     {
-        return $this->request->getHeaderLine('X-CloudTasks-TaskPreviousResponse') ?: NULL;
+        return $this->request->getHeaderLine('X-CloudTasks-TaskPreviousResponse') ?: null;
     }
 
     /**
      * The reason for retrying the task.
      *
-     * @return string|null
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
     public function getRetryReason(): ?string
     {
-        return $this->request->getHeaderLine('X-CloudTasks-TaskRetryReason') ?: NULL;
+        return $this->request->getHeaderLine('X-CloudTasks-TaskRetryReason') ?: null;
     }
 
     /**
-     * The schedule time of the task
+     * The schedule time of the task.
      *
-     * @return \DateTimeImmutable|null
      * @see https://cloud.google.com/tasks/docs/creating-http-target-tasks#handler
      */
-    public function getScheduledTime(): ?\DateTimeImmutable
+    public function getScheduledTime(): ?DateTimeImmutable
     {
         $time = $this->request->getHeaderLine('X-CloudTasks-TaskETA');
         if (empty($time)) {
-            return NULL;
+            return null;
         }
 
         // @todo: throw if unexpected / invalid format?
@@ -150,7 +140,8 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
-    public function setRequestParsedBody(array $body){
+    public function setRequestParsedBody(array $body)
+    {
         $this->request = $this->request->withParsedBody($body);
     }
 
@@ -158,20 +149,16 @@ class TaskRequest
     {
         $params = $this->request->getQueryParams();
 
-        return $params[$param] ?? NULL;
+        return $params[$param] ?? null;
     }
 
     /**
-     * Requires a non-empty value from the task URL query string
+     * Requires a non-empty value from the task URL query string.
      *
      * Used for the common case where your task URLs include object IDs etc in the querystring
      * and you can't do anything useful without them. The exception short-circuits further
      * execution but will be mapped to an HTTP response that tells CloudTasks not to bother
      * retrying.
-     *
-     * @param string $param
-     *
-     * @return string
      */
     public function requireQueryParam(string $param): string
     {
@@ -184,26 +171,21 @@ class TaskRequest
     }
 
     /**
-     * Requires a non-empty value from the task body (which is assumed to be POST variables)
+     * Requires a non-empty value from the task body (which is assumed to be POST variables).
      *
      * Used for the common case where you need one or two simple values in form-encoded POST
      * data sent with the request, and you can't do anything without them.
      *
      * The exception short-circuits further execution but will be mapped to an HTTP response
      * that tells CloudTasks not to bother retrying.
-     *
-     * @param string $key
-     *
-     * @return mixed
      */
     public function requireBodyField(string $key)
     {
-        $value = $this->request->getParsedBody()[$key] ?? NULL;
+        $value = $this->request->getParsedBody()[$key] ?? null;
         if (empty($value)) {
             throw new CloudTaskCannotBeValidException('Required field `'.$key.'` missing from task body payload');
         }
 
         return $value;
     }
-
 }

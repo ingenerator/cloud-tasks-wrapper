@@ -24,6 +24,7 @@
         "ext-grpc": "*",
         "fig/log-test": "^1.1",
         "guzzlehttp/psr7": "^3.5",
+        "php-cs-fixer/shim": "3.95.32",
         "phpunit/phpunit": "^13.4"
     },
     "repositories": [
@@ -50,5 +51,9 @@
         "platform": {
             "ext-bcmath": "8"
         }
+    },
+    "scripts": {
+        "cs": "php-cs-fixer fix --dry-run --verbose --diff",
+        "cs-fix": "php-cs-fixer fix"
     }
 }

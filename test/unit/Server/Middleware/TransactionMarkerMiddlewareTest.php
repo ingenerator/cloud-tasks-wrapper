@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
+ *
  * @licence   BSD-3-Clause
  */
 
@@ -22,13 +24,13 @@ class TransactionMarkerMiddlewareTest extends TestCase
 {
     private ArrayTransactionMarkerRepository $transaction_marker_repo;
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(TransactionMarkerMiddleware::class, $this->newSubject());
         $this->assertInstanceOf(TaskHandlerMiddleware::class, $this->newSubject());
     }
 
-    public function test_it_returns_response_of_next_in_chain_if_no_x_transaction_header()
+    public function testItReturnsResponseOfNextInChainIfNoXTransactionHeader()
     {
         $res = new ArbitraryTaskResult('no-transaction-header');
         $req = TaskRequestStub::any();
@@ -41,7 +43,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_returns_response_of_next_in_chain_if_transaction_marker_exists()
+    public function testItReturnsResponseOfNextInChainIfTransactionMarkerExists()
     {
         $this->transaction_marker_repo = ArrayTransactionMarkerRepository::withUuids(['abcd-efgh']);
 
@@ -56,7 +58,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_does_not_run_if_request_is_before_expiry()
+    public function testItDoesNotRunIfRequestIsBeforeExpiry()
     {
         $future = DateString::ymdhis(new DateTimeImmutable('tomorrow'));
 
@@ -66,10 +68,10 @@ class TransactionMarkerMiddlewareTest extends TestCase
 
         $this->assertSame(
             [
-                'code'        => TransactionMarkerResult::NOT_YET_VISIBLE,
-                'msg'         => 'transaction not ready',
+                'code' => TransactionMarkerResult::NOT_YET_VISIBLE,
+                'msg' => 'transaction not ready',
                 'log_context' => [
-                    'uuid'   => 'abcd-1234',
+                    'uuid' => 'abcd-1234',
                     'expiry' => $future,
                 ],
             ],
@@ -77,12 +79,12 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_does_not_run_if_after_expiry()
+    public function testItDoesNotRunIfAfterExpiry()
     {
         $request = TaskRequestStub::with(
             [
                 'headers' => [
-                    'X-Transaction'        => 'abcd-1234',
+                    'X-Transaction' => 'abcd-1234',
                     'X-Transaction-Expire' => DateString::ymdhis(new DateTimeImmutable('-1s')),
                 ],
             ]
@@ -90,10 +92,10 @@ class TransactionMarkerMiddlewareTest extends TestCase
 
         $this->assertSame(
             [
-                'code'        => TransactionMarkerResult::TRANSACTION_EXPIRED,
-                'msg'         => 'transaction rolled back',
+                'code' => TransactionMarkerResult::TRANSACTION_EXPIRED,
+                'msg' => 'transaction rolled back',
                 'log_context' => [
-                    'uuid'   => 'abcd-1234',
+                    'uuid' => 'abcd-1234',
                     'expiry' => DateString::ymdhis(new DateTimeImmutable('-1s')),
                 ],
             ],
@@ -111,5 +113,4 @@ class TransactionMarkerMiddlewareTest extends TestCase
         $this->transaction_marker_repo = ArrayTransactionMarkerRepository::withNothing();
         parent::setUp();
     }
-
 }

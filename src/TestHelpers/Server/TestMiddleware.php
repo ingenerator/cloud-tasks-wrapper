@@ -2,13 +2,14 @@
 
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
+use BadMethodCallException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 
 /**
- * Predominantly used for testing other middlewares, to allow test suites to stub a chain
+ * Predominantly used for testing other middlewares, to allow test suites to stub a chain.
  */
 class TestMiddleware implements TaskHandlerMiddleware
 {
@@ -26,7 +27,7 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function neverCalled(): TestMiddleware
     {
         return new static(
-            function () { throw new \BadMethodCallException(__CLASS__.' should never be called'); }
+            function () { throw new BadMethodCallException(__CLASS__.' should never be called'); }
         );
     }
 
@@ -46,5 +47,4 @@ class TestMiddleware implements TaskHandlerMiddleware
     {
         return ($this->callable)($request, $chain);
     }
-
 }

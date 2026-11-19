@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
-
 
 use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Utils;
@@ -22,16 +20,16 @@ class TaskRequestStub extends TaskRequest
     public static function with(array $options)
     {
         $defaults = [
-            'method'       => 'POST',
-            'url'          => 'http://foo.bar/anything',
-            'query'        => [],
-            'task_type'    => 'some-task',
-            'headers'      => [],
-            'caller_email' => NULL,
-            'body'         => NULL,
-            'parsed_body'  => NULL,
+            'method' => 'POST',
+            'url' => 'http://foo.bar/anything',
+            'query' => [],
+            'task_type' => 'some-task',
+            'headers' => [],
+            'caller_email' => null,
+            'body' => null,
+            'parsed_body' => null,
         ];
-        $options  = AssociativeArrayUtils::deepMerge($defaults, $options);
+        $options = AssociativeArrayUtils::deepMerge($defaults, $options);
 
         $request = new ServerRequest(
             $options['method'],
@@ -46,7 +44,7 @@ class TaskRequestStub extends TaskRequest
             $request = $request->withBody(Utils::streamFor($options['body']));
         }
 
-        $req               = new TaskRequest($request, $options['task_type']);
+        $req = new TaskRequest($request, $options['task_type']);
         $req->caller_email = $options['caller_email'];
 
         return $req;
@@ -61,5 +59,4 @@ class TaskRequestStub extends TaskRequest
     {
         return static::with(['query' => $query]);
     }
-
 }
