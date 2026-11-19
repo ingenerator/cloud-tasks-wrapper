@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\TestHelpers;
-
 
 use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
@@ -10,12 +8,12 @@ use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
 class TaskTypeConfigStub extends TaskTypeConfigProvider
 {
-    protected bool $allow_any_task_type = FALSE;
+    protected bool $allow_any_task_type = false;
 
     public static function withAnyTaskType(): TaskTypeConfigProvider
     {
-        $i                      = new static([]);
-        $i->allow_any_task_type = TRUE;
+        $i = new static([]);
+        $i->allow_any_task_type = true;
 
         return $i;
     }
@@ -31,13 +29,13 @@ class TaskTypeConfigStub extends TaskTypeConfigProvider
             AssociativeArrayUtils::deepMerge(
                 [
                     '_default' => [
-                        'queue'        => [
-                            'project'  => 'dev',
+                        'queue' => [
+                            'project' => 'dev',
                             'location' => 'europe',
-                            'name'     => 'my-queue',
+                            'name' => 'my-queue',
                         ],
                         'signer_email' => 'tasks-signer@serviceaccount.test',
-                        'handler_url'  => 'http://app-http/_do_task/{TASK_TYPE}',
+                        'handler_url' => 'http://app-http/_do_task/{TASK_TYPE}',
                     ],
                 ],
                 $config
@@ -47,11 +45,10 @@ class TaskTypeConfigStub extends TaskTypeConfigProvider
 
     public function getConfig(string $task_type): TaskTypeConfig
     {
-        if ($this->allow_any_task_type and ! isset($this->config[$task_type])) {
+        if ($this->allow_any_task_type and !isset($this->config[$task_type])) {
             $this->config[$task_type] = [];
         }
 
         return parent::getConfig($task_type);
     }
-
 }

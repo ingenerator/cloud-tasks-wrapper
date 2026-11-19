@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
+ *
  * @licence   BSD-3-Clause
  */
 

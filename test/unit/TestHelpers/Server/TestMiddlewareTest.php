@@ -1,8 +1,6 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\TestHelpers\Server;
-
 
 use Closure;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
@@ -19,7 +17,7 @@ class TestMiddlewareTest extends TestCase
      */
     protected $callable;
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(
             TestMiddleware::class,
@@ -27,10 +25,10 @@ class TestMiddlewareTest extends TestCase
         );
     }
 
-    public function test_it_passes_to_request_and_returns_result_without_calling_next()
+    public function testItPassesToRequestAndReturnsResultWithoutCallingNext()
     {
-        $result         = new ArbitraryTaskResult('anything');
-        $request        = TaskRequestStub::any();
+        $result = new ArbitraryTaskResult('anything');
+        $request = TaskRequestStub::any();
         $this->callable = function (TaskRequest $r) use ($request, $result) {
             $this->assertSame($request, $r);
 
@@ -48,10 +46,8 @@ class TestMiddlewareTest extends TestCase
         $this->callable = function () { return new ArbitraryTaskResult('anything'); };
     }
 
-
     protected function newSubject(): TestMiddleware
     {
         return new TestMiddleware($this->callable);
     }
-
 }

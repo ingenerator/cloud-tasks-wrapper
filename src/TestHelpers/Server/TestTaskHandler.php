@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
+use BadMethodCallException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
@@ -13,7 +14,7 @@ class TestTaskHandler implements TaskHandler
 
     public static function expectsReqAndReturns(
         TaskRequest $expect_req,
-        TaskHandlerResult $result
+        TaskHandlerResult $result,
     ): TestTaskHandler {
         return new static(
             function ($got_req) use ($expect_req, $result) {
@@ -27,7 +28,7 @@ class TestTaskHandler implements TaskHandler
     public static function neverCalled(): TestTaskHandler
     {
         return new static(
-            function () { throw new \BadMethodCallException('Did not expect handler call'); }
+            function () { throw new BadMethodCallException('Did not expect handler call'); }
         );
     }
 
@@ -45,5 +46,4 @@ class TestTaskHandler implements TaskHandler
     {
         return ($this->callable)($request);
     }
-
 }

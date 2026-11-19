@@ -1,22 +1,19 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
-
 
 use DateInterval;
 use DateTimeImmutable;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\TestWith;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 class CreateTaskOptionsTest extends TestCase
 {
-
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(CreateTaskOptions::class, new CreateTaskOptions([]));
     }
@@ -44,8 +41,8 @@ class CreateTaskOptionsTest extends TestCase
             ],
             [
                 // Can't specify `task_id` and `task_id_hash_options`
-                ['task_id' => 'something', 'task_id_hash_options' => TRUE],
-                'task_id'
+                ['task_id' => 'something', 'task_id_hash_options' => true],
+                'task_id',
             ],
             [
                 // Can't specify explicit task_id with throttle_interval
@@ -54,7 +51,7 @@ class CreateTaskOptionsTest extends TestCase
             ],
             [
                 // Can't specify schedule_send_after with throttle_interval
-                ['schedule_send_after' => new DateTimeImmutable, 'throttle_interval' => new DateInterval('PT5M')],
+                ['schedule_send_after' => new DateTimeImmutable(), 'throttle_interval' => new DateInterval('PT5M')],
                 'throttle_interval',
             ],
             [
@@ -71,7 +68,7 @@ class CreateTaskOptionsTest extends TestCase
     }
 
     #[DataProvider('provider_invalid_args')]
-    public function test_it_throws_on_construction_with_invalid_args($args, $expect_msg)
+    public function testItThrowsOnConstructionWithInvalidArgs($args, $expect_msg)
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageIsOrContains($expect_msg);
@@ -81,7 +78,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar']], true])]
     #[TestWith([['query' => null], false])]
     #[TestWith([[], false])]
-    public function test_it_can_have_query($opts, $expect)
+    public function testItCanHaveQuery($opts, $expect)
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->hasQuery());
@@ -93,16 +90,16 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever'], true])]
     #[TestWith([['custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], true])]
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], false])]
-    public function test_it_only_allows_query_with_custom_url_if_url_does_not_contain_a_query($opts, $is_valid)
+    public function testItOnlyAllowsQueryWithCustomUrlIfUrlDoesNotContainAQuery($opts, $is_valid)
     {
-        $e = NULL;
+        $e = null;
         try {
             $subject = new CreateTaskOptions($opts);
         } catch (InvalidArgumentException $e) {
         }
 
         if ($is_valid) {
-            $this->assertNull($e, (string ) $e);
+            $this->assertNull($e, (string) $e);
         } else {
             $this->assertInstanceOf(InvalidArgumentException::class, $e);
             $this->assertStringContainsString('querystring', $e->getMessage());
@@ -125,7 +122,7 @@ class CreateTaskOptionsTest extends TestCase
             [
                 // Merges content-type header with options
                 [
-                    'body'    => ['form' => ['foo' => 'bar']],
+                    'body' => ['form' => ['foo' => 'bar']],
                     'headers' => ['X-foo' => 'bar'],
                 ],
                 ['X-foo' => 'bar', 'Content-Type' => 'application/x-www-form-urlencoded'],
@@ -134,7 +131,7 @@ class CreateTaskOptionsTest extends TestCase
             [
                 // Custom content-type overrides default
                 [
-                    'body'    => ['form' => ['foo' => 'bar']],
+                    'body' => ['form' => ['foo' => 'bar']],
                     'headers' => ['Content-Type' => 'text/plain'],
                 ],
                 ['Content-Type' => 'text/plain'],
@@ -148,16 +145,16 @@ class CreateTaskOptionsTest extends TestCase
             [
                 [],
                 [],
-                NULL,
+                null,
             ],
         ];
     }
 
     #[DataProvider('provider_body_encoding')]
-    public function test_it_can_encode_body_types_and_sets_default_content_type_header(
+    public function testItCanEncodeBodyTypesAndSetsDefaultContentTypeHeader(
         array $opts,
         array $expect_headers,
-        ?string $expect_raw_body
+        ?string $expect_raw_body,
     ) {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect_headers, $subject->getHeaders());
@@ -172,7 +169,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'query' => ['foo' => 'bar']], '/some/queue/path/tasks/59c9944a18e175c30831ce9b7ded47bc48aba09f8b0e920f21c44d7e72b6b2fe'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'headers' => ['X-foo' => 'bar']], '/some/queue/path/tasks/8dbbc54179cb185b6ff25c4765403adea4692aa35f69594af1ab3b254e3dcd15'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'schedule_send_after' => '2020-09-04 00:00:00 +01:00'], '/some/queue/path/tasks/90372598891aabbb05ea2461ff3164aba8fd7e9de42d9c9f5418309cb9a015dc'])]
-    public function test_it_can_build_task_name_from_explicit_id_or_hashable_value($opts, $expect)
+    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue($opts, $expect)
     {
         if (isset($opts['schedule_send_after'])) {
             $opts['schedule_send_after'] = new DateTimeImmutable($opts['schedule_send_after']);
@@ -185,7 +182,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id' => 'foo'], true])]
     #[TestWith([['task_id_from' => 'bar'], true])]
     #[TestWith([['task_id' => 'foo', 'throw_on_duplicate' => false], false])]
-    public function test_it_defaults_to_throw_on_duplicate_task_id_but_can_override($opts, $expect)
+    public function testItDefaultsToThrowOnDuplicateTaskIdButCanOverride($opts, $expect)
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->shouldThrowOnDuplicate());
@@ -195,17 +192,17 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith(['2020-12-07 11:04:59.9999', 60, '2020-12-07T11:06:00.0000', 'app-task-id@1607339160.000000'])]
     #[TestWith(['2020-12-07 11:05:00.0001', 60, '2020-12-07T11:11:00.0000', 'app-task-id@1607339460.000000'])]
     #[TestWith(['2020-12-07 11:05:00.0001', 30, '2020-12-07T11:10:30.0000', 'app-task-id@1607339430.000000'])]
-    public function test_it_can_optionally_create_trailing_edge_throttle(
+    public function testItCanOptionallyCreateTrailingEdgeThrottle(
         string $create_at,
         int $delay_secs,
         string $expect_at,
-        string $expect_id_from
+        string $expect_id_from,
     ) {
         $subject = new CreateTaskOptions(
             [
-                '_create_time'        => new DateTimeImmutable($create_at),
-                'task_id_from'        => 'app-task-id',
-                'throttle_interval'   => new DateInterval('PT5M'),
+                '_create_time' => new DateTimeImmutable($create_at),
+                'task_id_from' => 'app-task-id',
+                'throttle_interval' => new DateInterval('PT5M'),
                 'throttle_delay_secs' => $delay_secs,
             ]
         );
@@ -221,12 +218,12 @@ class CreateTaskOptionsTest extends TestCase
         );
     }
 
-    public function test_it_uses_default_create_time_for_throttle_if_not_set()
+    public function testItUsesDefaultCreateTimeForThrottleIfNotSet()
     {
-        $subject   = new CreateTaskOptions(
+        $subject = new CreateTaskOptions(
             [
-                'task_id_from'        => 'anything',
-                'throttle_interval'   => new DateInterval('PT1H'),
+                'task_id_from' => 'anything',
+                'throttle_interval' => new DateInterval('PT1H'),
                 'throttle_delay_secs' => 60,
             ]
         );
@@ -237,5 +234,4 @@ class CreateTaskOptionsTest extends TestCase
         // If real time is right at the end of bucketing window, the event will fire as little as 60 seconds in the future
         $this->assertGreaterThan(new DateTimeImmutable('+59 seconds'), $scheduled);
     }
-
 }

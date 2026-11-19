@@ -1,24 +1,25 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server\TaskResult;
-
 
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
+use Throwable;
+
+use function get_class;
 
 class CoreTaskResult extends TaskHandlerResult
 {
-    const AUTH_INVALID       = 'authInvalid';
-    const AUTH_NOT_PROVIDED  = 'authNotProvided';
-    const BAD_HTTP_METHOD    = 'badHttpMethod';
-    const CANNOT_BE_VALID    = 'cannotBeValid';
-    const HANDLER_NOT_FOUND  = 'handlerNotFound';
-    const DUPLICATE_DELIVERY = 'duplicateDelivery';
-    const MUTEX_TIMEOUT      = 'mutexTimeout';
-    const SUCCESS            = 'success';
-    const UNCAUGHT_EXCEPTION = 'uncaughtException';
+    public const AUTH_INVALID = 'authInvalid';
+    public const AUTH_NOT_PROVIDED = 'authNotProvided';
+    public const BAD_HTTP_METHOD = 'badHttpMethod';
+    public const CANNOT_BE_VALID = 'cannotBeValid';
+    public const HANDLER_NOT_FOUND = 'handlerNotFound';
+    public const DUPLICATE_DELIVERY = 'duplicateDelivery';
+    public const MUTEX_TIMEOUT = 'mutexTimeout';
+    public const SUCCESS = 'success';
+    public const UNCAUGHT_EXCEPTION = 'uncaughtException';
 
     public static function authInvalid(string $msg, array $log_context = []): TaskHandlerResult
     {
@@ -64,11 +65,11 @@ class CoreTaskResult extends TaskHandlerResult
         return new static(static::SUCCESS, $msg);
     }
 
-    public static function uncaughtException(\Throwable $e): TaskHandlerResult
+    public static function uncaughtException(Throwable $e): TaskHandlerResult
     {
         return new static(
             static::UNCAUGHT_EXCEPTION,
-            sprintf('[%s] %s', \get_class($e), $e->getMessage()),
+            sprintf('[%s] %s', get_class($e), $e->getMessage()),
             ['exception' => $e]
         );
     }

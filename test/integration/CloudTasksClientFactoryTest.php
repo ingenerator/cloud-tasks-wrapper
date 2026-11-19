@@ -10,19 +10,18 @@ use Psr\Cache\CacheItemPoolInterface;
 
 class CloudTasksClientFactoryTest extends TestCase
 {
-
-    public function test_it_can_create_client_when_called_with_emulator_configuration()
+    public function testItCanCreateClientWhenCalledWithEmulatorConfiguration()
     {
         $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [
             'use_emulator' => true,
             'emulator_endpoint' => 'cloud_tasks_emulator:8123',
-            'credentials' => null
+            'credentials' => null,
         ]);
         $this->assertInstanceOf(CloudTasksClient::class, $client);
     }
 
-    public function test_it_can_create_client_when_called_with_production_configuration()
+    public function testItCanCreateClientWhenCalledWithProductionConfiguration()
     {
         $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [

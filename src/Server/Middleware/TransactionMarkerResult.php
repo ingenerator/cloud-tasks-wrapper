@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
+ *
  * @licence   BSD-3-Clause
  */
 
@@ -12,8 +14,8 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 
 class TransactionMarkerResult extends TaskHandlerResult
 {
-    const NOT_YET_VISIBLE     = 'notYetVisible';
-    const TRANSACTION_EXPIRED = 'transactionExpired';
+    public const NOT_YET_VISIBLE = 'notYetVisible';
+    public const TRANSACTION_EXPIRED = 'transactionExpired';
 
     public static function notYetVisible(string $uuid, DateTimeImmutable $expiry): TransactionMarkerResult
     {
@@ -21,7 +23,7 @@ class TransactionMarkerResult extends TaskHandlerResult
             static::NOT_YET_VISIBLE,
             'transaction not ready',
             [
-                'uuid'   => $uuid,
+                'uuid' => $uuid,
                 'expiry' => DateString::ymdhis($expiry),
             ]
         );
@@ -33,10 +35,9 @@ class TransactionMarkerResult extends TaskHandlerResult
             static::TRANSACTION_EXPIRED,
             'transaction rolled back',
             [
-                'uuid'   => $uuid,
+                'uuid' => $uuid,
                 'expiry' => DateString::ymdhis($expiry),
             ]
         );
     }
-
 }

@@ -1,12 +1,9 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\Client;
-
 
 use DateTimeImmutable;
 use Exception;
-use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
@@ -22,9 +19,12 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
+
+use function iterator_to_array;
 
 class CloudTaskCreatorTest extends TestCase
 {
@@ -39,26 +39,26 @@ class CloudTaskCreatorTest extends TestCase
 
     protected TaskTypeConfigStub $task_config;
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
-    #[TestWith([[], ""])]
-    #[TestWith([["body" => "any body"], "any body"])]
-    public function test_it_adds_body_and_headers_if_provided($opts, $expect_body)
+    #[TestWith([[], ''])]
+    #[TestWith([['body' => 'any body'], 'any body'])]
+    public function testItAddsBodyAndHeadersIfProvided($opts, $expect_body)
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
         $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
     }
 
-    #[TestWith(["someone@service.com", TRUE, "someone@service.com"])]
-    #[TestWith(["anonymous", FALSE, NULL])]
-    public function test_it_adds_oidc_token_for_task_unless_task_type_is_configured_anonymous(
+    #[TestWith(['someone@service.com', true, 'someone@service.com'])]
+    #[TestWith(['anonymous', false, null])]
+    public function testItAddsOidcTokenForTaskUnlessTaskTypeIsConfiguredAnonymous(
         $signer,
         $expect_has_oidc,
-        $expect_oidc_email
+        $expect_oidc_email,
     ) {
         $this->task_config = TaskTypeConfigStub::withTaskType('do-something', ['signer_email' => $signer]);
         $this->newSubject()->create('do-something');
@@ -75,10 +75,10 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    #[TestWith([["custom_token_audience" => null], ""])]
-    #[TestWith([[], ""])]
-    #[TestWith([["custom_token_audience" => "pick-me!"], "pick-me!"])]
-    public function test_it_configures_custom_audience_for_authenticated_task_if_configured($config, $expect)
+    #[TestWith([['custom_token_audience' => null], ''])]
+    #[TestWith([[], ''])]
+    #[TestWith([['custom_token_audience' => 'pick-me!'], 'pick-me!'])]
+    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured($config, $expect)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -94,34 +94,34 @@ class CloudTaskCreatorTest extends TestCase
     public static function provider_task_url(): array
     {
         return [
-            'just from config, no query'                                                 => [
+            'just from config, no query' => [
                 [],
-                "https://my.handler.foo/something",
+                'https://my.handler.foo/something',
             ],
-            'from config, with CreateTaskOptions.query'                                  => [
+            'from config, with CreateTaskOptions.query' => [
                 ['query' => ['id' => 15, 'scope' => 'any']],
-                "https://my.handler.foo/something?id=15&scope=any",
+                'https://my.handler.foo/something?id=15&scope=any',
             ],
-            'with CreateTaskOptions.custom_handler_url and no query'                     => [
+            'with CreateTaskOptions.custom_handler_url and no query' => [
                 ['custom_handler_url' => 'https://my-handler.com/whatever'],
-                "https://my-handler.com/whatever",
+                'https://my-handler.com/whatever',
             ],
             'with CreateTaskOptions.custom_handler_url including own query and no query' => [
                 ['custom_handler_url' => 'https://my-handler.com/whatever?foo=bar'],
-                "https://my-handler.com/whatever?foo=bar",
+                'https://my-handler.com/whatever?foo=bar',
             ],
-            'with CreateTaskOptions.custom_handler_url and CreateTaskOptions.query'      => [
+            'with CreateTaskOptions.custom_handler_url and CreateTaskOptions.query' => [
                 [
                     'custom_handler_url' => 'https://my-handler.com/whatever',
-                    'query'              => ['id' => 15, 'scope' => 'any'],
+                    'query' => ['id' => 15, 'scope' => 'any'],
                 ],
-                "https://my-handler.com/whatever?id=15&scope=any",
+                'https://my-handler.com/whatever?id=15&scope=any',
             ],
         ];
     }
 
     #[DataProvider('provider_task_url')]
-    public function test_it_sets_task_to_post_to_custom_or_config_url_optionally_adding_query_params($opts, $expect)
+    public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams($opts, $expect)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -133,9 +133,9 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
-    #[TestWith([[], ""])]
-    #[TestWith([["task_id" => "absad237"], "absad237"])]
-    public function test_it_adds_task_name_from_id_if_provided($opts, $expect_id)
+    #[TestWith([[], ''])]
+    #[TestWith([['task_id' => 'absad237'], 'absad237'])]
+    public function testItAddsTaskNameFromIdIfProvided($opts, $expect_id)
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'some-task',
@@ -148,18 +148,18 @@ class CloudTaskCreatorTest extends TestCase
         if ($expect_id) {
             $expect_name = CloudTasksClient::taskName('mine', 'mars', 'archival', $expect_id);
         } else {
-            $expect_name = "";
+            $expect_name = '';
         }
         $this->assertSame($expect_name, $task->getName());
     }
 
     #[TestWith([[], []])]
-    #[TestWith([["headers" => ["X-SomeThing" => "This"]], ["X-SomeThing" => "This"]])]
-    public function test_it_adds_http_headers_if_provided($opts, $expect)
+    #[TestWith([['headers' => ['X-SomeThing' => 'This']], ['X-SomeThing' => 'This']])]
+    public function testItAddsHttpHeadersIfProvided($opts, $expect)
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect, \iterator_to_array($task->getHttpRequest()->getHeaders()));
+        $this->assertSame($expect, iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
     public static function provider_schedule_time(): array
@@ -167,7 +167,7 @@ class CloudTaskCreatorTest extends TestCase
         $ts = time() + 500;
 
         return [
-            [[], NULL],
+            [[], null],
             [
                 [
                     'schedule_send_after' => DateTimeImmutable::createFromFormat(
@@ -181,11 +181,11 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     #[DataProvider('provider_schedule_time')]
-    public function test_it_adds_timestamp_for_scheduled_time_if_provided($opts, $expect)
+    public function testItAddsTimestampForScheduledTimeIfProvided($opts, $expect)
     {
         $this->newSubject()->create('any-old-job', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        if ($expect === NULL) {
+        if ($expect === null) {
             $this->assertSame($expect, $task->getScheduleTime());
         } else {
             $time = $task->getScheduleTime();
@@ -197,19 +197,19 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    public function test_it_submits_to_the_configured_queue_url_for_the_task_options()
+    public function testItSubmitsToTheConfiguredQueueUrlForTheTaskOptions()
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'something',
             [
                 'queue' => [
-                    'project'  => 'mine',
+                    'project' => 'mine',
                     'location' => 'mars',
-                    'name'     => 'archival',
+                    'name' => 'archival',
                 ],
             ]
         );
-        $result            = $this->newSubject()->create('something');
+        $result = $this->newSubject()->create('something');
         $this->assertSame(
             CloudTasksClient::taskName('mine', 'mars', 'archival', 'created-task-name'),
             $result
@@ -219,22 +219,22 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function test_it_logs_nothing_on_success()
+    public function testItLogsNothingOnSuccess()
     {
         $this->logger = new TestLogger();
         $this->newSubject()->create('anything');
         $this->assertSame([], $this->logger->records);
     }
 
-    public function test_it_logs_and_throws_on_failure()
+    public function testItLogsAndThrowsOnFailure()
     {
-        $this->logger       = new TestLogger();
-        $api_exception      = ApiException::createFromApiResponse(
+        $this->logger = new TestLogger();
+        $api_exception = ApiException::createFromApiResponse(
             'Create task broke!',
             Code::UNKNOWN
         );
         $this->tasks_client = TasksClientSpy::willThrowOnCreate($api_exception);
-        $subject            = $this->newSubject();
+        $subject = $this->newSubject();
         try {
             $subject->create('anything');
             $this->fail('Expected exception, none got');
@@ -250,19 +250,19 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function test_it_bubbles_already_exists_if_set_to_throw_on_duplicate()
+    public function testItBubblesAlreadyExistsIfSetToThrowOnDuplicate()
     {
-        $this->logger       = new TestLogger();
-        $api_exception      = ApiException::createFromApiResponse(
+        $this->logger = new TestLogger();
+        $api_exception = ApiException::createFromApiResponse(
             'Already got it!',
             Code::ALREADY_EXISTS
         );
         $this->tasks_client = TasksClientSpy::willThrowOnCreate($api_exception);
-        $subject            = $this->newSubject();
+        $subject = $this->newSubject();
         try {
             $subject->create(
                 'anything',
-                new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => TRUE])
+                new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => true])
             );
             $this->fail('Expected exception, none got');
         } catch (TaskCreationFailedException $e) {
@@ -277,25 +277,25 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function test_it_swallows_already_exists_if_set_not_to_throw_on_duplicate()
+    public function testItSwallowsAlreadyExistsIfSetNotToThrowOnDuplicate()
     {
-        $this->task_config  = TaskTypeConfigStub::withTaskType(
+        $this->task_config = TaskTypeConfigStub::withTaskType(
             'anything',
             [
-                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival',],
+                'queue' => ['project' => 'mine', 'location' => 'mars', 'name' => 'archival'],
             ]
         );
-        $this->logger       = new TestLogger();
+        $this->logger = new TestLogger();
         $this->tasks_client = TasksClientSpy::willThrowOnCreate(
             ApiException::createFromApiResponse(
                 'Already got it!',
                 Code::ALREADY_EXISTS
             )
         );
-        $subject            = $this->newSubject();
-        $result             = $subject->create(
+        $subject = $this->newSubject();
+        $result = $subject->create(
             'anything',
-            new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => FALSE])
+            new CreateTaskOptions(['task_id' => 'foobar', 'throw_on_duplicate' => false])
         );
         $this->assertSame(
             CloudTasksClient::taskName('mine', 'mars', 'archival', 'foobar'),
@@ -305,18 +305,17 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame([], $this->logger->records);
     }
 
-
-    public function test_it_provides_retry_options_when_sending_task()
+    public function testItProvidesRetryOptionsWhenSendingTask()
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'something',
             [
                 'create_retry_settings' => [
                     'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier'    => 1.3,
-                    'maxRetryDelayMillis'     => 10000,
-                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled'          => TRUE,
+                    'retryDelayMultiplier' => 1.3,
+                    'maxRetryDelayMillis' => 10000,
+                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled' => true,
                 ],
             ]
         );
@@ -325,10 +324,10 @@ class CloudTaskCreatorTest extends TestCase
             [
                 'retrySettings' => [
                     'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier'    => 1.3,
-                    'maxRetryDelayMillis'     => 10000,
-                    'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled'          => TRUE,
+                    'retryDelayMultiplier' => 1.3,
+                    'maxRetryDelayMillis' => 10000,
+                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                    'retriesEnabled' => true,
                 ],
             ]
         );
@@ -337,9 +336,9 @@ class CloudTaskCreatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->tasks_client = new TasksClientSpy;
-        $this->logger       = new NullLogger;
-        $this->task_config  = TaskTypeConfigStub::withAnyTaskType();
+        $this->tasks_client = new TasksClientSpy();
+        $this->logger = new NullLogger();
+        $this->task_config = TaskTypeConfigStub::withAnyTaskType();
     }
 
     protected function newSubject()
@@ -357,11 +356,13 @@ class TasksClientSpy implements CloudTasksClientInterface
     protected $created = [];
     protected $create_will_throw;
 
-    public function __construct() { }
+    public function __construct()
+    {
+    }
 
     public static function willThrowOnCreate(Exception $e)
     {
-        $i                    = new static;
+        $i = new static();
         $i->create_will_throw = $e;
 
         return $i;
@@ -373,7 +374,7 @@ class TasksClientSpy implements CloudTasksClientInterface
             throw $this->create_will_throw;
         }
         $this->created[] = ['parent' => $parent, 'task' => $task, 'args' => $call_options];
-        $result          = clone $task;
+        $result = clone $task;
         $result->setName($parent.'/tasks/created-task-name');
 
         return $result;
@@ -397,5 +398,4 @@ class TasksClientSpy implements CloudTasksClientInterface
         Assert::assertCount(1, $this->created);
         Assert::assertSame($options, $this->created[0]['args']);
     }
-
 }

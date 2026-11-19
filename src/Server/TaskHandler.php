@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server;
-
 
 interface TaskHandler
 {

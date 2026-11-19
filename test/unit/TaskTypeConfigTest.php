@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper;
-
 
 use Google\ApiCore\ValidationException;
 use PHPUnit\Framework\TestCase;
@@ -12,24 +10,24 @@ class TaskTypeConfigTest extends TestCase
     protected array $vars = [];
     protected string $type = 'foo-task';
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(TaskTypeConfig::class, $this->newSubject());
     }
 
-    public function test_it_throws_with_invalid_queue_path_components()
+    public function testItThrowsWithInvalidQueuePathComponents()
     {
         $this->vars['queue'] = [
-            'project'  => './foo',
+            'project' => './foo',
             'location' => 'outer-space',
-            'name'     => 'slow-things',
+            'name' => 'slow-things',
         ];
-        $subject             = $this->newSubject();
+        $subject = $this->newSubject();
         $this->expectException(ValidationException::class);
         $subject->getQueuePath();
     }
 
-    public function test_it_provides_queue_path_from_config_array()
+    public function testItProvidesQueuePathFromConfigArray()
     {
         $this->vars['queue'] = ['project' => 'big-work', 'location' => 'outer-space', 'name' => 'slow-things'];
         $this->assertSame(
@@ -38,10 +36,10 @@ class TaskTypeConfigTest extends TestCase
         );
     }
 
-    public function test_it_replaces_task_type_parameter_in_handler_url()
+    public function testItReplacesTaskTypeParameterInHandlerUrl()
     {
         $this->vars['handler_url'] = 'https://some.handler/_do_task/{TASK_TYPE}';
-        $this->type                = 'slow-job';
+        $this->type = 'slow-job';
 
         $subject = $this->newSubject();
         $this->assertSame(

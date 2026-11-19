@@ -1,10 +1,7 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
-
-use PHPUnit\Framework\Attributes\TestWith;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
@@ -12,23 +9,24 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use Ingenerator\PHPUtils\Mutex\MockMutexWrapper;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 class TaskMutexLockingMiddlewareTest extends TestCase
 {
     protected MockMutexWrapper $mutex;
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(TaskMutexLockingMiddleware::class, $this->newSubject());
     }
 
     #[TestWith(['https://my.handler/_task/anything', 'task-5c737dfa9f1aee5d5cee02ded109cb25'])]
     #[TestWith(['https://my.handler/_task/anything?foo=bar', 'task-58edbfa5da73f53ad2324fd00aacdcdd'])]
-    public function test_it_takes_mutex_based_on_request_url($url, $expect_lock_name)
+    public function testItTakesMutexBasedOnRequestUrl($url, $expect_lock_name)
     {
-        $this->mutex = new MockMutexWrapper;
-        $result      = $this->newSubject()->process(
+        $this->mutex = new MockMutexWrapper();
+        $result = $this->newSubject()->process(
             TaskRequestStub::with(['url' => $url]),
             TestTaskChain::will(
                 function () {
@@ -39,10 +37,10 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->assertSame($expect_lock_name, $result->getMsg());
     }
 
-    public function test_it_returns_result_of_next_handler_if_mutex_available()
+    public function testItReturnsResultOfNextHandlerIfMutexAvailable()
     {
-        $res    = new ArbitraryTaskResult('got-mutex');
-        $req    = TaskRequestStub::any();
+        $res = new ArbitraryTaskResult('got-mutex');
+        $req = TaskRequestStub::any();
         $result = $this->newSubject()->process(
             $req,
             TestTaskChain::withHandler(TestTaskHandler::expectsReqAndReturns($req, $res))
@@ -50,7 +48,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->assertSame($res, $result);
     }
 
-    public function test_it_returns_mutex_timeout_without_running_handler_if_locked()
+    public function testItReturnsMutexTimeoutWithoutRunningHandlerIfLocked()
     {
         $this->mutex->willTimeoutEverything();
 
@@ -64,7 +62,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mutex = new MockMutexWrapper;
+        $this->mutex = new MockMutexWrapper();
     }
 
     protected function newSubject()

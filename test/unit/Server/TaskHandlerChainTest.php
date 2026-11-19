@@ -1,10 +1,7 @@
 <?php
 
-
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
-
-use UnderflowException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
@@ -12,25 +9,26 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestMiddleware;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskHandler;
 use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
 use PHPUnit\Framework\TestCase;
+use UnderflowException;
 
 class TaskHandlerChainTest extends TestCase
 {
     protected $middlewares = [];
 
-    public function test_it_is_initialisable()
+    public function testItIsInitialisable()
     {
         $this->assertInstanceOf(TaskHandlerChain::class, $this->newSubject());
     }
 
-    public function test_it_throws_if_calling_next_handler_without_initialising_handler()
+    public function testItThrowsIfCallingNextHandlerWithoutInitialisingHandler()
     {
         $this->middlewares = [TestMiddleware::neverCalled()];
-        $subject           = $this->newSubject();
+        $subject = $this->newSubject();
         $this->expectException(UnderflowException::class);
         $subject->nextHandler(TaskRequestStub::any());
     }
 
-    public function test_its_process_method_does_not_modify_state_of_original_object()
+    public function testItsProcessMethodDoesNotModifyStateOfOriginalObject()
     {
         $this->middlewares = [
             TestMiddleware::callsNext(),
@@ -46,18 +44,18 @@ class TaskHandlerChainTest extends TestCase
             )
         );
         $this->assertSame(
-            ['middlewares' => $this->middlewares, 'handler' => NULL],
+            ['middlewares' => $this->middlewares, 'handler' => null],
             ObjectPropertyRipper::rip($subject, ['middlewares', 'handler']),
             'Does not modify state of original object'
         );
     }
 
-    public function test_its_process_calls_handler_and_returns_result_without_middlewares()
+    public function testItsProcessCallsHandlerAndReturnsResultWithoutMiddlewares()
     {
         $this->middlewares = [];
-        $rsp               = new ArbitraryTaskResult('anything');
-        $request           =TaskRequestStub::any();
-        $handler           = TestTaskHandler::expectsReqAndReturns($request, $rsp);
+        $rsp = new ArbitraryTaskResult('anything');
+        $request = TaskRequestStub::any();
+        $handler = TestTaskHandler::expectsReqAndReturns($request, $rsp);
 
         $this->assertSame(
             $rsp,
@@ -66,11 +64,11 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function test_its_process_calls_middlewares_before_returning_handler_result()
+    public function testItsProcessCallsMiddlewaresBeforeReturningHandlerResult()
     {
-        $rsp               = new ArbitraryTaskResult('anything');
-        $request           =TaskRequestStub::any();
-        $middleware_calls  = [];
+        $rsp = new ArbitraryTaskResult('anything');
+        $request = TaskRequestStub::any();
+        $middleware_calls = [];
         $this->middlewares = [
             new TestMiddleware(
                 function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls) {
@@ -98,17 +96,16 @@ class TaskHandlerChainTest extends TestCase
         $this->assertSame(
             [
                 ['one', $request],
-                ['two', $request]
+                ['two', $request],
             ],
             $middleware_calls
         );
     }
 
-
-    public function test_its_process_short_circuits_if_middleware_returns_result_without_next()
+    public function testItsProcessShortCircuitsIfMiddlewareReturnsResultWithoutNext()
     {
-        $rsp               = new ArbitraryTaskResult('anything');
-        $request           =TaskRequestStub::any();
+        $rsp = new ArbitraryTaskResult('anything');
+        $request = TaskRequestStub::any();
         $this->middlewares = [
             TestMiddleware::callsNext(),
             TestMiddleware::returnsResult($rsp),
@@ -125,5 +122,4 @@ class TaskHandlerChainTest extends TestCase
     {
         return new TaskHandlerChain(...$this->middlewares);
     }
-
 }

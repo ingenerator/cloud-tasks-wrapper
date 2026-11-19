@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
+ *
  * @licence   BSD-3-Clause
  */
 
@@ -15,8 +17,8 @@ use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 
 class TransactionMarkerMiddleware implements TaskHandlerMiddleware
 {
-    const TRANSACTION_MARKER_HEADER        = 'X-Transaction';
-    const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
+    public const TRANSACTION_MARKER_HEADER = 'X-Transaction';
+    public const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
 
     private TransactionMarkerRepository $transaction_marker_repo;
 
@@ -46,5 +48,4 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
         // transaction never completed e.g. rolled back
         return TransactionMarkerResult::transactionExpired($uuid, $expiry);
     }
-
 }

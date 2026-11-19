@@ -1,46 +1,47 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper;
-
 
 use Google\ApiCore\ApiStatus;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
+use InvalidArgumentException;
+use UnderflowException;
+
+use function array_merge;
 
 class TaskTypeConfigProvider
 {
-
     /**
      * @var array default options for retrying creation of cloud tasks
      */
     protected static $defaultCreateRetry = [
         'initialRetryDelayMillis' => 100,
-        'retryDelayMultiplier'    => 1.3,
-        'maxRetryDelayMillis'     => 10000,
+        'retryDelayMultiplier' => 1.3,
+        'maxRetryDelayMillis' => 10000,
         // NB that retryableCodes is not customisable due to the internals of array merging
-        'retryableCodes'          => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-        'retriesEnabled'          => TRUE,
+        'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+        'retriesEnabled' => true,
     ];
 
     protected array $config;
 
     public function __construct(array $config)
     {
-        $config['_default']['create_retry_settings'] = \array_merge(
+        $config['_default']['create_retry_settings'] = array_merge(
             static::$defaultCreateRetry,
             $config['_default']['create_retry_settings'] ?? []
         );
-        $this->config                                = $config;
+        $this->config = $config;
     }
 
     public function getConfig(string $task_type): TaskTypeConfig
     {
         if ($task_type === '_default') {
-            throw new \InvalidArgumentException('Cannot directly access _default task config');
+            throw new InvalidArgumentException('Cannot directly access _default task config');
         }
 
-        if ( ! isset($this->config[$task_type])) {
-            throw new \UnderflowException('No task type '.$task_type.' is defined');
+        if (!isset($this->config[$task_type])) {
+            throw new UnderflowException('No task type '.$task_type.' is defined');
         }
 
         $cfg = AssociativeArrayUtils::deepMerge(
@@ -52,9 +53,8 @@ class TaskTypeConfigProvider
             // This is because the ::deepMerge will always combine rather than replace an indexed array of codes
             // And it doesn't seem likely enough that we would ever need to customise it at a per-application level
             // to justify the complexity of merging that value differently.
-            throw new \InvalidArgumentException('Cannot customise `retryableCodes` for creating cloud tasks');
+            throw new InvalidArgumentException('Cannot customise `retryableCodes` for creating cloud tasks');
         }
-
 
         return new TaskTypeConfig($task_type, $cfg);
     }

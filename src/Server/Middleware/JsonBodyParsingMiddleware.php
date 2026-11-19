@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
+ *
  * @licence   BSD-3-Clause
  */
 
@@ -17,7 +19,6 @@ use Ingenerator\PHPUtils\StringEncoding\JSON;
 
 class JsonBodyParsingMiddleware implements TaskHandlerMiddleware
 {
-
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
     {
         $http_req = $request->getHttpRequest();
@@ -36,5 +37,4 @@ class JsonBodyParsingMiddleware implements TaskHandlerMiddleware
 
         return $chain->nextHandler($request);
     }
-
 }

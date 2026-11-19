@@ -1,28 +1,29 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Client;
 
-
+use DateInterval;
+use DateTimeImmutable;
 use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
+use InvalidArgumentException;
+
+use function array_keys;
+use function ceil;
+use function hash;
+use function http_build_query;
 use function str_contains;
 
 class CreateTaskOptions
 {
-
     /**
-     * Time the object was created (mostly to provide consistent / testable time-based behaviour)
-     *
-     * @var \DateTimeImmutable
+     * Time the object was created (mostly to provide consistent / testable time-based behaviour).
      */
-    private \DateTimeImmutable $_create_time;
+    private DateTimeImmutable $_create_time;
 
     /**
-     * The originally externally-supplied options
-     *
-     * @var array
+     * The originally externally-supplied options.
      */
     private array $_raw_options;
 
@@ -30,38 +31,30 @@ class CreateTaskOptions
      * Data to be sent in the body, can be JSON or form-encoded:
      * - to send JSON, 'body' => ['json' => [//data]]
      * - to send form, 'body' => ['form' => [//data]]
-     *
-     * @var string|null
      */
-    private ?string $body = NULL;
+    private ?string $body = null;
 
     /**
-     * Extra headers to send with the HTTP request to the task handler
-     *
-     * @var array
+     * Extra headers to send with the HTTP request to the task handler.
      */
     private array $headers = [];
 
     /**
-     * Optionally specify a complete URL the task should be sent to, otherwise this will come from the TaskTypeConfig
+     * Optionally specify a complete URL the task should be sent to, otherwise this will come from the TaskTypeConfig.
      */
-    private ?string $custom_handler_url = NULL;
+    private ?string $custom_handler_url = null;
 
     /**
      * Optionally add GET parameters to the handler URL.
      *
      * The handler URL itself comes from the task type config.
-     *
-     * @var array|null
      */
-    private ?array $query = NULL;
+    private ?array $query = null;
 
     /**
-     * Optionally specify when the task should first be executed
-     *
-     * @var \DateTimeImmutable|null
+     * Optionally specify when the task should first be executed.
      */
-    private ?\DateTimeImmutable $schedule_send_after = NULL;
+    private ?DateTimeImmutable $schedule_send_after = null;
 
     /**
      * Optional, specify a task ID for server-side dedupe by Cloud Tasks. Note per the
@@ -69,37 +62,29 @@ class CreateTaskOptions
      * well-distributed hash value. For fastest dispatch allow Cloud Tasks to duplicate
      * and deal with de-duping on receipt (necessary anyway as Tasks is always
      * at-least-once delivery).
-     *
-     * @var string|null
      */
-    private ?string $task_id = NULL;
+    private ?string $task_id = null;
 
     /**
      * Optional, *instead* of task_id, specify task_id_from to have the library automatically
      * calculate the task_id as an SHA256 hash of the application-provided string. Supports the
      * common case where you want to use a known string for deduping, but want the throughput of
      * well-distributed random-like task names.
-     *
-     * @var string|null
      */
-    private ?string $task_id_from = NULL;
+    private ?string $task_id_from = null;
 
     /**
-     * Optional, combine with `task_id_from` to include header, query values and schedule_send_after in the hashed ID
+     * Optional, combine with `task_id_from` to include header, query values and schedule_send_after in the hashed ID.
      *
      * It's very common you just want to dedupe a particular execution at a particular time. This option hashes the
      * values that usually make the submission unique. Can be used with, or without, the task_id_from option.
-     *
-     * @var bool
      */
-    private bool $task_id_hash_options = FALSE;
+    private bool $task_id_hash_options = false;
 
     /**
-     * Number of seconds to delay execution after the end of a throttling window
+     * Number of seconds to delay execution after the end of a throttling window.
      *
      * See main throttling docs for further details.
-     *
-     * @var int|null
      */
     private ?int $throttle_delay_secs = 60;
 
@@ -109,10 +94,8 @@ class CreateTaskOptions
      * Use this where e.g. you want to queue a task on high-frequency changes but dedupe / group the
      * executions together once the data for a given record has settled in some way. See main docs for
      * details on usage.
-     *
-     * @var \DateInterval|null
      */
-    private ?\DateInterval $throttle_interval = NULL;
+    private ?DateInterval $throttle_interval = null;
 
     /**
      * Whether to throw on a duplicate task (ALREADY_EXISTS) error, or to treat this as a safe condition.
@@ -121,24 +104,20 @@ class CreateTaskOptions
      * then it's expected that you may get an `ALREADY_EXISTS` error when a task is deduplicated. Often
      * this can be silently ignored by your app (if you just care it ran once) - set this flag to FALSE
      * to have the wrapper swallow that error.
-     *
-     * @var bool
      */
-    private bool $throw_on_duplicate = TRUE;
+    private bool $throw_on_duplicate = true;
 
     /**
      * Create an instance.
      *
      * See the class property list for the allowed keys and documentation
-     *
-     * @param array $options
      */
     public function __construct(array $options)
     {
         // Copied to allow the MockTaskCreator to capture it
         $options['_raw_options'] = $options;
-        $options['_create_time'] ??= new \DateTimeImmutable;
-        $encoded                 = $this->encodeBodyOption($options['body'] ?? NULL);
+        $options['_create_time'] ??= new DateTimeImmutable();
+        $encoded = $this->encodeBodyOption($options['body'] ?? null);
         if ($encoded) {
             $options['body'] = $encoded['body'];
             // ??= means only set this key if not already present / null
@@ -150,21 +129,21 @@ class CreateTaskOptions
         ObjectPropertyPopulator::assignHash($this, $options);
 
         if ($this->task_id and $this->task_id_from) {
-            throw new \InvalidArgumentException('Cannot set both task_id and task_id_from');
+            throw new InvalidArgumentException('Cannot set both task_id and task_id_from');
         }
         if ($this->task_id and $this->task_id_hash_options) {
-            throw new \InvalidArgumentException('Cannot set both task_id and task_id_hash_options');
+            throw new InvalidArgumentException('Cannot set both task_id and task_id_hash_options');
         }
 
-        if (str_contains($this->custom_handler_url ?? '', '?') and ! empty($this->query)) {
-            throw new \InvalidArgumentException(
+        if (str_contains($this->custom_handler_url ?? '', '?') and !empty($this->query)) {
+            throw new InvalidArgumentException(
                 'Cannot set a query if your custom_handler_url already includes a querystring'
             );
         }
 
-        if (isset($options['throttle_delay_secs']) and ! $this->throttle_interval) {
+        if (isset($options['throttle_delay_secs']) and !$this->throttle_interval) {
             // Only matters if they set it explicitly so we check $options not the property which has a default
-            throw new \InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
+            throw new InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
         }
 
         if ($this->throttle_interval) {
@@ -177,41 +156,41 @@ class CreateTaskOptions
 
     private function encodeBodyOption($body): ?array
     {
-        if ( ! is_array($body)) {
-            return NULL;
+        if (!is_array($body)) {
+            return null;
         }
 
-        $type = implode(',', \array_keys($body));
+        $type = implode(',', array_keys($body));
         switch ($type) {
             case 'json':
                 return [
-                    'body'         => JSON::encode($body['json'], FALSE),
+                    'body' => JSON::encode($body['json'], false),
                     'Content-Type' => 'application/json',
                 ];
             case 'form':
                 return [
-                    'body'         => \http_build_query($body['form']),
+                    'body' => http_build_query($body['form']),
                     'Content-Type' => 'application/x-www-form-urlencoded',
                 ];
             default:
-                throw new \InvalidArgumentException('Invalid body type: '.JSON::encode($type, FALSE));
+                throw new InvalidArgumentException('Invalid body type: '.JSON::encode($type, false));
         }
     }
 
     private function parseThrottleOptions(): void
     {
         if ($this->schedule_send_after) {
-            throw new \InvalidArgumentException('Cannot set both schedule_send_after and throttle_interval');
+            throw new InvalidArgumentException('Cannot set both schedule_send_after and throttle_interval');
         }
-        if ( ! $this->task_id_from) {
-            throw new \InvalidArgumentException('Cannot set throttle_interval without task_id_from');
+        if (!$this->task_id_from) {
+            throw new InvalidArgumentException('Cannot set throttle_interval without task_id_from');
         }
 
         // Round up the curent time to the end of the next bucketing window.
         // E.g. a task executed at 11:03:30 with a `PT5M` interval will be rounded up to 11:05:00.
 
         $bucket_seconds = $this->calculateIntervalSeconds($this->throttle_interval);
-        $bucket_ends_ts = ($bucket_seconds * \ceil($this->_create_time->format('U.u') / $bucket_seconds));
+        $bucket_ends_ts = ($bucket_seconds * ceil($this->_create_time->format('U.u') / $bucket_seconds));
 
         // Then add the throttle_delay_seconds to get the time the task should actually run.
         // So e.g. with the default 60 second delay, our 11:03:30 task will run at 11:06:00.
@@ -220,18 +199,13 @@ class CreateTaskOptions
         $exec_time = DateTimeImmutableFactory::atUnixSeconds($bucket_ends_ts + $this->throttle_delay_secs);
 
         $this->schedule_send_after = $exec_time;
-        $this->task_id_from        .= '@'.$this->schedule_send_after->format('U.u');
+        $this->task_id_from .= '@'.$this->schedule_send_after->format('U.u');
     }
 
-    /**
-     * @param \DateInterval|null $interval
-     *
-     * @return int
-     */
-    private function calculateIntervalSeconds(?\DateInterval $interval): int
+    private function calculateIntervalSeconds(?DateInterval $interval): int
     {
-        $start = new \DateTimeImmutable;
-        $end   = $start->add($interval);
+        $start = new DateTimeImmutable();
+        $end = $start->add($interval);
         $delta = $end->getTimestamp() - $start->getTimestamp();
 
         return $delta;
@@ -244,7 +218,7 @@ class CreateTaskOptions
             $parts[] = '@'.$this->schedule_send_after->format('U.u');
         }
         if ($this->query) {
-            $parts[] = '?'.\http_build_query($this->query);
+            $parts[] = '?'.http_build_query($this->query);
         }
         if ($this->headers) {
             $parts[] = JSON::encode($this->headers);
@@ -253,37 +227,26 @@ class CreateTaskOptions
     }
 
     /**
-     * Return the fully-qualified task name (which must include the queue path) if any
-     *
-     * @param string $queue_path
-     * @param array  $options
-     *
-     * @return string|null
+     * Return the fully-qualified task name (which must include the queue path) if any.
      */
     public function buildTaskName(string $queue_path): ?string
     {
         if ($this->task_id_from) {
-            $id = \hash('sha256', $this->task_id_from);
+            $id = hash('sha256', $this->task_id_from);
         } elseif ($this->task_id) {
             $id = $this->task_id;
         } else {
-            return NULL;
+            return null;
         }
 
         return $queue_path.'/tasks/'.$id;
     }
 
-    /**
-     * @return string|null
-     */
     public function getBodyContent(): ?string
     {
         return $this->body;
     }
 
-    /**
-     * @return array
-     */
     public function getHeaders(): array
     {
         return $this->headers;
@@ -294,42 +257,28 @@ class CreateTaskOptions
         return $this->custom_handler_url;
     }
 
-    /**
-     * @return array|null
-     */
     public function getQuery(): ?array
     {
         return $this->query;
     }
 
-    /**
-     * @return array
-     */
     public function getRawOptions(): array
     {
         return $this->_raw_options;
     }
 
-    /**
-     * @return \DateTimeImmutable|null
-     */
-    public function getScheduleSendAfter(): ?\DateTimeImmutable
+    public function getScheduleSendAfter(): ?DateTimeImmutable
     {
         return $this->schedule_send_after;
     }
 
     public function hasQuery(): bool
     {
-        return ! empty($this->query);
-
+        return !empty($this->query);
     }
 
-    /**
-     * @return bool
-     */
     public function shouldThrowOnDuplicate(): bool
     {
         return $this->throw_on_duplicate;
     }
-
 }

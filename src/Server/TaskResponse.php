@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Server;
-
 
 class TaskResponse
 {
@@ -12,34 +10,23 @@ class TaskResponse
 
     public function __construct(int $http_code, string $http_code_string, TaskHandlerResult $result)
     {
-        $this->status_code      = $http_code;
+        $this->status_code = $http_code;
         $this->status_code_name = $http_code_string;
-        $this->result           = $result;
+        $this->result = $result;
     }
 
-    /**
-     * @return int
-     */
     public function getStatusCode(): int
     {
         return $this->status_code;
     }
 
-    /**
-     * @return string
-     */
     public function getStatusCodeName(): string
     {
         return $this->status_code_name;
     }
 
-    /**
-     * @return \Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult
-     */
     public function getResult(): TaskHandlerResult
     {
         return $this->result;
     }
-
-
 }

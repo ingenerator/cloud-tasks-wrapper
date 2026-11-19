@@ -1,19 +1,15 @@
 <?php
 
-
 namespace Ingenerator\CloudTasksWrapper\Client;
-
 
 use Google\ApiCore\InsecureCredentialsWrapper;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Psr\Cache\CacheItemPoolInterface;
-use RuntimeException;
 
 class CloudTasksClientFactory
 {
-
     public static function makeClient(CacheItemPoolInterface $auth_cache, array $config): CloudTasksClient
     {
         $base_options = [
@@ -24,8 +20,8 @@ class CloudTasksClientFactory
             $options = array_merge(
                 $base_options,
                 [
-                    'apiEndpoint'     => $config['emulator_endpoint'],
-                    'credentials'     => $config['credentials'] ?? new InsecureCredentialsWrapper(),
+                    'apiEndpoint' => $config['emulator_endpoint'],
+                    'credentials' => $config['credentials'] ?? new InsecureCredentialsWrapper(),
                     'transportConfig' => [
                         'grpc' => [
                             'channel' => new Channel(
@@ -45,5 +41,4 @@ class CloudTasksClientFactory
 
         return new CloudTasksClient($options);
     }
-
 }
