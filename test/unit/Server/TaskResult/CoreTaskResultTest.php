@@ -101,7 +101,7 @@ final class CoreTaskResultTest extends TestCase
     public function testItHasNamedConstructorForEachStatusAndCanBeCreated(
         string $method,
         ?array $args,
-        ?array $expect,
+        array $expect,
     ): void {
         if ($args === null) {
             $this->fail('No testcase defined for CoreTaskResult::'.$method);
