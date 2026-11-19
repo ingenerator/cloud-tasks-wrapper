@@ -3,6 +3,7 @@
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use BadMethodCallException;
+use Closure;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
@@ -10,8 +11,6 @@ use PHPUnit\Framework\Assert;
 
 final class TestTaskHandler implements TaskHandler
 {
-    private $callable;
-
     public static function expectsReqAndReturns(
         TaskRequest $expect_req,
         TaskHandlerResult $result,
@@ -37,9 +36,8 @@ final class TestTaskHandler implements TaskHandler
         return new self(fn (): TaskHandlerResult => $result);
     }
 
-    public function __construct(callable $callable)
+    public function __construct(private readonly Closure $callable)
     {
-        $this->callable = $callable;
     }
 
     public function handle(TaskRequest $request): TaskHandlerResult
