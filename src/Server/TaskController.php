@@ -36,7 +36,7 @@ class TaskController
         try {
             $handler = $this->handler_factory->getHandler($task_req->getTaskType());
             $result = $this->chain->process($task_req, $handler);
-        } catch (UnknownTaskTypeException $e) {
+        } catch (UnknownTaskTypeException) {
             $result = CoreTaskResult::handlerNotFound($task_req->getTaskType());
         }
 
