@@ -12,7 +12,6 @@ use Ingenerator\OIDCTokenVerifier\TokenConstraints;
 use Ingenerator\OIDCTokenVerifier\TokenVerificationResult;
 use Ingenerator\OIDCTokenVerifier\TokenVerifier;
 
-use function get_class;
 use function preg_match;
 use function sprintf;
 
@@ -87,7 +86,7 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
         return CoreTaskResult::authInvalid(
             sprintf(
                 'Token failed (%s: %s)',
-                get_class($failure),
+                $failure::class,
                 $failure->getMessage()
             ),
             ['exception' => $failure]

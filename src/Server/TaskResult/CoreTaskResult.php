@@ -7,8 +7,6 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Throwable;
 
-use function get_class;
-
 class CoreTaskResult extends TaskHandlerResult
 {
     public const AUTH_INVALID = 'authInvalid';
@@ -69,7 +67,7 @@ class CoreTaskResult extends TaskHandlerResult
     {
         return new static(
             static::UNCAUGHT_EXCEPTION,
-            sprintf('[%s] %s', get_class($e), $e->getMessage()),
+            sprintf('[%s] %s', $e::class, $e->getMessage()),
             ['exception' => $e]
         );
     }
