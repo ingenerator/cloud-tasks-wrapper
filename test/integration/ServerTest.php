@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\integration;
 
 use Firebase\JWT\JWT;
@@ -7,7 +9,6 @@ use Google\Auth\Cache\MemoryCacheItemPool;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
-use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\ArrayTaskHandlerFactory;
@@ -22,9 +23,9 @@ use function file_get_contents;
 use function parse_str;
 use function parse_url;
 
-class ServerTest extends TestCase
+final class ServerTest extends TestCase
 {
-    public function testItCanProcessSuccessfulTasks()
+    public function testItCanProcessSuccessfulTasks(): void
     {
         $signer_email = 'someone@service.account.test';
         $handler_url = 'http://my.app/_do_task/do-my-task?person=15&option=something';
@@ -69,12 +70,12 @@ class ServerTest extends TestCase
         $this->assertSame('CustomTaskResult', $response->getStatusCodeName(), 'Correct HTTP status name');
     }
 
-    private function makeTestHandler()
+    private function makeTestHandler(): TaskHandler
     {
         return new class implements TaskHandler {
             public function handle(
                 TaskRequest $request,
-            ): TaskHandlerResult {
+            ): ArbitraryTaskResult {
                 return new ArbitraryTaskResult(
                     'customTaskResult',
                     'Got task from '.$request->getCallerEmail(),
@@ -91,7 +92,7 @@ class ServerTest extends TestCase
         };
     }
 
-    private function makeAuthToken(string $audience, string $email)
+    private function makeAuthToken(string $audience, string $email): string
     {
         $keys = JSON::decodeArray(
             file_get_contents('https://ingenerator.github.io/oidc-auth-sandbox/jwks-private-keys.json')
@@ -116,7 +117,7 @@ class ServerTest extends TestCase
     /**
      * @return ServerRequest|ServerRequestInterface
      */
-    private function makeServerRequest(string $handler_url, string $signer_email)
+    private function makeServerRequest(string $handler_url, string $signer_email): ServerRequestInterface
     {
         $req = new ServerRequest(
             'POST',

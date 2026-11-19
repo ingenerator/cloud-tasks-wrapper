@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper;
 
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use InvalidArgumentException;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
 
-class TaskTypeConfigProviderTest extends TestCase
+final class TaskTypeConfigProviderTest extends TestCase
 {
     protected array $config = [
         '_default' => [
@@ -23,12 +26,12 @@ class TaskTypeConfigProviderTest extends TestCase
         ],
     ];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskTypeConfigProvider::class, $this->newSubject());
     }
 
-    public function testItThrowsOnUnknownTaskType()
+    public function testItThrowsOnUnknownTaskType(): void
     {
         $this->config = ['_default' => []];
         $subject = $this->newSubject();
@@ -36,7 +39,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('unknown');
     }
 
-    public function testItThrowsOnDirectAccessToDefault()
+    public function testItThrowsOnDirectAccessToDefault(): void
     {
         $this->config = ['_default' => []];
         $subject = $this->newSubject();
@@ -44,7 +47,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('_default');
     }
 
-    public function testItThrowsOnAttemptToOverrideRetryableCodes()
+    public function testItThrowsOnAttemptToOverrideRetryableCodes(): void
     {
         $this->config['_default']['create_retry_settings']['retryableCodes'] = ['foo'];
         $this->config['any-task'] = [];
@@ -55,7 +58,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('any-task');
     }
 
-    public function testItProvidesExplicitValuesForKnownTaskType()
+    public function testItProvidesExplicitValuesForKnownTaskType(): void
     {
         $this->config = [
             'do-a-thing' => [
@@ -83,7 +86,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public function testItMergesDefaultConfigForKnownTaskType()
+    public function testItMergesDefaultConfigForKnownTaskType(): void
     {
         $this->config = [
             '_default' => [
@@ -121,7 +124,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public function testItCanProvideCustomTokenAudienceIfConfigured()
+    public function testItCanProvideCustomTokenAudienceIfConfigured(): void
     {
         $this->config = [
             'do-a-thing' => [
@@ -139,7 +142,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $this->assertSame('pick me!', $cfg->getCustomTokenAudience());
     }
 
-    public function testItProvidesDefaultCreationRetryOptionsIfNoneProvided()
+    public function testItProvidesDefaultCreationRetryOptionsIfNoneProvided(): void
     {
         unset($this->config['_default']['create_retry_settings']);
         $this->config['my-task'] = [];
@@ -156,42 +159,43 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public static function provider_custom_retry()
+    /**
+     * @return Iterator<int, array<string, array<array<string, int>|string>|bool|float|int>[]>
+     */
+    public static function provider_custom_retry(): Iterator
     {
-        return [
+        yield [
+            // Override one prop for all methods
             [
-                // Override one prop for all methods
-                [
-                    '_default' => ['create_retry_settings' => ['retryDelayMultiplier' => 5]],
-                    'some-task' => [],
-                ],
-                [
-                    'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier' => 5,
-                    'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled' => true,
-                ],
+                '_default' => ['create_retry_settings' => ['retryDelayMultiplier' => 5]],
+                'some-task' => [],
             ],
             [
-                // Override for a single task type
-                [
-                    '_default' => ['create_retry_settings' => ['maxRetryDelayMillis' => 5000]],
-                    'some-task' => ['create_retry_settings' => ['maxRetryDelayMillis' => 20000]],
-                ],
-                [
-                    'initialRetryDelayMillis' => 100,
-                    'retryDelayMultiplier' => 1.3,
-                    'maxRetryDelayMillis' => 20000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
-                    'retriesEnabled' => true,
-                ],
+                'initialRetryDelayMillis' => 100,
+                'retryDelayMultiplier' => 5,
+                'maxRetryDelayMillis' => 10000,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                'retriesEnabled' => true,
+            ],
+        ];
+        yield [
+            // Override for a single task type
+            [
+                '_default' => ['create_retry_settings' => ['maxRetryDelayMillis' => 5000]],
+                'some-task' => ['create_retry_settings' => ['maxRetryDelayMillis' => 20000]],
+            ],
+            [
+                'initialRetryDelayMillis' => 100,
+                'retryDelayMultiplier' => 1.3,
+                'maxRetryDelayMillis' => 20000,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+                'retriesEnabled' => true,
             ],
         ];
     }
 
     #[DataProvider('provider_custom_retry')]
-    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask($config, $expect)
+    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask(array $config, array $expect): void
     {
         $this->config = $config;
         $this->config['_default']['queue'] = ['project' => 'a', 'location' => 'b', 'name' => 'c'];
@@ -203,7 +207,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    protected function newSubject()
+    protected function newSubject(): TaskTypeConfigProvider
     {
         return new TaskTypeConfigProvider($this->config);
     }

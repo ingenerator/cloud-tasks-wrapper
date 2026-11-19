@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
@@ -20,24 +22,8 @@ use function memory_get_peak_usage;
  */
 class TaskLoggingMiddleware implements TaskHandlerMiddleware
 {
-    protected array $default_context;
-
-    protected RealtimeClock $clock;
-
-    protected LoggerInterface $logger;
-
-    protected TaskResultCodeMapper $code_mapper;
-
-    public function __construct(
-        RealtimeClock $clock,
-        LoggerInterface $logger,
-        TaskResultCodeMapper $code_mapper,
-        array $default_log_context = [],
-    ) {
-        $this->logger = $logger;
-        $this->code_mapper = $code_mapper;
-        $this->clock = $clock;
-        $this->default_context = $default_log_context;
+    public function __construct(protected RealtimeClock $clock, protected LoggerInterface $logger, protected TaskResultCodeMapper $code_mapper, protected array $default_context = [])
+    {
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult

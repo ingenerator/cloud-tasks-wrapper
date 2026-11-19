@@ -9,16 +9,10 @@ use Ingenerator\CloudTasksWrapper\Server\UnknownTaskTypeException;
 class ArrayTaskHandlerFactory implements TaskHandlerFactory
 {
     /**
-     * @var TaskHandler[]
-     */
-    private array $handlers;
-
-    /**
      * @param TaskHandler[] $handlers keyed by task type
      */
-    public function __construct(array $handlers)
+    public function __construct(private array $handlers)
     {
-        $this->handlers = $handlers;
     }
 
     public function getHandler(string $task_type): TaskHandler

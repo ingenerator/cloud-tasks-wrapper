@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Exception;
@@ -13,18 +15,19 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
 use Ingenerator\OIDCTokenVerifier\TestHelpers\MockTokenVerifier;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
 use function base64_encode;
 
-class TaskRequestAuthenticatingMiddlewareTest extends TestCase
+final class TaskRequestAuthenticatingMiddlewareTest extends TestCase
 {
     protected MockTokenVerifier $token_verifier;
     protected TaskTypeConfigStub $task_type_config;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(
             TaskRequestAuthenticatingMiddleware::class,
@@ -32,7 +35,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsBadMethodIfRequestNotPost()
+    public function testItReturnsBadMethodIfRequestNotPost(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -50,7 +53,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsAuthNotPresentIfNoAuthToken()
+    public function testItReturnsAuthNotPresentIfNoAuthToken(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -68,7 +71,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsAuthInvalidIfAuthIsNotBearer()
+    public function testItReturnsAuthInvalidIfAuthIsNotBearer(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -90,7 +93,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItValidatesTokenWithTaskTypeSignerEmailAndTaskUrlAsAudiencePathAndQuery()
+    public function testItValidatesTokenWithTaskTypeSignerEmailAndTaskUrlAsAudiencePathAndQuery(): void
     {
         $this->task_type_config = TaskTypeConfigStub::withTaskType(
             'my-custom-task',
@@ -120,22 +123,20 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public static function provider_auth_failures()
+    public static function provider_auth_failures(): Iterator
     {
-        return [
-            [
-                new SignatureInvalidException('Sig verification failed'),
-                'Token failed ('.SignatureInvalidException::class.': Sig verification failed)',
-            ],
-            [
-                new ExpiredException('Expired token'),
-                'Token failed ('.ExpiredException::class.': Expired token)',
-            ],
+        yield [
+            new SignatureInvalidException('Sig verification failed'),
+            'Token failed ('.SignatureInvalidException::class.': Sig verification failed)',
+        ];
+        yield [
+            new ExpiredException('Expired token'),
+            'Token failed ('.ExpiredException::class.': Expired token)',
         ];
     }
 
     #[DataProvider('provider_auth_failures')]
-    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, $expect_msg)
+    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, string $expect_msg): void
     {
         $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result = $this->newSubject()
@@ -154,20 +155,18 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItAddsTokenInfoToRequestAndReturnsNextHandlerResultOnSuccess()
+    public function testItAddsTokenInfoToRequestAndReturnsNextHandlerResultOnSuccess(): void
     {
         $this->token_verifier = MockTokenVerifier::willSucceedWith(
             ['email' => 'foo@some.iam.gserviceaccount.com']
         );
         $request = TaskRequestStub::withAuthToken();
-        $this->assertSame(null, $request->getCallerEmail(), 'Has no caller email before');
+        $this->assertNull($request->getCallerEmail(), 'Has no caller email before');
 
         $result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) {
-                    return new ArbitraryTaskResult('OK', $request->getCallerEmail());
-                }
+                fn (TaskRequest $request): ArbitraryTaskResult => new ArbitraryTaskResult('OK', $request->getCallerEmail())
             )
         );
 

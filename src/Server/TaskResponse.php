@@ -1,18 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper\Server;
 
 class TaskResponse
 {
-    private int $status_code;
-    private string $status_code_name;
-    private TaskHandlerResult $result;
-
-    public function __construct(int $http_code, string $http_code_string, TaskHandlerResult $result)
-    {
-        $this->status_code = $http_code;
-        $this->status_code_name = $http_code_string;
-        $this->result = $result;
+    public function __construct(
+        private readonly int $status_code,
+        private readonly string $status_code_name,
+        private readonly TaskHandlerResult $result,
+    ) {
     }
 
     public function getStatusCode(): int

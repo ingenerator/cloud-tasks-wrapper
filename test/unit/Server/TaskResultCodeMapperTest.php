@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
@@ -7,20 +9,21 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
 use Ingenerator\PHPUtils\Object\ConstantDirectory;
 use InvalidArgumentException;
+use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
-class TaskResultCodeMapperTest extends TestCase
+final class TaskResultCodeMapperTest extends TestCase
 {
     protected $custom_codes = [];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskResultCodeMapper::class, $this->newSubject());
     }
 
-    public function testItBuildsHttpResponseFromTaskResultBasedOnConfig()
+    public function testItBuildsHttpResponseFromTaskResultBasedOnConfig(): void
     {
         $this->custom_codes['myCustomStatus'] = ['http_status' => 200];
         $response = $this->newSubject()->getHttpResponse(
@@ -38,7 +41,7 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public function testItProvidesLogLevelForTaskResultBasedOnConfig()
+    public function testItProvidesLogLevelForTaskResultBasedOnConfig(): void
     {
         $this->custom_codes['myCustomStatus'] = ['loglevel' => LogLevel::INFO];
         $this->assertSame(
@@ -47,7 +50,7 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public function testItThrowsForHttpResponseIfNotMappedOrInvalid()
+    public function testItThrowsForHttpResponseIfNotMappedOrInvalid(): void
     {
         $result = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
@@ -55,7 +58,7 @@ class TaskResultCodeMapperTest extends TestCase
         $subject->getHttpResponse($result);
     }
 
-    public function testItThrowsForLogLevelIfNotMapped()
+    public function testItThrowsForLogLevelIfNotMapped(): void
     {
         $result = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
@@ -67,11 +70,11 @@ class TaskResultCodeMapperTest extends TestCase
     {
         $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
 
-        return array_map(function (string $code) { return [$code]; }, $consts);
+        return array_map(fn (string $code): array => [$code], $consts);
     }
 
     #[DataProvider('provider_core_task_results')]
-    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code)
+    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code): void
     {
         $result = new ArbitraryTaskResult($code);
         $subject = $this->newSubject();
@@ -89,34 +92,35 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public static function provider_code_overrides(): array
+    /**
+     * @return Iterator<int, array<array<string, array<string, int|string>|int|string>|string>>
+     */
+    public static function provider_code_overrides(): Iterator
     {
-        return [
+        yield [
+            [CoreTaskResult::AUTH_NOT_PROVIDED => ['http_status' => 281]],
+            CoreTaskResult::AUTH_NOT_PROVIDED,
+            ['http' => 281, 'loglevel' => LogLevel::WARNING], // Uses default loglevel
+        ];
+        yield [
+            [CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
+            CoreTaskResult::MUTEX_TIMEOUT,
+            ['http' => 409, 'loglevel' => LogLevel::EMERGENCY], // Uses default http code
+        ];
+        yield [
             [
-                [CoreTaskResult::AUTH_NOT_PROVIDED => ['http_status' => 281]],
-                CoreTaskResult::AUTH_NOT_PROVIDED,
-                ['http' => 281, 'loglevel' => LogLevel::WARNING], // Uses default loglevel
-            ],
-            [
-                [CoreTaskResult::MUTEX_TIMEOUT => ['loglevel' => LogLevel::EMERGENCY]],
-                CoreTaskResult::MUTEX_TIMEOUT,
-                ['http' => 409, 'loglevel' => LogLevel::EMERGENCY], // Uses default http code
-            ],
-            [
-                [
-                    CoreTaskResult::BAD_HTTP_METHOD => [
-                        'http_status' => 297,
-                        'loglevel' => LogLevel::EMERGENCY,
-                    ],
+                CoreTaskResult::BAD_HTTP_METHOD => [
+                    'http_status' => 297,
+                    'loglevel' => LogLevel::EMERGENCY,
                 ],
-                CoreTaskResult::BAD_HTTP_METHOD,
-                ['http' => 297, 'loglevel' => LogLevel::EMERGENCY], // Uses both overrides
             ],
+            CoreTaskResult::BAD_HTTP_METHOD,
+            ['http' => 297, 'loglevel' => LogLevel::EMERGENCY], // Uses both overrides
         ];
     }
 
     #[DataProvider('provider_code_overrides')]
-    public function testUsersCanOverrideBehaviourOfCoreCodes($custom_codes, $code, $expect)
+    public function testUsersCanOverrideBehaviourOfCoreCodes(array $custom_codes, string $code, array $expect): void
     {
         $this->custom_codes = $custom_codes;
         $result = new ArbitraryTaskResult($code);

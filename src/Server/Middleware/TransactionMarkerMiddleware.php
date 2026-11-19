@@ -20,11 +20,9 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
     public const TRANSACTION_MARKER_HEADER = 'X-Transaction';
     public const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
 
-    private TransactionMarkerRepository $transaction_marker_repo;
-
-    public function __construct(TransactionMarkerRepository $transaction_marker_repo)
-    {
-        $this->transaction_marker_repo = $transaction_marker_repo;
+    public function __construct(
+        private readonly TransactionMarkerRepository $transaction_marker_repo,
+    ) {
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
@@ -32,7 +30,7 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
         $uuid = $request->getHttpRequest()->getHeaderLine(static::TRANSACTION_MARKER_HEADER);
 
         // go go go - if it's nothing to do with us / or it's ready to begin
-        if (empty($uuid) or $this->transaction_marker_repo->exists($uuid)) {
+        if (empty($uuid) || $this->transaction_marker_repo->exists($uuid)) {
             return $chain->nextHandler($request);
         }
 

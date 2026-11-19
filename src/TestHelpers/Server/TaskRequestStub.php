@@ -17,7 +17,10 @@ class TaskRequestStub extends TaskRequest
         );
     }
 
-    public static function with(array $options)
+    /**
+     * @param array<string, mixed> $options
+     */
+    public static function with(array $options): TaskRequest
     {
         $defaults = [
             'method' => 'POST',
@@ -50,12 +53,12 @@ class TaskRequestStub extends TaskRequest
         return $req;
     }
 
-    public static function withAuthToken(string $token = 'abc1234')
+    public static function withAuthToken(string $token = 'abc1234'): TaskRequest
     {
         return static::with(['headers' => ['Authorization' => 'Bearer '.$token]]);
     }
 
-    public static function withQuery(array $query)
+    public static function withQuery(array $query): TaskRequest
     {
         return static::with(['query' => $query]);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
@@ -16,7 +18,7 @@ use Psr\Log\Test\TestLogger;
 
 use function array_shift;
 
-class TaskLoggingMiddlewareTest extends TestCase
+final class TaskLoggingMiddlewareTest extends TestCase
 {
     protected LoggerInterface $logger;
 
@@ -26,12 +28,12 @@ class TaskLoggingMiddlewareTest extends TestCase
 
     protected $default_context = [];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskLoggingMiddleware::class, $this->newSubject());
     }
 
-    public function testItReturnsUnmodifiedResultFromNextHandler()
+    public function testItReturnsUnmodifiedResultFromNextHandler(): void
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->process(
@@ -41,7 +43,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
-    public function testItLogsTaskResultWithConfiguredLoglevel()
+    public function testItLogsTaskResultWithConfiguredLoglevel(): void
     {
         $this->code_mapper = new TaskResultCodeMapper(
             ['someCustomCode' => ['loglevel' => LogLevel::WARNING]]
@@ -58,7 +60,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItIncludesLogContextInLog()
+    public function testItIncludesLogContextInLog(): void
     {
         $this->code_mapper = new TaskResultCodeMapper(
             ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
@@ -81,7 +83,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItIncludesOptionalContextInAllLogs()
+    public function testItIncludesOptionalContextInAllLogs(): void
     {
         $this->default_context = [
             'foo' => 'bar',
@@ -107,7 +109,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItIncludesTimingInLog()
+    public function testItIncludesTimingInLog(): void
     {
         $this->code_mapper = new TaskResultCodeMapper(
             ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
@@ -116,7 +118,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->newSubject()->process(
             TaskRequestStub::any(),
             TestTaskChain::will(
-                function () {
+                function (): ArbitraryTaskResult {
                     $this->clock->tickMicroseconds(213204);
 
                     return new ArbitraryTaskResult('someCustomCode');
@@ -128,7 +130,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->assertSame(213, $log['context']['time_ms'], 'Should have logged time');
     }
 
-    public function testItIncludesMemoryInLog()
+    public function testItIncludesMemoryInLog(): void
     {
         $this->code_mapper = new TaskResultCodeMapper(
             ['someCustomCode' => ['loglevel' => LogLevel::INFO]]
@@ -152,7 +154,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         $this->assertLessThan(100, $mem, 'Should be less than 100MB');
     }
 
-    public function testItIncludesTaskRequestInfoInLog()
+    public function testItIncludesTaskRequestInfoInLog(): void
     {
         $this->code_mapper = new TaskResultCodeMapper(['code' => ['loglevel' => LogLevel::INFO]]);
 
@@ -192,7 +194,7 @@ class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
-    protected function newSubject()
+    protected function newSubject(): TaskLoggingMiddleware
     {
         return new TaskLoggingMiddleware(
             $this->clock,

@@ -17,7 +17,7 @@ class TestTaskHandler implements TaskHandler
         TaskHandlerResult $result,
     ): TestTaskHandler {
         return new static(
-            function ($got_req) use ($expect_req, $result) {
+            function ($got_req) use ($expect_req, $result): TaskHandlerResult {
                 Assert::assertSame($expect_req, $got_req);
 
                 return $result;
@@ -28,13 +28,13 @@ class TestTaskHandler implements TaskHandler
     public static function neverCalled(): TestTaskHandler
     {
         return new static(
-            function () { throw new BadMethodCallException('Did not expect handler call'); }
+            function (): void { throw new BadMethodCallException('Did not expect handler call'); }
         );
     }
 
     public static function returnsResult(TaskHandlerResult $result): TestTaskHandler
     {
-        return new static(function () use ($result) { return $result; });
+        return new static(fn (): TaskHandlerResult => $result);
     }
 
     public function __construct(callable $callable)

@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\Factory;
 
+use GuzzleHttp\Client;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
@@ -29,6 +30,8 @@ class TaskServerFactory
      *
      * For more advanced customisation you can of course replace this with an equivalent implementation / dependency
      * container config.
+     *
+     * @param array<string, mixed> $server_config
      */
     public static function makeController(
         LoggerInterface $logger,
@@ -92,7 +95,7 @@ class TaskServerFactory
                     $task_types,
                     new OIDCTokenVerifier(
                         new OpenIDDiscoveryCertificateProvider(
-                            new \GuzzleHttp\Client(),
+                            new Client(),
                             $certificate_cache,
                             $logger,
                             $server_config['oidc_cert_options']

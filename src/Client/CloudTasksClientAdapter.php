@@ -18,7 +18,7 @@ final class CloudTasksClientAdapter implements CloudTasksClientInterface
 
     public function createTask(string $parent, Task $task, array $call_options = []): Task
     {
-        $request = (new CreateTaskRequest())
+        $request = new CreateTaskRequest()
             ->setParent($parent)
             ->setTask($task);
 

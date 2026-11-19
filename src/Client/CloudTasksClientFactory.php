@@ -10,6 +10,9 @@ use Psr\Cache\CacheItemPoolInterface;
 
 class CloudTasksClientFactory
 {
+    /**
+     * @param array<string, mixed> $config
+     */
     public static function makeClient(CacheItemPoolInterface $auth_cache, array $config): CloudTasksClient
     {
         $base_options = [

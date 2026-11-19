@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use BadMethodCallException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Throwable;
 
@@ -33,7 +36,7 @@ class TestTaskChain extends TaskHandlerChain
 
     public static function willThrow(Throwable $e): TestTaskChain
     {
-        return static::will(function () use ($e) { throw $e; });
+        return static::will(function () use ($e): void { throw $e; });
     }
 
     public static function withHandler(TaskHandler $handler, bool $allow_next = true): TestTaskChain
@@ -54,7 +57,7 @@ class TestTaskChain extends TaskHandlerChain
         return $i;
     }
 
-    public function nextHandler(\Ingenerator\CloudTasksWrapper\Server\TaskRequest $request): TaskHandlerResult
+    public function nextHandler(TaskRequest $request): TaskHandlerResult
     {
         if (!$this->allow_next) {
             throw new BadMethodCallException('Unexpected call to '.__METHOD__);

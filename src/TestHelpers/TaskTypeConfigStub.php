@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper\TestHelpers;
 
 use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
@@ -45,7 +47,7 @@ class TaskTypeConfigStub extends TaskTypeConfigProvider
 
     public function getConfig(string $task_type): TaskTypeConfig
     {
-        if ($this->allow_any_task_type and !isset($this->config[$task_type])) {
+        if ($this->allow_any_task_type && !isset($this->config[$task_type])) {
             $this->config[$task_type] = [];
         }
 

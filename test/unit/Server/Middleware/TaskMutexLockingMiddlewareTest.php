@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
@@ -12,32 +14,30 @@ use Ingenerator\PHPUtils\Mutex\MockMutexWrapper;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
-class TaskMutexLockingMiddlewareTest extends TestCase
+final class TaskMutexLockingMiddlewareTest extends TestCase
 {
     protected MockMutexWrapper $mutex;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskMutexLockingMiddleware::class, $this->newSubject());
     }
 
     #[TestWith(['https://my.handler/_task/anything', 'task-5c737dfa9f1aee5d5cee02ded109cb25'])]
     #[TestWith(['https://my.handler/_task/anything?foo=bar', 'task-58edbfa5da73f53ad2324fd00aacdcdd'])]
-    public function testItTakesMutexBasedOnRequestUrl($url, $expect_lock_name)
+    public function testItTakesMutexBasedOnRequestUrl($url, $expect_lock_name): void
     {
         $this->mutex = new MockMutexWrapper();
         $result = $this->newSubject()->process(
             TaskRequestStub::with(['url' => $url]),
             TestTaskChain::will(
-                function () {
-                    return new ArbitraryTaskResult('mutex-name', $this->mutex->getCurrentLockName());
-                }
+                fn (): ArbitraryTaskResult => new ArbitraryTaskResult('mutex-name', $this->mutex->getCurrentLockName())
             )
         );
         $this->assertSame($expect_lock_name, $result->getMsg());
     }
 
-    public function testItReturnsResultOfNextHandlerIfMutexAvailable()
+    public function testItReturnsResultOfNextHandlerIfMutexAvailable(): void
     {
         $res = new ArbitraryTaskResult('got-mutex');
         $req = TaskRequestStub::any();
@@ -48,7 +48,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->assertSame($res, $result);
     }
 
-    public function testItReturnsMutexTimeoutWithoutRunningHandlerIfLocked()
+    public function testItReturnsMutexTimeoutWithoutRunningHandlerIfLocked(): void
     {
         $this->mutex->willTimeoutEverything();
 
@@ -65,7 +65,7 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->mutex = new MockMutexWrapper();
     }
 
-    protected function newSubject()
+    protected function newSubject(): TaskMutexLockingMiddleware
     {
         return new TaskMutexLockingMiddleware($this->mutex);
     }

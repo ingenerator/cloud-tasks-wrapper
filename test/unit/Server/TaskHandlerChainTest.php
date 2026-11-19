@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
+use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestMiddleware;
@@ -11,16 +14,16 @@ use Ingenerator\PHPUtils\Object\ObjectPropertyRipper;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
 
-class TaskHandlerChainTest extends TestCase
+final class TaskHandlerChainTest extends TestCase
 {
     protected $middlewares = [];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskHandlerChain::class, $this->newSubject());
     }
 
-    public function testItThrowsIfCallingNextHandlerWithoutInitialisingHandler()
+    public function testItThrowsIfCallingNextHandlerWithoutInitialisingHandler(): void
     {
         $this->middlewares = [TestMiddleware::neverCalled()];
         $subject = $this->newSubject();
@@ -28,7 +31,7 @@ class TaskHandlerChainTest extends TestCase
         $subject->nextHandler(TaskRequestStub::any());
     }
 
-    public function testItsProcessMethodDoesNotModifyStateOfOriginalObject()
+    public function testItsProcessMethodDoesNotModifyStateOfOriginalObject(): void
     {
         $this->middlewares = [
             TestMiddleware::callsNext(),
@@ -40,7 +43,7 @@ class TaskHandlerChainTest extends TestCase
         $subject->process(
             TaskRequestStub::any(),
             new TestTaskHandler(
-                function () { return new ArbitraryTaskResult('anything'); }
+                fn (): ArbitraryTaskResult => new ArbitraryTaskResult('anything')
             )
         );
         $this->assertSame(
@@ -50,7 +53,7 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessCallsHandlerAndReturnsResultWithoutMiddlewares()
+    public function testItsProcessCallsHandlerAndReturnsResultWithoutMiddlewares(): void
     {
         $this->middlewares = [];
         $rsp = new ArbitraryTaskResult('anything');
@@ -64,21 +67,21 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessCallsMiddlewaresBeforeReturningHandlerResult()
+    public function testItsProcessCallsMiddlewaresBeforeReturningHandlerResult(): void
     {
         $rsp = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();
         $middleware_calls = [];
         $this->middlewares = [
             new TestMiddleware(
-                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls) {
+                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
                     $middleware_calls[] = ['one', $got_req];
 
                     return $chain->nextHandler($got_req);
                 }
             ),
             new TestMiddleware(
-                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls) {
+                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
                     $middleware_calls[] = ['two', $got_req];
 
                     return $chain->nextHandler($got_req);
@@ -102,7 +105,7 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessShortCircuitsIfMiddlewareReturnsResultWithoutNext()
+    public function testItsProcessShortCircuitsIfMiddlewareReturnsResultWithoutNext(): void
     {
         $rsp = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();

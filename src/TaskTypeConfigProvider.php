@@ -25,6 +25,9 @@ class TaskTypeConfigProvider
 
     protected array $config;
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config)
     {
         $config['_default']['create_retry_settings'] = array_merge(

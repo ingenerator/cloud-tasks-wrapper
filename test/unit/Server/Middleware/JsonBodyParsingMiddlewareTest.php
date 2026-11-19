@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
@@ -11,15 +13,15 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\TestCase;
 
-class JsonBodyParsingMiddlewareTest extends TestCase
+final class JsonBodyParsingMiddlewareTest extends TestCase
 {
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(JsonBodyParsingMiddleware::class, $this->newSubject());
         $this->assertInstanceOf(TaskHandlerMiddleware::class, $this->newSubject());
     }
 
-    public function testItReturnsUnmodifiedResultFromNextHandler()
+    public function testItReturnsUnmodifiedResultFromNextHandler(): void
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->process(
@@ -29,7 +31,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
-    public function testItsParsedBodyIsUnmodifiedWhenNotJson()
+    public function testItsParsedBodyIsUnmodifiedWhenNotJson(): void
     {
         $parsed_body = ['something not to be messed with'];
         $request = TaskRequestStub::with([
@@ -43,7 +45,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) use ($parsed_body) {
+                function (TaskRequest $request) use ($parsed_body): ArbitraryTaskResult {
                     // assert here to test parsed body is correct on the way in
                     $this->assertSame($parsed_body, $request->getHttpRequest()->getParsedBody());
 
@@ -64,7 +66,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItParsesJsonBody()
+    public function testItParsesJsonBody(): void
     {
         $request = TaskRequestStub::with([
             'headers' => ['Content-Type' => 'application/json'],
@@ -75,7 +77,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $actual_result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                function (TaskRequest $request) use ($result) {
+                function (TaskRequest $request) use ($result): ArbitraryTaskResult {
                     $this->assertSame(
                         ['A' => [1, 2, 3]],
                         $request->getHttpRequest()->getParsedBody(),
@@ -92,7 +94,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $this->assertSame($result, $actual_result);
     }
 
-    public function testItReturnsCouldNotBeValidResultWithInvalidJson()
+    public function testItReturnsCouldNotBeValidResultWithInvalidJson(): void
     {
         $request = TaskRequestStub::with([
             'headers' => ['Content-Type' => 'application/json'],

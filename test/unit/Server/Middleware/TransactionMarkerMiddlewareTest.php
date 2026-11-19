@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
  *
@@ -20,17 +22,17 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 use PHPUnit\Framework\TestCase;
 use test\mock\Ingenerator\CloudTasksWrapper\Repository\ArrayTransactionMarkerRepository;
 
-class TransactionMarkerMiddlewareTest extends TestCase
+final class TransactionMarkerMiddlewareTest extends TestCase
 {
     private ArrayTransactionMarkerRepository $transaction_marker_repo;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TransactionMarkerMiddleware::class, $this->newSubject());
         $this->assertInstanceOf(TaskHandlerMiddleware::class, $this->newSubject());
     }
 
-    public function testItReturnsResponseOfNextInChainIfNoXTransactionHeader()
+    public function testItReturnsResponseOfNextInChainIfNoXTransactionHeader(): void
     {
         $res = new ArbitraryTaskResult('no-transaction-header');
         $req = TaskRequestStub::any();
@@ -43,7 +45,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsResponseOfNextInChainIfTransactionMarkerExists()
+    public function testItReturnsResponseOfNextInChainIfTransactionMarkerExists(): void
     {
         $this->transaction_marker_repo = ArrayTransactionMarkerRepository::withUuids(['abcd-efgh']);
 
@@ -58,7 +60,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function testItDoesNotRunIfRequestIsBeforeExpiry()
+    public function testItDoesNotRunIfRequestIsBeforeExpiry(): void
     {
         $future = DateString::ymdhis(new DateTimeImmutable('tomorrow'));
 
@@ -79,7 +81,7 @@ class TransactionMarkerMiddlewareTest extends TestCase
         );
     }
 
-    public function testItDoesNotRunIfAfterExpiry()
+    public function testItDoesNotRunIfAfterExpiry(): void
     {
         $request = TaskRequestStub::with(
             [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\TaskResult;
 
 use Error;
@@ -14,9 +16,12 @@ use PHPUnit\Framework\TestCase;
 use function array_fill_keys;
 use function call_user_func_array;
 
-class CoreTaskResultTest extends TestCase
+final class CoreTaskResultTest extends TestCase
 {
-    public static function provider_status_constructors()
+    /**
+     * @return mixed[]
+     */
+    public static function provider_status_constructors(): array
     {
         /**
          * This data provider and test is a sanity test that:
@@ -25,7 +30,7 @@ class CoreTaskResultTest extends TestCase
          *
          * It will fail if new codes are added without a corresponding method
          */
-        $mutex_exception = new MutexTimedOutException('ab', '15', 1);
+        $mutex_exception = new MutexTimedOutException('ab', 15, 1);
         $invalid_exception = new CloudTaskCannotBeValidException('It has no info');
         $misc_e = new Error('That was an error');
 
@@ -97,7 +102,7 @@ class CoreTaskResultTest extends TestCase
         string $method,
         ?array $args,
         ?array $expect,
-    ) {
+    ): void {
         if ($args === null) {
             $this->fail('No testcase defined for CoreTaskResult::'.$method);
         }

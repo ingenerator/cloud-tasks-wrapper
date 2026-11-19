@@ -16,14 +16,8 @@ class TaskRequest
 {
     protected ?string $caller_email = null;
 
-    protected ServerRequestInterface $request;
-
-    protected string $task_type;
-
-    public function __construct(ServerRequestInterface $request, string $task_type)
+    public function __construct(protected ServerRequestInterface $request, protected string $task_type)
     {
-        $this->request = $request;
-        $this->task_type = $task_type;
     }
 
     /**
@@ -140,7 +134,7 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
-    public function setRequestParsedBody(array $body)
+    public function setRequestParsedBody(array $body): void
     {
         $this->request = $this->request->withParsedBody($body);
     }
