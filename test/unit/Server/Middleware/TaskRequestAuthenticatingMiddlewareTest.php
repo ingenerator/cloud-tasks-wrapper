@@ -135,7 +135,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     }
 
     #[DataProvider('provider_auth_failures')]
-    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, $expect_msg): void
+    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, string $expect_msg): void
     {
         $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result = $this->newSubject()

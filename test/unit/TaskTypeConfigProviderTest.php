@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper;
 
 use Google\ApiCore\ApiStatus;
@@ -191,7 +193,7 @@ class TaskTypeConfigProviderTest extends TestCase
     }
 
     #[DataProvider('provider_custom_retry')]
-    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask($config, $expect): void
+    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask(array $config, array $expect): void
     {
         $this->config = $config;
         $this->config['_default']['queue'] = ['project' => 'a', 'location' => 'b', 'name' => 'c'];

@@ -68,7 +68,7 @@ class CreateTaskOptionsTest extends TestCase
     }
 
     #[DataProvider('provider_invalid_args')]
-    public function testItThrowsOnConstructionWithInvalidArgs($args, $expect_msg): void
+    public function testItThrowsOnConstructionWithInvalidArgs(array $args, string $expect_msg): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageIsOrContains($expect_msg);

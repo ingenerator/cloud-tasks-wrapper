@@ -116,7 +116,7 @@ class TaskResultCodeMapperTest extends TestCase
     }
 
     #[DataProvider('provider_code_overrides')]
-    public function testUsersCanOverrideBehaviourOfCoreCodes($custom_codes, $code, $expect): void
+    public function testUsersCanOverrideBehaviourOfCoreCodes(array $custom_codes, string $code, array $expect): void
     {
         $this->custom_codes = $custom_codes;
         $result = new ArbitraryTaskResult($code);

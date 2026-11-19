@@ -121,7 +121,7 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     #[DataProvider('provider_task_url')]
-    public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams($opts, $expect): void
+    public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams(array $opts, string $expect): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -181,7 +181,7 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     #[DataProvider('provider_schedule_time')]
-    public function testItAddsTimestampForScheduledTimeIfProvided($opts, $expect): void
+    public function testItAddsTimestampForScheduledTimeIfProvided(array $opts, ?array $expect): void
     {
         $this->newSubject()->create('any-old-job', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
