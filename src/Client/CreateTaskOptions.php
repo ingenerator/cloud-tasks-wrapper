@@ -23,11 +23,6 @@ class CreateTaskOptions
     private readonly DateTimeImmutable $_create_time;
 
     /**
-     * The originally externally-supplied options.
-     */
-    private readonly array $_raw_options;
-
-    /**
      * Data to be sent in the body, can be JSON or form-encoded:
      * - to send JSON, 'body' => ['json' => [//data]]
      * - to send form, 'body' => ['form' => [//data]]
@@ -112,13 +107,13 @@ class CreateTaskOptions
      *
      * See the class property list for the allowed keys and documentation
      *
-     * @param array<string, mixed> $options
+     * @param array<string, mixed> $_raw_options
      */
-    public function __construct(array $options)
-    {
-        // Copied to allow the MockTaskCreator to capture it
-        $options['_raw_options'] = $options;
-        $options['_create_time'] ??= new DateTimeImmutable();
+    public function __construct(
+        private readonly array $_raw_options,
+    ) {
+        $this->_create_time = $this->_raw_options['_create_time'] ?? new DateTimeImmutable();
+        $options = $this->_raw_options;
         $encoded = $this->encodeBodyOption($options['body'] ?? null);
         if ($encoded) {
             $options['body'] = $encoded['body'];
@@ -143,7 +138,7 @@ class CreateTaskOptions
             );
         }
 
-        if (isset($options['throttle_delay_secs']) && !$this->throttle_interval) {
+        if (isset($this->_raw_options['throttle_delay_secs']) && !$this->throttle_interval) {
             // Only matters if they set it explicitly so we check $options not the property which has a default
             throw new InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
         }
@@ -262,6 +257,9 @@ class CreateTaskOptions
         return $this->query;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getRawOptions(): array
     {
         return $this->_raw_options;

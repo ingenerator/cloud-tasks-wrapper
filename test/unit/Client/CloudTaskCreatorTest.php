@@ -355,10 +355,13 @@ final class CloudTaskCreatorTest extends TestCase
     }
 }
 
-class TasksClientSpy implements CloudTasksClientInterface
+final class TasksClientSpy implements CloudTasksClientInterface
 {
-    protected $created = [];
-    protected $create_will_throw;
+    /**
+     * @var array<string, mixed[]|Task|string>[]
+     */
+    private array $created = [];
+    private ?Exception $create_will_throw = null;
 
     public function __construct()
     {
@@ -366,7 +369,7 @@ class TasksClientSpy implements CloudTasksClientInterface
 
     public static function willThrowOnCreate(Exception $e): static
     {
-        $i = new static();
+        $i = new self();
         $i->create_will_throw = $e;
 
         return $i;
@@ -374,7 +377,7 @@ class TasksClientSpy implements CloudTasksClientInterface
 
     public function createTask(string $parent, Task $task, array $call_options = []): Task
     {
-        if ($this->create_will_throw) {
+        if ($this->create_will_throw instanceof Exception) {
             throw $this->create_will_throw;
         }
         $this->created[] = ['parent' => $parent, 'task' => $task, 'args' => $call_options];

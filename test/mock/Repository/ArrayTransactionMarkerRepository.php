@@ -10,18 +10,18 @@ namespace test\mock\Ingenerator\CloudTasksWrapper\Repository;
 
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerRepository;
 
-class ArrayTransactionMarkerRepository implements TransactionMarkerRepository
+final class ArrayTransactionMarkerRepository implements TransactionMarkerRepository
 {
     private array $uuids = [];
 
     public static function withNothing(): ArrayTransactionMarkerRepository
     {
-        return new static();
+        return new self();
     }
 
     public static function withUuids(array $uuids): ArrayTransactionMarkerRepository
     {
-        $static = new static();
+        $static = new self();
         $static->uuids = $uuids;
 
         return $static;

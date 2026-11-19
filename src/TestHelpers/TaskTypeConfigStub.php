@@ -8,21 +8,21 @@ use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
-class TaskTypeConfigStub extends TaskTypeConfigProvider
+final class TaskTypeConfigStub extends TaskTypeConfigProvider
 {
     protected bool $allow_any_task_type = false;
 
-    public static function withAnyTaskType(): TaskTypeConfigProvider
+    public static function withAnyTaskType(): TaskTypeConfigStub
     {
-        $i = new static([]);
+        $i = new self([]);
         $i->allow_any_task_type = true;
 
         return $i;
     }
 
-    public static function withTaskType(string $type, array $opts = []): TaskTypeConfigProvider
+    public static function withTaskType(string $type, array $opts = []): TaskTypeConfigStub
     {
-        return new static([$type => $opts]);
+        return new self([$type => $opts]);
     }
 
     public function __construct(array $config)

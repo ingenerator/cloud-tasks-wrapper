@@ -8,15 +8,15 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use PHPUnit\Framework\Assert;
 
-class TestTaskHandler implements TaskHandler
+final class TestTaskHandler implements TaskHandler
 {
-    protected $callable;
+    private $callable;
 
     public static function expectsReqAndReturns(
         TaskRequest $expect_req,
         TaskHandlerResult $result,
     ): TestTaskHandler {
-        return new static(
+        return new self(
             function ($got_req) use ($expect_req, $result): TaskHandlerResult {
                 Assert::assertSame($expect_req, $got_req);
 
@@ -27,14 +27,14 @@ class TestTaskHandler implements TaskHandler
 
     public static function neverCalled(): TestTaskHandler
     {
-        return new static(
-            function (): void { throw new BadMethodCallException('Did not expect handler call'); }
+        return new self(
+            function (): never { throw new BadMethodCallException('Did not expect handler call'); }
         );
     }
 
     public static function returnsResult(TaskHandlerResult $result): TestTaskHandler
     {
-        return new static(fn (): TaskHandlerResult => $result);
+        return new self(fn (): TaskHandlerResult => $result);
     }
 
     public function __construct(callable $callable)
