@@ -4,6 +4,7 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 
+use PHPUnit\Framework\Attributes\TestWith;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
@@ -30,10 +31,8 @@ class TaskRequestTest extends TestCase
         );
     }
 
-    /**
-     * @testWith [{"X-CloudTasks-TaskETA":"1501912403.555197"}, "2017-08-05T06:53:23.555197+01:00"]
-     *           [{}, null]
-     */
+    #[TestWith([['X-CloudTasks-TaskETA' => '1501912403.555197'], '2017-08-05T06:53:23.555197+01:00'])]
+    #[TestWith([[], null])]
     public function test_it_provides_cloud_tasks_eta_as_datetime_or_null($hdrs, $expect)
     {
         $dtz = \date_default_timezone_get();
@@ -98,10 +97,8 @@ class TaskRequestTest extends TestCase
         $this->assertSame(3, $this->newSubject()->getExecutionCount());
     }
 
-    /**
-     * @testWith [{"X-CloudTasks-TaskPreviousResponse": "499"}, "499"]
-     *           [{}, null]
-     */
+    #[TestWith([['X-CloudTasks-TaskPreviousResponse' => '499'], '499'])]
+    #[TestWith([[], null])]
     public function test_it_provides_previous_response_if_present($hdrs, $expect)
     {
         $this->http_req = new ServerRequest(
@@ -112,10 +109,8 @@ class TaskRequestTest extends TestCase
         $this->assertSame($expect, $this->newSubject()->getPreviousResponse());
     }
 
-    /**
-     * @testWith [{"X-CloudTasks-TaskRetryReason": "didn't work before"}, "didn't work before"]
-     *           [{}, null]
-     */
+    #[TestWith([['X-CloudTasks-TaskRetryReason' => "didn't work before"], "didn't work before"])]
+    #[TestWith([[], null])]
     public function test_it_provides_retry_reason_if_present($hdrs, $expect)
     {
         $this->http_req = new ServerRequest(
@@ -126,11 +121,9 @@ class TaskRequestTest extends TestCase
         $this->assertSame($expect, $this->newSubject()->getRetryReason());
     }
 
-    /**
-     * @testWith [[], null]
-     *           [{"foo": "bar"}, null]
-     *           [{"param": "this"}, "this"]
-     */
+    #[TestWith([[], null])]
+    #[TestWith([['foo' => 'bar'], null])]
+    #[TestWith([['param' => 'this'], 'this'])]
     public function test_its_optional_query_provides_value_or_null($vars, $expect)
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
@@ -143,11 +136,9 @@ class TaskRequestTest extends TestCase
         $this->assertSame('bar', $this->newSubject()->requireQueryParam('foo'));
     }
 
-    /**
-     * @testWith [[]]
-     *           [{"something":"else"}]
-     *           [{"foo":""}]
-     */
+    #[TestWith([[]])]
+    #[TestWith([['something' => 'else']])]
+    #[TestWith([['foo' => '']])]
     public function test_its_require_query_throws_if_value_missing_or_empty($vars)
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
@@ -163,13 +154,11 @@ class TaskRequestTest extends TestCase
         $this->assertSame('My value', $subject->requireBodyField('some_payload_field'));
     }
 
-    /**
-     * @testWith [null]
-     *           [[]]
-     *           [{"other": "things"}]
-     *           [{"anything": null}]
-     *           [{"anything": ""}]
-     */
+    #[TestWith([null])]
+    #[TestWith([[]])]
+    #[TestWith([['other' => 'things']])]
+    #[TestWith([['anything' => null]])]
+    #[TestWith([['anything' => '']])]
     public function test_its_require_body_field_throws_if_value_missing_or_empty($body)
     {
         $this->http_req = $this->http_req->withParsedBody($body);

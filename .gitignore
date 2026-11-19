@@ -5,4 +5,4 @@
 Thumbs.db
 thumbs.db
 /composer.lock
-/test/.phpunit.result.cache
+.phpunit.result.cache

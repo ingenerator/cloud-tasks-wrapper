@@ -4,6 +4,7 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
+use PHPUnit\Framework\Attributes\TestWith;
 use Ingenerator\CloudTasksWrapper\Server\CloudTaskCannotBeValidException;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
@@ -36,10 +37,8 @@ class ExceptionCatchingMiddlewareTest extends TestCase
         );
     }
 
-    /**
-     * @testWith ["Error"]
-     *           ["RuntimeException"]
-     */
+    #[TestWith(['Error'])]
+    #[TestWith(['RuntimeException'])]
     public function test_it_converts_uncaught_throwable_to_uncaught_exception_result($err_class)
     {
         $exception = new $err_class('I have a problem');

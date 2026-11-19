@@ -4,6 +4,7 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
+use PHPUnit\Framework\Attributes\TestWith;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskMutexLockingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
@@ -22,10 +23,8 @@ class TaskMutexLockingMiddlewareTest extends TestCase
         $this->assertInstanceOf(TaskMutexLockingMiddleware::class, $this->newSubject());
     }
 
-    /**
-     * @testWith ["https://my.handler/_task/anything", "task-5c737dfa9f1aee5d5cee02ded109cb25"]
-     *           ["https://my.handler/_task/anything?foo=bar", "task-58edbfa5da73f53ad2324fd00aacdcdd"]
-     */
+    #[TestWith(['https://my.handler/_task/anything', 'task-5c737dfa9f1aee5d5cee02ded109cb25'])]
+    #[TestWith(['https://my.handler/_task/anything?foo=bar', 'task-58edbfa5da73f53ad2324fd00aacdcdd'])]
     public function test_it_takes_mutex_based_on_request_url($url, $expect_lock_name)
     {
         $this->mutex = new MockMutexWrapper;

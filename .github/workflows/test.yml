@@ -14,14 +14,18 @@ jobs:
       fail-fast: false
       matrix:
         php_version:
-        - '8.2'
-        - '8.3'
         - '8.4'
+        - '8.5'
+        - '8.6'
         dependency-versions:
         - 'lowest'
         - 'default'
     env:
       php_extensions: grpc, protobuf
+      # ext-grpc threads outlive grpc_shutdown(), so PHP 8.5 on ubuntu-26.04
+      # segfaults at exit when grpc.so is unloaded. Skip the unload until
+      # https://github.com/grpc/grpc/issues/42242 is fixed.
+      ZEND_DONT_UNLOAD_MODULES: 1
 
     steps:
     - name: Setup PHP
@@ -32,15 +36,19 @@ jobs:
         extensions: ${{ env.php_extensions }}
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         show-progress: false
 
     - name: Install composer dependencies
-      uses: ramsey/composer-install@v3
+      uses: ramsey/composer-install@v4
       with:
         dependency-versions: ${{ matrix.dependency-versions }}
 
     - name: Run unit tests
       run: |
-        vendor/bin/phpunit
+        vendor/bin/phpunit --testsuite=unit
+
+    - name: Run integration tests
+      run: |
+        vendor/bin/phpunit --testsuite=integration

@@ -4,6 +4,9 @@
 namespace test\unit\Ingenerator\CloudTasksWrapper\Server\Middleware;
 
 
+use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Throwable;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskRequestAuthenticatingMiddleware;
@@ -94,7 +97,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
             ['signer_email' => 'foo@bar.serviceaccount.com']
         );
         $this->token_verifier   = MockTokenVerifier::willFailWith(
-            new \Exception('Anything')
+            new Exception('Anything')
         );
         $this->newSubject()
             ->process(
@@ -117,7 +120,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function provider_auth_failures()
+    public static function provider_auth_failures()
     {
         return [
             [
@@ -131,10 +134,8 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provider_auth_failures
-     */
-    public function test_it_returns_auth_invalid_if_token_verification_fails(\Throwable $e, $expect_msg)
+    #[DataProvider('provider_auth_failures')]
+    public function test_it_returns_auth_invalid_if_token_verification_fails(Throwable $e, $expect_msg)
     {
         $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result               = $this->newSubject()

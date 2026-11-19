@@ -1,5 +1,8 @@
 ## Unreleased
 
+* Support PHP 8.5 and PHP 8.6
+* Drop support for PHP 8.2 and PHP 8.3
+
 ## v0.5.9 (2025-07-23)
 
 * Support PHP 8.4

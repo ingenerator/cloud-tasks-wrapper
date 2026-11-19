@@ -4,6 +4,9 @@
 namespace Ingenerator\CloudTasksWrapper;
 
 
+use UnderflowException;
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\CloudTasksClient;
 use PHPUnit\Framework\TestCase;
@@ -31,7 +34,7 @@ class TaskTypeConfigProviderTest extends TestCase
     {
         $this->config = ['_default' => []];
         $subject      = $this->newSubject();
-        $this->expectException(\UnderflowException::class);
+        $this->expectException(UnderflowException::class);
         $subject->getConfig('unknown');
     }
 
@@ -39,7 +42,7 @@ class TaskTypeConfigProviderTest extends TestCase
     {
         $this->config = ['_default' => []];
         $subject      = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $subject->getConfig('_default');
     }
 
@@ -49,8 +52,8 @@ class TaskTypeConfigProviderTest extends TestCase
         $this->config['any-task']                                            = [];
 
         $subject = $this->newSubject();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('retryableCodes');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains('retryableCodes');
         $subject->getConfig('any-task');
     }
 
@@ -155,7 +158,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public function provider_custom_retry()
+    public static function provider_custom_retry()
     {
         return [
             [
@@ -189,9 +192,7 @@ class TaskTypeConfigProviderTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provider_custom_retry
-     */
+    #[DataProvider('provider_custom_retry')]
     public function test_it_can_customise_creation_retry_options_for_all_tasks_or_one_task($config, $expect)
     {
         $this->config                            = $config;
