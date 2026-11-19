@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
  *
  * @licence   proprietary
  */
-
 namespace unit\Client;
 
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;

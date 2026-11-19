@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ingenerator\CloudTasksWrapper\Client;
 
 use Google\Cloud\Tasks\V2\Task;
