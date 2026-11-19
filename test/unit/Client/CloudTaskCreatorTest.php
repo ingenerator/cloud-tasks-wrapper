@@ -22,7 +22,6 @@ use Iterator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
@@ -31,14 +30,8 @@ use function iterator_to_array;
 
 final class CloudTaskCreatorTest extends TestCase
 {
-    /**
-     * @var MockObject
-     */
-    protected $tasks_client;
-    /**
-     * @var NullLogger
-     */
-    protected $logger;
+    protected TasksClientSpy $tasks_client;
+    protected TestLogger|NullLogger $logger;
 
     protected TaskTypeConfigStub $task_config;
 

@@ -12,7 +12,6 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\PHPUtils\DateTime\Clock\StoppedMockClock;
 use Ingenerator\PHPUtils\StringEncoding\JSON;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\Test\TestLogger;
 
@@ -20,7 +19,7 @@ use function array_shift;
 
 final class TaskLoggingMiddlewareTest extends TestCase
 {
-    protected LoggerInterface $logger;
+    protected TestLogger $logger;
 
     protected TaskResultCodeMapper $code_mapper;
 
