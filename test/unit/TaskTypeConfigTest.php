@@ -20,7 +20,7 @@ class TaskTypeConfigTest extends TestCase
     public function test_it_throws_with_invalid_queue_path_components()
     {
         $this->vars['queue'] = [
-            'project'  => NULL,
+            'project'  => './foo',
             'location' => 'outer-space',
             'name'     => 'slow-things',
         ];

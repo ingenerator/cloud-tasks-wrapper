@@ -9,12 +9,13 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ApiStatus;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\Client\CloudTaskCreator;
+use Ingenerator\CloudTasksWrapper\Client\CloudTasksClientInterface;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
@@ -351,7 +352,7 @@ class CloudTaskCreatorTest extends TestCase
     }
 }
 
-class TasksClientSpy extends CloudTasksClient
+class TasksClientSpy implements CloudTasksClientInterface
 {
     protected $created = [];
     protected $create_will_throw;
@@ -366,12 +367,12 @@ class TasksClientSpy extends CloudTasksClient
         return $i;
     }
 
-    public function createTask($parent, $task, array $optionalArgs = [])
+    public function createTask(string $parent, Task $task, array $call_options = []): Task
     {
         if ($this->create_will_throw) {
             throw $this->create_will_throw;
         }
-        $this->created[] = ['parent' => $parent, 'task' => $task, 'args' => $optionalArgs];
+        $this->created[] = ['parent' => $parent, 'task' => $task, 'args' => $call_options];
         $result          = clone $task;
         $result->setName($parent.'/tasks/created-task-name');
 

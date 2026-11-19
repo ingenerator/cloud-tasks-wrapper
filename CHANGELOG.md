@@ -1,5 +1,10 @@
 ## Unreleased
 
+* Upgrade to `google/cloud-tasks:^2.0`. Projects that just pass the result of `CloudTasksClientFactory::makeClient()`
+  to `new CloudTaskCreator` will not see any difference. If you directly use the returned client (e.g. to perform
+  other requests to Cloud Tasks) you will need to update your code to use the new 
+  `Google\Cloud\Tasks\V2\Client\CloudTasksClient` request-object based signatures.
+* Bump minimum google/protobuf to ^v5.34 (from 4.29)
 * Support PHP 8.5 and PHP 8.6
 * Drop support for PHP 8.2 and PHP 8.3
 

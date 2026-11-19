@@ -5,7 +5,6 @@ namespace Ingenerator\CloudTasksWrapper;
 
 
 use Google\ApiCore\ApiStatus;
-use Google\Cloud\Tasks\V2\CloudTasksClient;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
 class TaskTypeConfigProvider
