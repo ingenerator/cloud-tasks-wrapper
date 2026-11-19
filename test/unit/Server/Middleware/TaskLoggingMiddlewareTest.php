@@ -25,7 +25,10 @@ final class TaskLoggingMiddlewareTest extends TestCase
 
     protected StoppedMockClock $clock;
 
-    protected $default_context = [];
+    /**
+     * @var array<mixed>
+     */
+    protected array $default_context = [];
 
     public function testItIsInitialisable(): void
     {

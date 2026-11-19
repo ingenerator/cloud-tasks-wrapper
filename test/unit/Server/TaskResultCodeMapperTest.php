@@ -16,7 +16,10 @@ use Psr\Log\LogLevel;
 
 final class TaskResultCodeMapperTest extends TestCase
 {
-    protected $custom_codes = [];
+    /**
+     * @var array<string, array{http_status?: int, loglevel?: string}>
+     */
+    protected array $custom_codes = [];
 
     public function testItIsInitialisable(): void
     {
@@ -74,7 +77,7 @@ final class TaskResultCodeMapperTest extends TestCase
     }
 
     #[DataProvider('provider_core_task_results')]
-    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code): void
+    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults(string $code): void
     {
         $result = new ArbitraryTaskResult($code);
         $subject = $this->newSubject();

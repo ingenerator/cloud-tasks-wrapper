@@ -16,7 +16,10 @@ use UnderflowException;
 
 final class TaskHandlerChainTest extends TestCase
 {
-    protected $middlewares = [];
+    /**
+     * @var list<TestMiddleware>
+     */
+    protected array $middlewares = [];
 
     public function testItIsInitialisable(): void
     {
