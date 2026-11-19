@@ -24,5 +24,6 @@ return new Config()
         'phpdoc_to_comment' => [ // Keep as a phpdoc if it contains the `@var` annotation
             'ignored_tags' => ['var'],
         ],
+        'method_argument_space' => ['on_multiline' => 'ensure_fully_multiline'] // Override Symfony
     ])
     ->setFinder($finder);
