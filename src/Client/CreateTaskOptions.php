@@ -161,20 +161,18 @@ class CreateTaskOptions
         }
 
         $type = implode(',', array_keys($body));
-        switch ($type) {
-            case 'json':
-                return [
-                    'body' => JSON::encode($body['json'], false),
-                    'Content-Type' => 'application/json',
-                ];
-            case 'form':
-                return [
-                    'body' => http_build_query($body['form']),
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ];
-            default:
-                throw new InvalidArgumentException('Invalid body type: '.JSON::encode($type, false));
-        }
+
+        return match ($type) {
+            'json' => [
+                'body' => JSON::encode($body['json'], false),
+                'Content-Type' => 'application/json',
+            ],
+            'form' => [
+                'body' => http_build_query($body['form']),
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ],
+            default => throw new InvalidArgumentException('Invalid body type: '.JSON::encode($type, false)),
+        };
     }
 
     private function parseThrottleOptions(): void
