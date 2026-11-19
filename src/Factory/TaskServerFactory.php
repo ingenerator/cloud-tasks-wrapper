@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\Factory;
 
+use GuzzleHttp\Client;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\ExceptionCatchingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\JsonBodyParsingMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\Middleware\TaskLoggingMiddleware;
@@ -92,7 +93,7 @@ class TaskServerFactory
                     $task_types,
                     new OIDCTokenVerifier(
                         new OpenIDDiscoveryCertificateProvider(
-                            new \GuzzleHttp\Client(),
+                            new Client(),
                             $certificate_cache,
                             $logger,
                             $server_config['oidc_cert_options']

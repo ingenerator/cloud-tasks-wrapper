@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use BadMethodCallException;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
@@ -54,7 +55,7 @@ class TestTaskChain extends TaskHandlerChain
         return $i;
     }
 
-    public function nextHandler(\Ingenerator\CloudTasksWrapper\Server\TaskRequest $request): TaskHandlerResult
+    public function nextHandler(TaskRequest $request): TaskHandlerResult
     {
         if (!$this->allow_next) {
             throw new BadMethodCallException('Unexpected call to '.__METHOD__);
