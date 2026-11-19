@@ -11,27 +11,27 @@ use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 /**
  * Predominantly used for testing other middlewares, to allow test suites to stub a chain.
  */
-class TestMiddleware implements TaskHandlerMiddleware
+final class TestMiddleware implements TaskHandlerMiddleware
 {
-    protected $callable;
+    private $callable;
 
     public static function callsNext(): TestMiddleware
     {
-        return new static(
+        return new self(
             fn (TaskRequest $req, TaskHandlerChain $chain): TaskHandlerResult => $chain->nextHandler($req)
         );
     }
 
     public static function neverCalled(): TestMiddleware
     {
-        return new static(
-            function (): void { throw new BadMethodCallException(self::class.' should never be called'); }
+        return new self(
+            function (): never { throw new BadMethodCallException(self::class.' should never be called'); }
         );
     }
 
     public static function returnsResult(TaskHandlerResult $result): TestMiddleware
     {
-        return new static(
+        return new self(
             fn (): TaskHandlerResult => $result
         );
     }

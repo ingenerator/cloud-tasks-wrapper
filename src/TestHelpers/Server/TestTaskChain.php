@@ -12,7 +12,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Throwable;
 
-class TestTaskChain extends TaskHandlerChain
+final class TestTaskChain extends TaskHandlerChain
 {
     protected bool $allow_next = true;
 
@@ -21,27 +21,27 @@ class TestTaskChain extends TaskHandlerChain
         ?string $msg = null,
         array $log_context = [],
     ): TestTaskChain {
-        return static::withFixedResult(new ArbitraryTaskResult($code, $msg, $log_context));
+        return self::withFixedResult(new ArbitraryTaskResult($code, $msg, $log_context));
     }
 
     public static function withFixedResult(TaskHandlerResult $result): TestTaskChain
     {
-        return static::withHandler(TestTaskHandler::returnsResult($result), true);
+        return self::withHandler(TestTaskHandler::returnsResult($result), true);
     }
 
     public static function will(callable $handler): TestTaskChain
     {
-        return static::withHandler(new TestTaskHandler($handler), true);
+        return self::withHandler(new TestTaskHandler($handler), true);
     }
 
     public static function willThrow(Throwable $e): TestTaskChain
     {
-        return static::will(function () use ($e): void { throw $e; });
+        return self::will(function () use ($e): never { throw $e; });
     }
 
     public static function withHandler(TaskHandler $handler, bool $allow_next = true): TestTaskChain
     {
-        $chain = new static();
+        $chain = new self();
         $chain->handler = $handler;
         $chain->allow_next = $allow_next;
 
@@ -50,7 +50,7 @@ class TestTaskChain extends TaskHandlerChain
 
     public static function nextNeverCalled(): TestTaskChain
     {
-        $i = new static();
+        $i = new self();
         $i->handler = TestTaskHandler::neverCalled();
         $i->allow_next = false;
 

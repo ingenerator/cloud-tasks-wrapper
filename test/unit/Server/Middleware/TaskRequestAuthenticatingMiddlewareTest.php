@@ -18,7 +18,6 @@ use Ingenerator\OIDCTokenVerifier\TestHelpers\MockTokenVerifier;
 use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
 use function base64_encode;
 
@@ -136,7 +135,7 @@ final class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     }
 
     #[DataProvider('provider_auth_failures')]
-    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, string $expect_msg): void
+    public function testItReturnsAuthInvalidIfTokenVerificationFails(Exception $e, string $expect_msg): void
     {
         $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result = $this->newSubject()

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
  *
@@ -12,15 +14,15 @@ use DateTimeImmutable;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\PHPUtils\DateTime\DateString;
 
-class TransactionMarkerResult extends TaskHandlerResult
+final class TransactionMarkerResult extends TaskHandlerResult
 {
-    public const NOT_YET_VISIBLE = 'notYetVisible';
-    public const TRANSACTION_EXPIRED = 'transactionExpired';
+    public const string NOT_YET_VISIBLE = 'notYetVisible';
+    public const string TRANSACTION_EXPIRED = 'transactionExpired';
 
     public static function notYetVisible(string $uuid, DateTimeImmutable $expiry): TransactionMarkerResult
     {
-        return new static(
-            static::NOT_YET_VISIBLE,
+        return new self(
+            self::NOT_YET_VISIBLE,
             'transaction not ready',
             [
                 'uuid' => $uuid,
@@ -31,8 +33,8 @@ class TransactionMarkerResult extends TaskHandlerResult
 
     public static function transactionExpired(string $uuid, DateTimeImmutable $expiry): TransactionMarkerResult
     {
-        return new static(
-            static::TRANSACTION_EXPIRED,
+        return new self(
+            self::TRANSACTION_EXPIRED,
             'transaction rolled back',
             [
                 'uuid' => $uuid,

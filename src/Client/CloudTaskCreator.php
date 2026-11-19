@@ -9,7 +9,6 @@ use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\HttpRequest;
 use Google\Cloud\Tasks\V2\OidcToken;
 use Google\Cloud\Tasks\V2\Task;
-use Google\Protobuf\Internal\Message;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
@@ -42,12 +41,14 @@ class CloudTaskCreator implements TaskCreator
         }
 
         $task_name = $options->buildTaskName($task_type->getQueuePath());
-        $task = $this->createObj(
-            Task::class,
+
+        // Note passing the array values through array_filter first - protobuf internally differentiates
+        // between a field that is not present / undefined vs one that is explicitly set to null
+        // and some fields don't have valid `null` values
+        $task = new Task(array_filter(
             [
                 'name' => $task_name,
-                'http_request' => $this->createObj(
-                    HttpRequest::class,
+                'http_request' => new HttpRequest(array_filter(
                     [
                         'url' => $handler_url,
                         'http_method' => HttpMethod::POST,
@@ -58,10 +59,10 @@ class CloudTaskCreator implements TaskCreator
                         'headers' => $options->getHeaders(),
                         'body' => $options->getBodyContent(),
                     ]
-                ),
+                )),
                 'schedule_time' => $this->toTimestampOrNull($options->getScheduleSendAfter()),
             ]
-        );
+        ));
 
         try {
             $result = $this->client->createTask(
@@ -132,14 +133,5 @@ class CloudTaskCreator implements TaskCreator
                 'nanos' => 1000 * $datetime->format('u'),
             ]
         );
-    }
-
-    protected function createObj(string $class, array $vars): Message
-    {
-        // Note passing the array through array_filter first - protobuf internally differentiates
-        // between a field that is not present / undefined vs one that is explicitly set to null
-        // and some fields don't have valid `null` values
-
-        return new $class(array_filter($vars));
     }
 }

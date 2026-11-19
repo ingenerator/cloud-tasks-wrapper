@@ -44,7 +44,7 @@ class TaskHandlerChain
         return new static($logging, $catcher, $auth, $mutex, $json_parsing, ...$additional_middlewares);
     }
 
-    public function __construct(TaskHandlerMiddleware ...$middlewares)
+    final public function __construct(TaskHandlerMiddleware ...$middlewares)
     {
         $this->middlewares = $middlewares;
     }

@@ -12,18 +12,18 @@ use Throwable;
 use function json_encode;
 use function uniqid;
 
-class MockCloudTaskCreator implements TaskCreator
+final class MockCloudTaskCreator implements TaskCreator
 {
     /**
      * @var array<string, mixed[]|string>[]
      */
-    protected array $calls = [];
+    private array $calls = [];
 
-    protected ?Throwable $will_throw = null;
+    private ?Throwable $will_throw = null;
 
     public static function willThrow(?Throwable $e = null): static
     {
-        $i = new static();
+        $i = new self();
         $i->will_throw = $e ?? new TaskCreationFailedException('Failed to create task');
 
         return $i;

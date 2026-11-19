@@ -1,0 +1,12 @@
+parameters:
+    treatPhpDocTypesAsCertain: false
+    level: 5
+    paths:
+        - src
+        - test
+
+    ignoreErrors:
+      # CreateTaskOptions uses ObjectPropertyPopulator::assignHash - to refactor to named args
+      -
+        identifier: property.unusedType
+        path: src/Client/CreateTaskOptions.php
