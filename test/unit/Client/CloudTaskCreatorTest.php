@@ -40,9 +40,12 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
+    /**
+     * @param array{body?: string} $opts
+     */
     #[TestWith([[], ''])]
     #[TestWith([['body' => 'any body'], 'any body'])]
-    public function testItAddsBodyAndHeadersIfProvided($opts, $expect_body): void
+    public function testItAddsBodyAndHeadersIfProvided(array $opts, string $expect_body): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
@@ -52,9 +55,9 @@ final class CloudTaskCreatorTest extends TestCase
     #[TestWith(['someone@service.com', true, 'someone@service.com'])]
     #[TestWith(['anonymous', false, null])]
     public function testItAddsOidcTokenForTaskUnlessTaskTypeIsConfiguredAnonymous(
-        $signer,
-        $expect_has_oidc,
-        $expect_oidc_email,
+        string $signer,
+        bool $expect_has_oidc,
+        ?string $expect_oidc_email,
     ): void {
         $this->task_config = TaskTypeConfigStub::withTaskType('do-something', ['signer_email' => $signer]);
         $this->newSubject()->create('do-something');
@@ -71,10 +74,13 @@ final class CloudTaskCreatorTest extends TestCase
         }
     }
 
+    /**
+     * @param array{custom_token_audience?: string|null} $config
+     */
     #[TestWith([['custom_token_audience' => null], ''])]
     #[TestWith([[], ''])]
     #[TestWith([['custom_token_audience' => 'pick-me!'], 'pick-me!'])]
-    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured($config, $expect): void
+    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured(array $config, string $expect): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -130,9 +136,12 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
+    /**
+     * @param array{task_id?: string} $opts
+     */
     #[TestWith([[], ''])]
     #[TestWith([['task_id' => 'absad237'], 'absad237'])]
-    public function testItAddsTaskNameFromIdIfProvided($opts, $expect_id): void
+    public function testItAddsTaskNameFromIdIfProvided(array $opts, string $expect_id): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'some-task',
@@ -150,9 +159,13 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect_name, $task->getName());
     }
 
+    /**
+     * @param array{headers?: array<string, string>} $opts
+     * @param array<string, string> $expect
+     */
     #[TestWith([[], []])]
     #[TestWith([['headers' => ['X-SomeThing' => 'This']], ['X-SomeThing' => 'This']])]
-    public function testItAddsHttpHeadersIfProvided($opts, $expect): void
+    public function testItAddsHttpHeadersIfProvided(array $opts, array $expect): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
