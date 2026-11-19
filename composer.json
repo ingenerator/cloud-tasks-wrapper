@@ -25,7 +25,8 @@
         "fig/log-test": "^1.1",
         "guzzlehttp/psr7": "^3.5",
         "php-cs-fixer/shim": "3.95.32",
-        "phpunit/phpunit": "^13.4"
+        "phpunit/phpunit": "^13.4",
+        "rector/rector": "2.8.5"
     },
     "repositories": [
         {"type": "composer", "url": "https://php-packages.ingenerator.com"}
@@ -54,6 +55,8 @@
     },
     "scripts": {
         "cs": "php-cs-fixer fix --dry-run --verbose --diff",
-        "cs-fix": "php-cs-fixer fix"
+        "cs-fix": "php-cs-fixer fix",
+        "rector": "rector --dry-run",
+        "rector-fix": "rector"
     }
 }
