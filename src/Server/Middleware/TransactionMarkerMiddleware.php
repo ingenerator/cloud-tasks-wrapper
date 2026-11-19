@@ -30,7 +30,7 @@ class TransactionMarkerMiddleware implements TaskHandlerMiddleware
         $uuid = $request->getHttpRequest()->getHeaderLine(static::TRANSACTION_MARKER_HEADER);
 
         // go go go - if it's nothing to do with us / or it's ready to begin
-        if (empty($uuid) or $this->transaction_marker_repo->exists($uuid)) {
+        if (empty($uuid) || $this->transaction_marker_repo->exists($uuid)) {
             return $chain->nextHandler($request);
         }
 

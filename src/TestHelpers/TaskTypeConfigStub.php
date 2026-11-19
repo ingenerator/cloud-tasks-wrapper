@@ -45,7 +45,7 @@ class TaskTypeConfigStub extends TaskTypeConfigProvider
 
     public function getConfig(string $task_type): TaskTypeConfig
     {
-        if ($this->allow_any_task_type and !isset($this->config[$task_type])) {
+        if ($this->allow_any_task_type && !isset($this->config[$task_type])) {
             $this->config[$task_type] = [];
         }
 

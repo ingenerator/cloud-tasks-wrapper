@@ -79,7 +79,7 @@ class CloudTaskCreator implements TaskCreator
 
             return $result->getName();
         } catch (ApiException $e) {
-            if (($e->getCode() === Code::ALREADY_EXISTS) and !$options->shouldThrowOnDuplicate()) {
+            if ($e->getCode() === Code::ALREADY_EXISTS && !$options->shouldThrowOnDuplicate()) {
                 // This is an expected failure, we are using server-side-task-dedupe and the caller has asked
                 // for us to silently ignore failures to create duplicates of tasks that have already been queued.
                 return $task_name;

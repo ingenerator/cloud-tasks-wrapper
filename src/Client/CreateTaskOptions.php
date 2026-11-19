@@ -128,20 +128,20 @@ class CreateTaskOptions
 
         ObjectPropertyPopulator::assignHash($this, $options);
 
-        if ($this->task_id and $this->task_id_from) {
+        if ($this->task_id && $this->task_id_from) {
             throw new InvalidArgumentException('Cannot set both task_id and task_id_from');
         }
-        if ($this->task_id and $this->task_id_hash_options) {
+        if ($this->task_id && $this->task_id_hash_options) {
             throw new InvalidArgumentException('Cannot set both task_id and task_id_hash_options');
         }
 
-        if (str_contains($this->custom_handler_url ?? '', '?') and !empty($this->query)) {
+        if (str_contains($this->custom_handler_url ?? '', '?') && !empty($this->query)) {
             throw new InvalidArgumentException(
                 'Cannot set a query if your custom_handler_url already includes a querystring'
             );
         }
 
-        if (isset($options['throttle_delay_secs']) and !$this->throttle_interval) {
+        if (isset($options['throttle_delay_secs']) && !$this->throttle_interval) {
             // Only matters if they set it explicitly so we check $options not the property which has a default
             throw new InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
         }
