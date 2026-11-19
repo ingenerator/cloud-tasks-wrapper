@@ -27,7 +27,7 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function neverCalled(): TestMiddleware
     {
         return new static(
-            function () { throw new BadMethodCallException(__CLASS__.' should never be called'); }
+            function () { throw new BadMethodCallException(self::class.' should never be called'); }
         );
     }
 

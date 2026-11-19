@@ -54,7 +54,7 @@ class TaskController
 
         if (!isset($matches['task_type'])) {
             throw new InvalidArgumentException(
-                __CLASS__.'->url_pattern must include a <task_type> capture group'
+                self::class.'->url_pattern must include a <task_type> capture group'
             );
         }
 
