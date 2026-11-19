@@ -20,12 +20,12 @@ class CreateTaskOptions
     /**
      * Time the object was created (mostly to provide consistent / testable time-based behaviour).
      */
-    private DateTimeImmutable $_create_time;
+    private readonly DateTimeImmutable $_create_time;
 
     /**
      * The originally externally-supplied options.
      */
-    private array $_raw_options;
+    private readonly array $_raw_options;
 
     /**
      * Data to be sent in the body, can be JSON or form-encoded:

@@ -5,9 +5,9 @@ namespace Ingenerator\CloudTasksWrapper\Server;
 class TaskResponse
 {
     public function __construct(
-        private int $status_code,
-        private string $status_code_name,
-        private TaskHandlerResult $result,
+        private readonly int $status_code,
+        private readonly string $status_code_name,
+        private readonly TaskHandlerResult $result,
     ) {
     }
 
