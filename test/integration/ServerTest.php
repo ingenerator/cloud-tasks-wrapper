@@ -114,9 +114,6 @@ final class ServerTest extends TestCase
         );
     }
 
-    /**
-     * @return ServerRequest|ServerRequestInterface
-     */
     private function makeServerRequest(string $handler_url, string $signer_email): ServerRequestInterface
     {
         $req = new ServerRequest(

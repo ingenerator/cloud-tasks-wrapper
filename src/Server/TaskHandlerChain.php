@@ -18,7 +18,7 @@ class TaskHandlerChain
     /**
      * @var TaskHandlerMiddleware[]
      */
-    protected $middlewares = [];
+    protected array $middlewares = [];
 
     /**
      * Creates a middleware stack with the default middlewares.

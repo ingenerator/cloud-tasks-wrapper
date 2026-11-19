@@ -14,10 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 final class TestMiddlewareTest extends TestCase
 {
-    /**
-     * @var Closure
-     */
-    protected $callable;
+    protected Closure $callable;
 
     public function testItIsInitialisable(): void
     {

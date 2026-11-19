@@ -14,7 +14,7 @@ class TaskTypeConfigProvider
     /**
      * @var array default options for retrying creation of cloud tasks
      */
-    protected static $defaultCreateRetry = [
+    protected static array $defaultCreateRetry = [
         'initialRetryDelayMillis' => 100,
         'retryDelayMultiplier' => 1.3,
         'maxRetryDelayMillis' => 10000,
