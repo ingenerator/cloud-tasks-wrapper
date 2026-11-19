@@ -17,7 +17,7 @@ class TaskRequestStub extends TaskRequest
         );
     }
 
-    public static function with(array $options)
+    public static function with(array $options): TaskRequest
     {
         $defaults = [
             'method' => 'POST',

@@ -16,7 +16,10 @@ use function call_user_func_array;
 
 class CoreTaskResultTest extends TestCase
 {
-    public static function provider_status_constructors()
+    /**
+     * @return mixed[]
+     */
+    public static function provider_status_constructors(): array
     {
         /**
          * This data provider and test is a sanity test that:
@@ -97,7 +100,7 @@ class CoreTaskResultTest extends TestCase
         string $method,
         ?array $args,
         ?array $expect,
-    ) {
+    ): void {
         if ($args === null) {
             $this->fail('No testcase defined for CoreTaskResult::'.$method);
         }

@@ -36,7 +36,7 @@ class TestTaskChain extends TaskHandlerChain
 
     public static function willThrow(Throwable $e): TestTaskChain
     {
-        return static::will(function () use ($e) { throw $e; });
+        return static::will(function () use ($e): void { throw $e; });
     }
 
     public static function withHandler(TaskHandler $handler, bool $allow_next = true): TestTaskChain

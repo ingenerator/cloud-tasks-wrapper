@@ -39,14 +39,14 @@ class CloudTaskCreatorTest extends TestCase
 
     protected TaskTypeConfigStub $task_config;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
     #[TestWith([[], ''])]
     #[TestWith([['body' => 'any body'], 'any body'])]
-    public function testItAddsBodyAndHeadersIfProvided($opts, $expect_body)
+    public function testItAddsBodyAndHeadersIfProvided($opts, $expect_body): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
@@ -59,7 +59,7 @@ class CloudTaskCreatorTest extends TestCase
         $signer,
         $expect_has_oidc,
         $expect_oidc_email,
-    ) {
+    ): void {
         $this->task_config = TaskTypeConfigStub::withTaskType('do-something', ['signer_email' => $signer]);
         $this->newSubject()->create('do-something');
 
@@ -78,7 +78,7 @@ class CloudTaskCreatorTest extends TestCase
     #[TestWith([['custom_token_audience' => null], ''])]
     #[TestWith([[], ''])]
     #[TestWith([['custom_token_audience' => 'pick-me!'], 'pick-me!'])]
-    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured($config, $expect)
+    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured($config, $expect): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -121,7 +121,7 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     #[DataProvider('provider_task_url')]
-    public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams($opts, $expect)
+    public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams($opts, $expect): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -135,7 +135,7 @@ class CloudTaskCreatorTest extends TestCase
 
     #[TestWith([[], ''])]
     #[TestWith([['task_id' => 'absad237'], 'absad237'])]
-    public function testItAddsTaskNameFromIdIfProvided($opts, $expect_id)
+    public function testItAddsTaskNameFromIdIfProvided($opts, $expect_id): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'some-task',
@@ -155,7 +155,7 @@ class CloudTaskCreatorTest extends TestCase
 
     #[TestWith([[], []])]
     #[TestWith([['headers' => ['X-SomeThing' => 'This']], ['X-SomeThing' => 'This']])]
-    public function testItAddsHttpHeadersIfProvided($opts, $expect)
+    public function testItAddsHttpHeadersIfProvided($opts, $expect): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
@@ -181,7 +181,7 @@ class CloudTaskCreatorTest extends TestCase
     }
 
     #[DataProvider('provider_schedule_time')]
-    public function testItAddsTimestampForScheduledTimeIfProvided($opts, $expect)
+    public function testItAddsTimestampForScheduledTimeIfProvided($opts, $expect): void
     {
         $this->newSubject()->create('any-old-job', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
@@ -197,7 +197,7 @@ class CloudTaskCreatorTest extends TestCase
         }
     }
 
-    public function testItSubmitsToTheConfiguredQueueUrlForTheTaskOptions()
+    public function testItSubmitsToTheConfiguredQueueUrlForTheTaskOptions(): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'something',
@@ -219,14 +219,14 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function testItLogsNothingOnSuccess()
+    public function testItLogsNothingOnSuccess(): void
     {
         $this->logger = new TestLogger();
         $this->newSubject()->create('anything');
         $this->assertSame([], $this->logger->records);
     }
 
-    public function testItLogsAndThrowsOnFailure()
+    public function testItLogsAndThrowsOnFailure(): void
     {
         $this->logger = new TestLogger();
         $api_exception = ApiException::createFromApiResponse(
@@ -250,7 +250,7 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function testItBubblesAlreadyExistsIfSetToThrowOnDuplicate()
+    public function testItBubblesAlreadyExistsIfSetToThrowOnDuplicate(): void
     {
         $this->logger = new TestLogger();
         $api_exception = ApiException::createFromApiResponse(
@@ -277,7 +277,7 @@ class CloudTaskCreatorTest extends TestCase
         );
     }
 
-    public function testItSwallowsAlreadyExistsIfSetNotToThrowOnDuplicate()
+    public function testItSwallowsAlreadyExistsIfSetNotToThrowOnDuplicate(): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'anything',
@@ -305,7 +305,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->assertSame([], $this->logger->records);
     }
 
-    public function testItProvidesRetryOptionsWhenSendingTask()
+    public function testItProvidesRetryOptionsWhenSendingTask(): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'something',
@@ -341,7 +341,7 @@ class CloudTaskCreatorTest extends TestCase
         $this->task_config = TaskTypeConfigStub::withAnyTaskType();
     }
 
-    protected function newSubject()
+    protected function newSubject(): CloudTaskCreator
     {
         return new CloudTaskCreator(
             $this->tasks_client,
@@ -387,13 +387,13 @@ class TasksClientSpy implements CloudTasksClientInterface
         return $this->created[0]['task'];
     }
 
-    public function assertCreatedOneTaskInQueue(string $queue)
+    public function assertCreatedOneTaskInQueue(string $queue): void
     {
         Assert::assertCount(1, $this->created);
         Assert::assertSame($queue, $this->created[0]['parent']);
     }
 
-    public function assertCreatedOneTaskWithOptions(array $options)
+    public function assertCreatedOneTaskWithOptions(array $options): void
     {
         Assert::assertCount(1, $this->created);
         Assert::assertSame($options, $this->created[0]['args']);

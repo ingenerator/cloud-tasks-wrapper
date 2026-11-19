@@ -7,6 +7,7 @@ declare(strict_types=1);
  *
  * @licence   BSD-3-Clause
  */
+
 namespace Ingenerator\CloudTasksWrapper\Client;
 
 use DateTimeImmutable;

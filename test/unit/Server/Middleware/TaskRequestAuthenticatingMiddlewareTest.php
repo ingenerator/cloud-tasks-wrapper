@@ -24,7 +24,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     protected MockTokenVerifier $token_verifier;
     protected TaskTypeConfigStub $task_type_config;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(
             TaskRequestAuthenticatingMiddleware::class,
@@ -32,7 +32,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsBadMethodIfRequestNotPost()
+    public function testItReturnsBadMethodIfRequestNotPost(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -50,7 +50,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsAuthNotPresentIfNoAuthToken()
+    public function testItReturnsAuthNotPresentIfNoAuthToken(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -68,7 +68,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsAuthInvalidIfAuthIsNotBearer()
+    public function testItReturnsAuthInvalidIfAuthIsNotBearer(): void
     {
         $result = $this->newSubject()
             ->process(
@@ -90,7 +90,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItValidatesTokenWithTaskTypeSignerEmailAndTaskUrlAsAudiencePathAndQuery()
+    public function testItValidatesTokenWithTaskTypeSignerEmailAndTaskUrlAsAudiencePathAndQuery(): void
     {
         $this->task_type_config = TaskTypeConfigStub::withTaskType(
             'my-custom-task',
@@ -120,7 +120,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public static function provider_auth_failures()
+    public static function provider_auth_failures(): array
     {
         return [
             [
@@ -135,7 +135,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
     }
 
     #[DataProvider('provider_auth_failures')]
-    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, $expect_msg)
+    public function testItReturnsAuthInvalidIfTokenVerificationFails(Throwable $e, $expect_msg): void
     {
         $this->token_verifier = MockTokenVerifier::willFailWith($e);
         $result = $this->newSubject()
@@ -154,7 +154,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItAddsTokenInfoToRequestAndReturnsNextHandlerResultOnSuccess()
+    public function testItAddsTokenInfoToRequestAndReturnsNextHandlerResultOnSuccess(): void
     {
         $this->token_verifier = MockTokenVerifier::willSucceedWith(
             ['email' => 'foo@some.iam.gserviceaccount.com']
@@ -165,7 +165,7 @@ class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $result = $this->newSubject()->process(
             $request,
             TestTaskChain::will(
-                fn (TaskRequest $request) => new ArbitraryTaskResult('OK', $request->getCallerEmail())
+                fn (TaskRequest $request): ArbitraryTaskResult => new ArbitraryTaskResult('OK', $request->getCallerEmail())
             )
         );
 

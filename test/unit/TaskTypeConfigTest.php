@@ -12,12 +12,12 @@ class TaskTypeConfigTest extends TestCase
     protected array $vars = [];
     protected string $type = 'foo-task';
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskTypeConfig::class, $this->newSubject());
     }
 
-    public function testItThrowsWithInvalidQueuePathComponents()
+    public function testItThrowsWithInvalidQueuePathComponents(): void
     {
         $this->vars['queue'] = [
             'project' => './foo',
@@ -29,7 +29,7 @@ class TaskTypeConfigTest extends TestCase
         $subject->getQueuePath();
     }
 
-    public function testItProvidesQueuePathFromConfigArray()
+    public function testItProvidesQueuePathFromConfigArray(): void
     {
         $this->vars['queue'] = ['project' => 'big-work', 'location' => 'outer-space', 'name' => 'slow-things'];
         $this->assertSame(
@@ -38,7 +38,7 @@ class TaskTypeConfigTest extends TestCase
         );
     }
 
-    public function testItReplacesTaskTypeParameterInHandlerUrl()
+    public function testItReplacesTaskTypeParameterInHandlerUrl(): void
     {
         $this->vars['handler_url'] = 'https://some.handler/_do_task/{TASK_TYPE}';
         $this->type = 'slow-job';

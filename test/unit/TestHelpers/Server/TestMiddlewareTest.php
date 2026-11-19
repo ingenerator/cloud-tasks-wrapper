@@ -17,7 +17,7 @@ class TestMiddlewareTest extends TestCase
      */
     protected $callable;
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(
             TestMiddleware::class,
@@ -25,7 +25,7 @@ class TestMiddlewareTest extends TestCase
         );
     }
 
-    public function testItPassesToRequestAndReturnsResultWithoutCallingNext()
+    public function testItPassesToRequestAndReturnsResultWithoutCallingNext(): void
     {
         $result = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();
@@ -43,7 +43,7 @@ class TestMiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->callable = (fn () => new ArbitraryTaskResult('anything'));
+        $this->callable = (fn (): ArbitraryTaskResult => new ArbitraryTaskResult('anything'));
     }
 
     protected function newSubject(): TestMiddleware

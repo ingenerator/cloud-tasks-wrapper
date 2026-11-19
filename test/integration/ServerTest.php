@@ -24,7 +24,7 @@ use function parse_url;
 
 class ServerTest extends TestCase
 {
-    public function testItCanProcessSuccessfulTasks()
+    public function testItCanProcessSuccessfulTasks(): void
     {
         $signer_email = 'someone@service.account.test';
         $handler_url = 'http://my.app/_do_task/do-my-task?person=15&option=something';
@@ -69,7 +69,7 @@ class ServerTest extends TestCase
         $this->assertSame('CustomTaskResult', $response->getStatusCodeName(), 'Correct HTTP status name');
     }
 
-    private function makeTestHandler()
+    private function makeTestHandler(): TaskHandler
     {
         return new class implements TaskHandler {
             public function handle(
@@ -91,7 +91,7 @@ class ServerTest extends TestCase
         };
     }
 
-    private function makeAuthToken(string $audience, string $email)
+    private function makeAuthToken(string $audience, string $email): string
     {
         $keys = JSON::decodeArray(
             file_get_contents('https://ingenerator.github.io/oidc-auth-sandbox/jwks-private-keys.json')

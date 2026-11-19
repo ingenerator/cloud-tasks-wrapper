@@ -13,12 +13,12 @@ use PHPUnit\Framework\TestCase;
 
 class ExceptionCatchingMiddlewareTest extends TestCase
 {
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(ExceptionCatchingMiddleware::class, $this->newSubject());
     }
 
-    public function testItConvertsTaskCannotBeValidExceptionToCannotBeValid()
+    public function testItConvertsTaskCannotBeValidExceptionToCannotBeValid(): void
     {
         $exception = new CloudTaskCannotBeValidException('Missing some crucial thing');
         $result = $this->newSubject()->process(
@@ -37,7 +37,7 @@ class ExceptionCatchingMiddlewareTest extends TestCase
 
     #[TestWith(['Error'])]
     #[TestWith(['RuntimeException'])]
-    public function testItConvertsUncaughtThrowableToUncaughtExceptionResult($err_class)
+    public function testItConvertsUncaughtThrowableToUncaughtExceptionResult($err_class): void
     {
         $exception = new $err_class('I have a problem');
         $result = $this->newSubject()->process(
@@ -54,7 +54,7 @@ class ExceptionCatchingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItReturnsUnmodifiedResultFromNextHandlerOnSuccess()
+    public function testItReturnsUnmodifiedResultFromNextHandlerOnSuccess(): void
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->process(
@@ -64,7 +64,7 @@ class ExceptionCatchingMiddlewareTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
-    protected function newSubject()
+    protected function newSubject(): ExceptionCatchingMiddleware
     {
         return new ExceptionCatchingMiddleware();
     }

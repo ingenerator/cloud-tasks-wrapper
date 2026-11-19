@@ -15,12 +15,12 @@ class TaskHandlerChainTest extends TestCase
 {
     protected $middlewares = [];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskHandlerChain::class, $this->newSubject());
     }
 
-    public function testItThrowsIfCallingNextHandlerWithoutInitialisingHandler()
+    public function testItThrowsIfCallingNextHandlerWithoutInitialisingHandler(): void
     {
         $this->middlewares = [TestMiddleware::neverCalled()];
         $subject = $this->newSubject();
@@ -28,7 +28,7 @@ class TaskHandlerChainTest extends TestCase
         $subject->nextHandler(TaskRequestStub::any());
     }
 
-    public function testItsProcessMethodDoesNotModifyStateOfOriginalObject()
+    public function testItsProcessMethodDoesNotModifyStateOfOriginalObject(): void
     {
         $this->middlewares = [
             TestMiddleware::callsNext(),
@@ -40,7 +40,7 @@ class TaskHandlerChainTest extends TestCase
         $subject->process(
             TaskRequestStub::any(),
             new TestTaskHandler(
-                fn () => new ArbitraryTaskResult('anything')
+                fn (): ArbitraryTaskResult => new ArbitraryTaskResult('anything')
             )
         );
         $this->assertSame(
@@ -50,7 +50,7 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessCallsHandlerAndReturnsResultWithoutMiddlewares()
+    public function testItsProcessCallsHandlerAndReturnsResultWithoutMiddlewares(): void
     {
         $this->middlewares = [];
         $rsp = new ArbitraryTaskResult('anything');
@@ -64,7 +64,7 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessCallsMiddlewaresBeforeReturningHandlerResult()
+    public function testItsProcessCallsMiddlewaresBeforeReturningHandlerResult(): void
     {
         $rsp = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();
@@ -102,7 +102,7 @@ class TaskHandlerChainTest extends TestCase
         );
     }
 
-    public function testItsProcessShortCircuitsIfMiddlewareReturnsResultWithoutNext()
+    public function testItsProcessShortCircuitsIfMiddlewareReturnsResultWithoutNext(): void
     {
         $rsp = new ArbitraryTaskResult('anything');
         $request = TaskRequestStub::any();

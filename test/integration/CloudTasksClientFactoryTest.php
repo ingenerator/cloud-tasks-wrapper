@@ -10,7 +10,7 @@ use Psr\Cache\CacheItemPoolInterface;
 
 class CloudTasksClientFactoryTest extends TestCase
 {
-    public function testItCanCreateClientWhenCalledWithEmulatorConfiguration()
+    public function testItCanCreateClientWhenCalledWithEmulatorConfiguration(): void
     {
         $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [
@@ -21,7 +21,7 @@ class CloudTasksClientFactoryTest extends TestCase
         $this->assertInstanceOf(CloudTasksClient::class, $client);
     }
 
-    public function testItCanCreateClientWhenCalledWithProductionConfiguration()
+    public function testItCanCreateClientWhenCalledWithProductionConfiguration(): void
     {
         $cache = $this->createStub(CacheItemPoolInterface::class);
         $client = CloudTasksClientFactory::makeClient($cache, [

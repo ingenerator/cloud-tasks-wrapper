@@ -18,21 +18,21 @@ class TestMiddleware implements TaskHandlerMiddleware
     public static function callsNext(): TestMiddleware
     {
         return new static(
-            fn (TaskRequest $req, TaskHandlerChain $chain) => $chain->nextHandler($req)
+            fn (TaskRequest $req, TaskHandlerChain $chain): TaskHandlerResult => $chain->nextHandler($req)
         );
     }
 
     public static function neverCalled(): TestMiddleware
     {
         return new static(
-            function () { throw new BadMethodCallException(self::class.' should never be called'); }
+            function (): void { throw new BadMethodCallException(self::class.' should never be called'); }
         );
     }
 
     public static function returnsResult(TaskHandlerResult $result): TestMiddleware
     {
         return new static(
-            fn () => $result
+            fn (): TaskHandlerResult => $result
         );
     }
 

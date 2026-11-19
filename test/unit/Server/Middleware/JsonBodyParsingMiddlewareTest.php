@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
 
 class JsonBodyParsingMiddlewareTest extends TestCase
 {
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(JsonBodyParsingMiddleware::class, $this->newSubject());
         $this->assertInstanceOf(TaskHandlerMiddleware::class, $this->newSubject());
     }
 
-    public function testItReturnsUnmodifiedResultFromNextHandler()
+    public function testItReturnsUnmodifiedResultFromNextHandler(): void
     {
         $expect = new ArbitraryTaskResult('someCustomCode');
         $result = $this->newSubject()->process(
@@ -29,7 +29,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
-    public function testItsParsedBodyIsUnmodifiedWhenNotJson()
+    public function testItsParsedBodyIsUnmodifiedWhenNotJson(): void
     {
         $parsed_body = ['something not to be messed with'];
         $request = TaskRequestStub::with([
@@ -64,7 +64,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         );
     }
 
-    public function testItParsesJsonBody()
+    public function testItParsesJsonBody(): void
     {
         $request = TaskRequestStub::with([
             'headers' => ['Content-Type' => 'application/json'],
@@ -92,7 +92,7 @@ class JsonBodyParsingMiddlewareTest extends TestCase
         $this->assertSame($result, $actual_result);
     }
 
-    public function testItReturnsCouldNotBeValidResultWithInvalidJson()
+    public function testItReturnsCouldNotBeValidResultWithInvalidJson(): void
     {
         $request = TaskRequestStub::with([
             'headers' => ['Content-Type' => 'application/json'],

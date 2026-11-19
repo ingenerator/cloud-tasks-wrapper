@@ -16,7 +16,7 @@ use function array_pop;
 
 class TaskServerFactoryTest extends TestCase
 {
-    public function testCanCreateServerStack()
+    public function testCanCreateServerStack(): void
     {
         $mock_middleware = $this->createStub(TaskHandlerMiddleware::class);
 
@@ -36,7 +36,7 @@ class TaskServerFactoryTest extends TestCase
         $this->assertSame($mock_middleware, array_pop($middlewares));
     }
 
-    public function testCanCreateServerStackWithMultipleAdditionalMiddlewares()
+    public function testCanCreateServerStackWithMultipleAdditionalMiddlewares(): void
     {
         $middleware1 = $this->createStub(TaskHandlerMiddleware::class);
         $middleware2 = $this->createStub(TaskHandlerMiddleware::class);

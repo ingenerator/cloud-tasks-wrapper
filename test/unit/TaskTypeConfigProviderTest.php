@@ -23,12 +23,12 @@ class TaskTypeConfigProviderTest extends TestCase
         ],
     ];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskTypeConfigProvider::class, $this->newSubject());
     }
 
-    public function testItThrowsOnUnknownTaskType()
+    public function testItThrowsOnUnknownTaskType(): void
     {
         $this->config = ['_default' => []];
         $subject = $this->newSubject();
@@ -36,7 +36,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('unknown');
     }
 
-    public function testItThrowsOnDirectAccessToDefault()
+    public function testItThrowsOnDirectAccessToDefault(): void
     {
         $this->config = ['_default' => []];
         $subject = $this->newSubject();
@@ -44,7 +44,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('_default');
     }
 
-    public function testItThrowsOnAttemptToOverrideRetryableCodes()
+    public function testItThrowsOnAttemptToOverrideRetryableCodes(): void
     {
         $this->config['_default']['create_retry_settings']['retryableCodes'] = ['foo'];
         $this->config['any-task'] = [];
@@ -55,7 +55,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $subject->getConfig('any-task');
     }
 
-    public function testItProvidesExplicitValuesForKnownTaskType()
+    public function testItProvidesExplicitValuesForKnownTaskType(): void
     {
         $this->config = [
             'do-a-thing' => [
@@ -83,7 +83,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public function testItMergesDefaultConfigForKnownTaskType()
+    public function testItMergesDefaultConfigForKnownTaskType(): void
     {
         $this->config = [
             '_default' => [
@@ -121,7 +121,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public function testItCanProvideCustomTokenAudienceIfConfigured()
+    public function testItCanProvideCustomTokenAudienceIfConfigured(): void
     {
         $this->config = [
             'do-a-thing' => [
@@ -139,7 +139,7 @@ class TaskTypeConfigProviderTest extends TestCase
         $this->assertSame('pick me!', $cfg->getCustomTokenAudience());
     }
 
-    public function testItProvidesDefaultCreationRetryOptionsIfNoneProvided()
+    public function testItProvidesDefaultCreationRetryOptionsIfNoneProvided(): void
     {
         unset($this->config['_default']['create_retry_settings']);
         $this->config['my-task'] = [];
@@ -156,7 +156,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    public static function provider_custom_retry()
+    public static function provider_custom_retry(): array
     {
         return [
             [
@@ -191,7 +191,7 @@ class TaskTypeConfigProviderTest extends TestCase
     }
 
     #[DataProvider('provider_custom_retry')]
-    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask($config, $expect)
+    public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask($config, $expect): void
     {
         $this->config = $config;
         $this->config['_default']['queue'] = ['project' => 'a', 'location' => 'b', 'name' => 'c'];
@@ -203,7 +203,7 @@ class TaskTypeConfigProviderTest extends TestCase
         );
     }
 
-    protected function newSubject()
+    protected function newSubject(): TaskTypeConfigProvider
     {
         return new TaskTypeConfigProvider($this->config);
     }

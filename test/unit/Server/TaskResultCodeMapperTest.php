@@ -15,12 +15,12 @@ class TaskResultCodeMapperTest extends TestCase
 {
     protected $custom_codes = [];
 
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(TaskResultCodeMapper::class, $this->newSubject());
     }
 
-    public function testItBuildsHttpResponseFromTaskResultBasedOnConfig()
+    public function testItBuildsHttpResponseFromTaskResultBasedOnConfig(): void
     {
         $this->custom_codes['myCustomStatus'] = ['http_status' => 200];
         $response = $this->newSubject()->getHttpResponse(
@@ -38,7 +38,7 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public function testItProvidesLogLevelForTaskResultBasedOnConfig()
+    public function testItProvidesLogLevelForTaskResultBasedOnConfig(): void
     {
         $this->custom_codes['myCustomStatus'] = ['loglevel' => LogLevel::INFO];
         $this->assertSame(
@@ -47,7 +47,7 @@ class TaskResultCodeMapperTest extends TestCase
         );
     }
 
-    public function testItThrowsForHttpResponseIfNotMappedOrInvalid()
+    public function testItThrowsForHttpResponseIfNotMappedOrInvalid(): void
     {
         $result = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
@@ -55,7 +55,7 @@ class TaskResultCodeMapperTest extends TestCase
         $subject->getHttpResponse($result);
     }
 
-    public function testItThrowsForLogLevelIfNotMapped()
+    public function testItThrowsForLogLevelIfNotMapped(): void
     {
         $result = new ArbitraryTaskResult('somethingIsNotDefined');
         $subject = $this->newSubject();
@@ -67,11 +67,11 @@ class TaskResultCodeMapperTest extends TestCase
     {
         $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
 
-        return array_map(fn (string $code) => [$code], $consts);
+        return array_map(fn (string $code): array => [$code], $consts);
     }
 
     #[DataProvider('provider_core_task_results')]
-    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code)
+    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code): void
     {
         $result = new ArbitraryTaskResult($code);
         $subject = $this->newSubject();
@@ -116,7 +116,7 @@ class TaskResultCodeMapperTest extends TestCase
     }
 
     #[DataProvider('provider_code_overrides')]
-    public function testUsersCanOverrideBehaviourOfCoreCodes($custom_codes, $code, $expect)
+    public function testUsersCanOverrideBehaviourOfCoreCodes($custom_codes, $code, $expect): void
     {
         $this->custom_codes = $custom_codes;
         $result = new ArbitraryTaskResult($code);

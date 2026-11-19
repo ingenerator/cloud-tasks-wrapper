@@ -134,7 +134,7 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
-    public function setRequestParsedBody(array $body)
+    public function setRequestParsedBody(array $body): void
     {
         $this->request = $this->request->withParsedBody($body);
     }

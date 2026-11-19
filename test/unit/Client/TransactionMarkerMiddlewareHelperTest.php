@@ -7,6 +7,7 @@ declare(strict_types=1);
  *
  * @licence   proprietary
  */
+
 namespace unit\Client;
 
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
@@ -19,7 +20,7 @@ use function uniqid;
 
 class TransactionMarkerMiddlewareHelperTest extends TestCase
 {
-    public function testItAddsHeaderOptionsToTaskArray()
+    public function testItAddsHeaderOptionsToTaskArray(): void
     {
         $options = ['headers' => ['X-CustomHeader' => 'foo']];
         $uuid = uniqid();
@@ -36,7 +37,7 @@ class TransactionMarkerMiddlewareHelperTest extends TestCase
         );
     }
 
-    public function testOptionsAreCompatibleWithCreateTaskOptions()
+    public function testOptionsAreCompatibleWithCreateTaskOptions(): void
     {
         $uuid = uniqid();
         $expiry = DateTimeImmutableFactory::atUnixSeconds(1570792394);

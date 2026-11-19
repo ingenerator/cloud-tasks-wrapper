@@ -28,13 +28,13 @@ class TestTaskHandler implements TaskHandler
     public static function neverCalled(): TestTaskHandler
     {
         return new static(
-            function () { throw new BadMethodCallException('Did not expect handler call'); }
+            function (): void { throw new BadMethodCallException('Did not expect handler call'); }
         );
     }
 
     public static function returnsResult(TaskHandlerResult $result): TestTaskHandler
     {
-        return new static(fn () => $result);
+        return new static(fn (): TaskHandlerResult => $result);
     }
 
     public function __construct(callable $callable)

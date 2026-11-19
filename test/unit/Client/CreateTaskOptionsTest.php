@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class CreateTaskOptionsTest extends TestCase
 {
-    public function testItIsInitialisable()
+    public function testItIsInitialisable(): void
     {
         $this->assertInstanceOf(CreateTaskOptions::class, new CreateTaskOptions([]));
     }
@@ -68,7 +68,7 @@ class CreateTaskOptionsTest extends TestCase
     }
 
     #[DataProvider('provider_invalid_args')]
-    public function testItThrowsOnConstructionWithInvalidArgs($args, $expect_msg)
+    public function testItThrowsOnConstructionWithInvalidArgs($args, $expect_msg): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageIsOrContains($expect_msg);
@@ -78,7 +78,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar']], true])]
     #[TestWith([['query' => null], false])]
     #[TestWith([[], false])]
-    public function testItCanHaveQuery($opts, $expect)
+    public function testItCanHaveQuery($opts, $expect): void
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->hasQuery());
@@ -90,7 +90,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever'], true])]
     #[TestWith([['custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], true])]
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], false])]
-    public function testItOnlyAllowsQueryWithCustomUrlIfUrlDoesNotContainAQuery($opts, $is_valid)
+    public function testItOnlyAllowsQueryWithCustomUrlIfUrlDoesNotContainAQuery($opts, $is_valid): void
     {
         $e = null;
         try {
@@ -155,7 +155,7 @@ class CreateTaskOptionsTest extends TestCase
         array $opts,
         array $expect_headers,
         ?string $expect_raw_body,
-    ) {
+    ): void {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect_headers, $subject->getHeaders());
         $this->assertSame($expect_raw_body, $subject->getBodyContent());
@@ -169,7 +169,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'query' => ['foo' => 'bar']], '/some/queue/path/tasks/59c9944a18e175c30831ce9b7ded47bc48aba09f8b0e920f21c44d7e72b6b2fe'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'headers' => ['X-foo' => 'bar']], '/some/queue/path/tasks/8dbbc54179cb185b6ff25c4765403adea4692aa35f69594af1ab3b254e3dcd15'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'schedule_send_after' => '2020-09-04 00:00:00 +01:00'], '/some/queue/path/tasks/90372598891aabbb05ea2461ff3164aba8fd7e9de42d9c9f5418309cb9a015dc'])]
-    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue($opts, $expect)
+    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue($opts, $expect): void
     {
         if (isset($opts['schedule_send_after'])) {
             $opts['schedule_send_after'] = new DateTimeImmutable($opts['schedule_send_after']);
@@ -182,7 +182,7 @@ class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id' => 'foo'], true])]
     #[TestWith([['task_id_from' => 'bar'], true])]
     #[TestWith([['task_id' => 'foo', 'throw_on_duplicate' => false], false])]
-    public function testItDefaultsToThrowOnDuplicateTaskIdButCanOverride($opts, $expect)
+    public function testItDefaultsToThrowOnDuplicateTaskIdButCanOverride($opts, $expect): void
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->shouldThrowOnDuplicate());
@@ -197,7 +197,7 @@ class CreateTaskOptionsTest extends TestCase
         int $delay_secs,
         string $expect_at,
         string $expect_id_from,
-    ) {
+    ): void {
         $subject = new CreateTaskOptions(
             [
                 '_create_time' => new DateTimeImmutable($create_at),
@@ -218,7 +218,7 @@ class CreateTaskOptionsTest extends TestCase
         );
     }
 
-    public function testItUsesDefaultCreateTimeForThrottleIfNotSet()
+    public function testItUsesDefaultCreateTimeForThrottleIfNotSet(): void
     {
         $subject = new CreateTaskOptions(
             [

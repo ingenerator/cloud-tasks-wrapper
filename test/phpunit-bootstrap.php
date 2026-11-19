@@ -9,7 +9,7 @@ ini_set('date.timezone', 'UTC');
 // Currently phpunit's default error handling doesn't properly catch warnings / errors from data providers
 // https://github.com/sebastianbergmann/phpunit/issues/2449
 set_error_handler(
-    function ($severity, $message, $file, $line) {
+    function ($severity, $message, $file, $line): void {
         throw new ErrorException($message, 0, $severity, $file, $line);
     }
 );
