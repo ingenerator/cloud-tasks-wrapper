@@ -185,7 +185,7 @@ class CreateTaskOptions
         // E.g. a task executed at 11:03:30 with a `PT5M` interval will be rounded up to 11:05:00.
 
         $bucket_seconds = $this->calculateIntervalSeconds($this->throttle_interval);
-        $bucket_ends_ts = ($bucket_seconds * ceil($this->_create_time->format('U.u') / $bucket_seconds));
+        $bucket_ends_ts = (int) ($bucket_seconds * ceil($this->_create_time->format('U.u') / $bucket_seconds));
 
         // Then add the throttle_delay_seconds to get the time the task should actually run.
         // So e.g. with the default 60 second delay, our 11:03:30 task will run at 11:06:00.
