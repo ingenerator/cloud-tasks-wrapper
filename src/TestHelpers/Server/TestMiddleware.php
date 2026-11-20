@@ -35,6 +35,9 @@ final class TestMiddleware implements TaskHandlerMiddleware
         );
     }
 
+    /**
+     * @param Closure(TaskRequest, TaskHandlerChain): TaskHandlerResult $callable
+     */
     public function __construct(private readonly Closure $callable)
     {
     }
