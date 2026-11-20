@@ -36,6 +36,9 @@ final class TestTaskHandler implements TaskHandler
         return new self(fn (): TaskHandlerResult => $result);
     }
 
+    /**
+     * @param Closure(TaskRequest): TaskHandlerResult $callable
+     */
     public function __construct(private readonly Closure $callable)
     {
     }
