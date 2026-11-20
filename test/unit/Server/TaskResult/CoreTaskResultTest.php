@@ -12,8 +12,8 @@ use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Object\ConstantDirectory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use UnderflowException;
 
-use function array_fill_keys;
 use function call_user_func_array;
 
 final class CoreTaskResultTest extends TestCase
@@ -34,27 +34,25 @@ final class CoreTaskResultTest extends TestCase
         $invalid_exception = new CloudTaskCannotBeValidException('It has no info');
         $misc_e = new Error('That was an error');
 
-        $codes = array_fill_keys(
-            ConstantDirectory::forClass(CoreTaskResult::class)->listConstants(),
-            []
-        );
-
-        $map = array_merge(
-            $codes,
-            [
+        foreach (ConstantDirectory::forClass(CoreTaskResult::class)->listConstants() as $code) {
+            yield $code => match ($code) {
                 CoreTaskResult::AUTH_INVALID => [
+                    $code,
                     ['Invalid!'],
                     ['msg' => 'Invalid!', 'log_context' => []],
                 ],
                 CoreTaskResult::AUTH_NOT_PROVIDED => [
+                    $code,
                     ['No auth!'],
                     ['msg' => 'No auth!', 'log_context' => []],
                 ],
                 CoreTaskResult::BAD_HTTP_METHOD => [
+                    $code,
                     ['PUT'],
                     ['msg' => '`PUT` not accepted', 'log_context' => []],
                 ],
                 CoreTaskResult::CANNOT_BE_VALID => [
+                    $code,
                     [$invalid_exception],
                     [
                         'msg' => 'Cannot be valid: It has no info',
@@ -62,14 +60,17 @@ final class CoreTaskResultTest extends TestCase
                     ],
                 ],
                 CoreTaskResult::DUPLICATE_DELIVERY => [
+                    $code,
                     ['You sent this!'],
                     ['msg' => 'You sent this!', 'log_context' => []],
                 ],
                 CoreTaskResult::HANDLER_NOT_FOUND => [
+                    $code,
                     ['any-task'],
                     ['msg' => 'No task handler for `any-task`', 'log_context' => []],
                 ],
                 CoreTaskResult::MUTEX_TIMEOUT => [
+                    $code,
                     [$mutex_exception],
                     [
                         'msg' => 'Mutex failed: '.$mutex_exception->getMessage(),
@@ -77,24 +78,20 @@ final class CoreTaskResultTest extends TestCase
                     ],
                 ],
                 CoreTaskResult::SUCCESS => [
+                    $code,
                     [],
                     ['msg' => 'ok', 'log_context' => []],
                 ],
                 CoreTaskResult::UNCAUGHT_EXCEPTION => [
+                    $code,
                     [$misc_e],
                     ['msg' => '[Error] That was an error',
                         'log_context' => ['exception' => $misc_e],
                     ],
                 ],
-            ]
-        );
-
-        $cases = [];
-        foreach ($map as $code => $vars) {
-            $cases[] = [$code, $vars[0] ?? null, $vars[1] ?? null];
+                default => throw new UnderflowException('No expectation defined for '.$code),
+            };
         }
-
-        return $cases;
     }
 
     /**
