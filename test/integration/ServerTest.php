@@ -6,6 +6,7 @@ namespace test\integration;
 
 use Firebase\JWT\JWT;
 use Google\Auth\Cache\MemoryCacheItemPool;
+use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\ServerRequest;
 use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
@@ -18,13 +19,41 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
+use UnexpectedValueException;
 
-use function file_get_contents;
 use function parse_str;
 use function parse_url;
 
 final class ServerTest extends TestCase
 {
+    /**
+     * @var array{kid: string, private_key: string}
+     */
+    private static array $jwkPrivateKey;
+
+    /**
+     * @return array{kid: string, private_key: string}
+     */
+    private function fetchTestJwkPrivateKey(): array
+    {
+        $client = new Client();
+        // @todo: We should run a local emulator for integration tests, not rely on public HTTP requests
+        $data = $client->get('https://ingenerator.github.io/oidc-auth-sandbox/jwks-private-keys.json');
+        $keys = JSON::decodeArray($data->getBody()->getContents());
+        if (
+            isset($keys['keys'])
+            && is_array($keys['keys'])
+            && isset($keys['keys'][0])
+            && is_array($keys['keys'][0])
+            && is_string($keys['keys'][0]['kid'] ?? null)
+            && is_string($keys['keys'][0]['private_key'] ?? null)
+        ) {
+            return $keys['keys'][0];
+        }
+
+        throw new UnexpectedValueException('Invalid content from test keyserver URL');
+    }
+
     public function testItCanProcessSuccessfulTasks(): void
     {
         $signer_email = 'someone@service.account.test';
@@ -94,10 +123,8 @@ final class ServerTest extends TestCase
 
     private function makeAuthToken(string $audience, string $email): string
     {
-        $keys = JSON::decodeArray(
-            file_get_contents('https://ingenerator.github.io/oidc-auth-sandbox/jwks-private-keys.json')
-        );
-        $key = $keys['keys'][0];
+        self::$jwkPrivateKey ??= self::fetchTestJwkPrivateKey();
+        $key = self::$jwkPrivateKey;
 
         return JWT::encode(
             [
