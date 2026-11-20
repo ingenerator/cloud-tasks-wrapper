@@ -58,6 +58,9 @@ class TaskRequestStub extends TaskRequest
         return static::with(['headers' => ['Authorization' => 'Bearer '.$token]]);
     }
 
+    /**
+     * @param array<string, mixed> $query
+     */
     public static function withQuery(array $query): TaskRequest
     {
         return static::with(['query' => $query]);

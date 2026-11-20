@@ -34,6 +34,8 @@ class CreateTaskOptions
 
     /**
      * Extra headers to send with the HTTP request to the task handler.
+     *
+     * @var array<string, string>
      */
     private array $headers = [];
 
@@ -46,6 +48,8 @@ class CreateTaskOptions
      * Optionally add GET parameters to the handler URL.
      *
      * The handler URL itself comes from the task type config.
+     *
+     * @var array<string, mixed>|null
      */
     private ?array $query = null;
 
@@ -251,6 +255,9 @@ class CreateTaskOptions
         return $this->body;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getHeaders(): array
     {
         return $this->headers;
@@ -261,6 +268,9 @@ class CreateTaskOptions
         return $this->custom_handler_url;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getQuery(): ?array
     {
         return $this->query;
