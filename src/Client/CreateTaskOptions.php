@@ -170,18 +170,18 @@ class CreateTaskOptions
             return null;
         }
 
-        $type = implode(',', array_keys($body));
+        $hasSingleType = count($body) === 1;
 
-        return match ($type) {
-            'json' => [
+        return match (true) {
+            $hasSingleType && array_key_exists('json', $body) => [
                 'body' => JSON::encode($body['json'], false),
                 'Content-Type' => 'application/json',
             ],
-            'form' => [
+            $hasSingleType && array_key_exists('form', $body) => [
                 'body' => http_build_query($body['form']),
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ],
-            default => throw new InvalidArgumentException('Invalid body type: '.JSON::encode($type, false)),
+            default => throw new InvalidArgumentException('Invalid body type: '.implode(',', array_keys($body))),
         };
     }
 
