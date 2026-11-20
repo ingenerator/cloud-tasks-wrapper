@@ -158,8 +158,8 @@ final class TaskTypeConfigProviderTest extends TestCase
                 'initialRetryDelayMillis' => 100,
                 'retryDelayMultiplier' => 1.3,
                 'maxRetryDelayMillis' => 10000,
-                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 'retriesEnabled' => true,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
             ],
             $this->newSubject()->getConfig('my-task')->getCreateRetrySettings()
         );
@@ -180,8 +180,8 @@ final class TaskTypeConfigProviderTest extends TestCase
                 'initialRetryDelayMillis' => 100,
                 'retryDelayMultiplier' => 5,
                 'maxRetryDelayMillis' => 10000,
-                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 'retriesEnabled' => true,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
             ],
         ];
         yield [
@@ -194,8 +194,8 @@ final class TaskTypeConfigProviderTest extends TestCase
                 'initialRetryDelayMillis' => 100,
                 'retryDelayMultiplier' => 1.3,
                 'maxRetryDelayMillis' => 20000,
-                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 'retriesEnabled' => true,
+                'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
             ],
         ];
     }

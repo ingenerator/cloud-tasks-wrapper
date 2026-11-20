@@ -334,7 +334,6 @@ final class CloudTaskCreatorTest extends TestCase
                     'initialRetryDelayMillis' => 100,
                     'retryDelayMultiplier' => 1.3,
                     'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                     'retriesEnabled' => true,
                 ],
             ]
@@ -346,8 +345,8 @@ final class CloudTaskCreatorTest extends TestCase
                     'initialRetryDelayMillis' => 100,
                     'retryDelayMultiplier' => 1.3,
                     'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                     'retriesEnabled' => true,
+                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 ],
             ]
         );

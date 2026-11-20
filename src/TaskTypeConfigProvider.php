@@ -22,9 +22,16 @@ class TaskTypeConfigProvider
         'initialRetryDelayMillis' => 100,
         'retryDelayMultiplier' => 1.3,
         'maxRetryDelayMillis' => 10000,
-        // NB that retryableCodes is not customisable due to the internals of array merging
-        'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
+        // NB that retryableCodes is not customisable per task due to the internals of array merging
         'retriesEnabled' => true,
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected static array $retryableCodes = [
+        ApiStatus::DEADLINE_EXCEEDED,
+        ApiStatus::UNAVAILABLE,
     ];
 
     /**
@@ -59,12 +66,14 @@ class TaskTypeConfigProvider
             $this->config[$task_type]
         );
 
-        if ($cfg['create_retry_settings']['retryableCodes'] !== static::$defaultCreateRetry['retryableCodes']) {
+        if (isset($cfg['create_retry_settings']['retryableCodes'])) {
             // This is because the ::deepMerge will always combine rather than replace an indexed array of codes
-            // And it doesn't seem likely enough that we would ever need to customise it at a per-application level
+            // And it doesn't seem likely enough that we would ever need to customise it at a per-task-type level
             // to justify the complexity of merging that value differently.
             throw new InvalidArgumentException('Cannot customise `retryableCodes` for creating cloud tasks');
         }
+
+        $cfg['create_retry_settings']['retryableCodes'] = static::$retryableCodes;
 
         return new TaskTypeConfig($task_type, $cfg);
     }

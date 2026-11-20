@@ -14,7 +14,6 @@ use function str_replace;
  * @phpstan-type TRetrySettingsArray array{
  *     retriesEnabled?: true,
  *     noRetriesRpcTimeoutMillis?: int,
- *     retryableCodes?: list<string>,
  *     initialRetryDelayMillis?: int,
  *     retryDelayMultiplier?: float,
  *     maxRetryDelayMillis?: int,
