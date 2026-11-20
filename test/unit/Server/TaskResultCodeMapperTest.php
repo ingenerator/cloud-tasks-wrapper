@@ -70,13 +70,14 @@ final class TaskResultCodeMapperTest extends TestCase
     }
 
     /**
-     * @return array<string, array{string}>
+     * @return iterable<string, array{string}>
      */
-    public static function provider_core_task_results(): array
+    public static function provider_core_task_results(): iterable
     {
-        $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
-
-        return array_map(fn (string $code): array => [$code], $consts);
+        foreach (ConstantDirectory::forClass(CoreTaskResult::class)->listConstants() as $const) {
+            assert(is_string($const), 'Constant value must be a string');
+            yield $const => [$const];
+        }
     }
 
     /**

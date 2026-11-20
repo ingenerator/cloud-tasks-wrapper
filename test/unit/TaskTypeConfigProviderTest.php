@@ -201,7 +201,7 @@ final class TaskTypeConfigProviderTest extends TestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $config
+     * @param array<string, TPartialTaskTypeConfigArray> $config
      * @param array<string, mixed> $expect
      */
     #[DataProvider('provider_custom_retry')]

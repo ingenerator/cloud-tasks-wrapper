@@ -144,14 +144,16 @@ final class TaskLoggingMiddlewareTest extends TestCase
         );
 
         $log = $this->assertLoggedOnce(LogLevel::INFO);
+        $mem = $log['context']['peak_mem'];
+        $this->assertIsString($mem, 'Memory should be formatted to string for fixed size output');
         $this->assertMatchesRegularExpression(
             '/^[1-9][0-9]*\.[0-9]{3}MB$/',
-            $log['context']['peak_mem'],
+            $mem,
             'Should have a plausible value for peak memory'
         );
         // Can't be too strict, dependencies will change their usage over time, but roughly check we've divided to the
         // correct unit scale.
-        $mem = (float) $log['context']['peak_mem'];
+        $mem = (float) $mem;
         $this->assertGreaterThan(1, $mem, 'Should be more than 1MB');
         $this->assertLessThan(100, $mem, 'Should be less than 100MB');
     }

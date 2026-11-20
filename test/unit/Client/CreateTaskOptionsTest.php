@@ -193,6 +193,7 @@ final class CreateTaskOptionsTest extends TestCase
     public function testItCanBuildTaskNameFromExplicitIdOrHashableValue(array $opts, ?string $expect): void
     {
         if (isset($opts['schedule_send_after'])) {
+            $this->assertIsString($opts['schedule_send_after']);
             $opts['schedule_send_after'] = new DateTimeImmutable($opts['schedule_send_after']);
         }
         $subject = new CreateTaskOptions($opts);

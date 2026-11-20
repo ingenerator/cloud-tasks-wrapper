@@ -10,6 +10,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\PHPUtils\Mutex\MutexTimedOutException;
 use Ingenerator\PHPUtils\Object\ConstantDirectory;
+use Ingenerator\PHPUtils\StringEncoding\JSON;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
@@ -19,7 +20,7 @@ use function call_user_func_array;
 final class CoreTaskResultTest extends TestCase
 {
     /**
-     * @return iterable<int, array{string, list<mixed>, array{msg: string, log_context: array<string,mixed>}}>
+     * @return iterable<string, array{string, list<mixed>, array{msg: string, log_context: array<string,mixed>}}>
      */
     public static function provider_status_constructors(): iterable
     {
@@ -35,6 +36,7 @@ final class CoreTaskResultTest extends TestCase
         $misc_e = new Error('That was an error');
 
         foreach (ConstantDirectory::forClass(CoreTaskResult::class)->listConstants() as $code) {
+            assert(is_string($code), 'Constant value must be a string');
             yield $code => match ($code) {
                 CoreTaskResult::AUTH_INVALID => [
                     $code,
@@ -89,7 +91,7 @@ final class CoreTaskResultTest extends TestCase
                         'log_context' => ['exception' => $misc_e],
                     ],
                 ],
-                default => throw new UnderflowException('No expectation defined for '.$code),
+                default => throw new UnderflowException('No expectation defined for '.JSON::encode($code)),
             };
         }
     }
