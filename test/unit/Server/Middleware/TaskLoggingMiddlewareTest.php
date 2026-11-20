@@ -207,13 +207,26 @@ final class TaskLoggingMiddlewareTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{level: string, message: string, context: array<string,mixed>}
      */
     protected function assertLoggedOnce(string $level): array
     {
         $infos = $this->logger->recordsByLevel[$level];
         $this->assertCount(1, $infos, 'Should have logged exactly once');
 
-        return array_shift($infos);
+        $record = array_shift($infos);
+        assert(
+            is_array($record)
+            && isset($record['level'])
+            && is_string($record['level'])
+            && isset($record['message'])
+            && is_string($record['message'])
+            && isset($record['context'])
+            && is_array($record['context'])
+            && !array_is_list($record['context']),
+            'TestLogger stores records in expected internal shape'
+        );
+
+        return $record;
     }
 }
