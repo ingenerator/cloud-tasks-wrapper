@@ -145,8 +145,15 @@ class TaskRequest
     public function optionalQueryParam(string $param): ?string
     {
         $params = $this->request->getQueryParams();
+        if (!isset($params[$param])) {
+            return null;
+        }
 
-        return $params[$param] ?? null;
+        if (!is_string($params[$param])) {
+            throw new CloudTaskCannotBeValidException('Query parameter "'.$param.'" must be a string');
+        }
+
+        return $params[$param];
     }
 
     /**

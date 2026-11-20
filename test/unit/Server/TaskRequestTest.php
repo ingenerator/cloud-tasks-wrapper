@@ -30,7 +30,7 @@ final class TaskRequestTest extends TestCase
         $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar');
         $this->assertSame(
             'https://my.app/task?foo=bar',
-            $this->newSubject()->getFullUrl()
+            $this->newSubject()->getFullUrl(),
         );
     }
 
@@ -48,7 +48,7 @@ final class TaskRequestTest extends TestCase
             $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar', $hdrs);
             $this->assertSame(
                 $expect,
-                DateString::isoMS($this->newSubject()->getScheduledTime(), null)
+                DateString::isoMS($this->newSubject()->getScheduledTime(), null),
             );
         } finally {
             date_default_timezone_set($dtz);
@@ -62,7 +62,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-QueueName' => 'my-queue',
-            ]
+            ],
         );
         $this->assertSame('my-queue', $this->newSubject()->getQueueName());
     }
@@ -74,7 +74,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskName' => 'task12472315223',
-            ]
+            ],
         );
         $this->assertSame('task12472315223', $this->newSubject()->getTaskName());
     }
@@ -86,7 +86,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskRetryCount' => '5',
-            ]
+            ],
         );
         $this->assertSame(5, $this->newSubject()->getRetryCount());
     }
@@ -98,7 +98,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskExecutionCount' => '3',
-            ]
+            ],
         );
         $this->assertSame(3, $this->newSubject()->getExecutionCount());
     }
@@ -113,7 +113,7 @@ final class TaskRequestTest extends TestCase
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
-            $hdrs
+            $hdrs,
         );
         $this->assertSame($expect, $this->newSubject()->getPreviousResponse());
     }
@@ -128,9 +128,18 @@ final class TaskRequestTest extends TestCase
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
-            $hdrs
+            $hdrs,
         );
         $this->assertSame($expect, $this->newSubject()->getRetryReason());
+    }
+
+    public function testItThrowsOnAccessToNonStringQueryParam(): void
+    {
+        $this->http_req = $this->http_req->withQueryParams(['foo' => ['one', 'two']]);
+        $subject = $this->newSubject();
+        $this->expectException(CloudTaskCannotBeValidException::class);
+        $this->expectExceptionMessageIsOrContains('Query parameter "foo" must be a string');
+        $subject->optionalQueryParam('foo');
     }
 
     /**
