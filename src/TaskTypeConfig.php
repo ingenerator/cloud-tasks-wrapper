@@ -35,7 +35,7 @@ use function str_replace;
  *   handler_url?: non-empty-string,
  *   queue?: array{project?: non-empty-string, location?: non-empty-string, name?: non-empty-string},
  *   signer_email?: non-empty-string,
- *   custom_token_audience?: non-empty-string,
+ *   custom_token_audience?: non-empty-string|null,
  * }
  */
 class TaskTypeConfig
