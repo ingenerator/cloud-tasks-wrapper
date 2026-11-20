@@ -190,6 +190,26 @@ final class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         );
     }
 
+    public function testItFailsIfEmailPresentButNotAString(): void
+    {
+        $this->token_verifier = MockTokenVerifier::willSucceedWith(
+            ['email' => ['some-other-type-of-value']]
+        );
+        $result = $this->newSubject()->process(
+            TaskRequestStub::withAuthToken(),
+            TestTaskChain::nextNeverCalled(),
+        );
+
+        $this->assertSame(
+            [
+                'code' => CoreTaskResult::AUTH_INVALID,
+                'msg' => '`email` claim must be a string, if it is supplied',
+                'log_context' => [],
+            ],
+            $result->toArray()
+        );
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

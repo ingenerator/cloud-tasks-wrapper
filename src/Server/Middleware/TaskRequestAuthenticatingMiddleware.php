@@ -46,8 +46,13 @@ class TaskRequestAuthenticatingMiddleware implements TaskHandlerMiddleware
             return $this->createAuthFailureResult($result);
         }
 
-        // Auth was successful, store the info onto the request object for use elsewhere
-        $request->setCallerEmail($result->getPayload()->email ?? null);
+        // Auth was successful, store the info onto the request object for use elsewhere.
+        // Note that we always reset any stored value from elsewhere in the stack.
+        $email = $result->getPayload()->email ?? null;
+        if ($email !== null && !is_string($email)) {
+            return CoreTaskResult::authInvalid('`email` claim must be a string, if it is supplied');
+        }
+        $request->setCallerEmail($email);
 
         return $chain->nextHandler($request);
     }
