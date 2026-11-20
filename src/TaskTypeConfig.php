@@ -71,7 +71,7 @@ class TaskTypeConfig
     protected ?string $custom_token_audience = null;
 
     /**
-     * @param array<string, mixed> $cfg
+     * @param TPartialTaskTypeConfigArray $cfg
      */
     public function __construct(
         /**
