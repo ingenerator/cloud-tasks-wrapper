@@ -21,6 +21,9 @@ final class CoreTaskResult extends TaskHandlerResult
     public const string SUCCESS = 'success';
     public const string UNCAUGHT_EXCEPTION = 'uncaughtException';
 
+    /**
+     * @param array<string, mixed> $log_context
+     */
     public static function authInvalid(string $msg, array $log_context = []): CoreTaskResult
     {
         return new self(self::AUTH_INVALID, $msg, $log_context);

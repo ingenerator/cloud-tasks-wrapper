@@ -134,6 +134,9 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    /**
+     * @param array<array-key, mixed> $body
+     */
     public function setRequestParsedBody(array $body): void
     {
         $this->request = $this->request->withParsedBody($body);
