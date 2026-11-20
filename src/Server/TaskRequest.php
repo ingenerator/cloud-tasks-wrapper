@@ -178,7 +178,11 @@ class TaskRequest
      */
     public function requireBodyField(string $key): mixed
     {
-        $value = $this->request->getParsedBody()[$key] ?? null;
+        $body = $this->request->getParsedBody();
+        if (!is_array($body)) {
+            throw new CloudTaskCannotBeValidException('Task body payload must be an array');
+        }
+        $value = $body[$key] ?? null;
         if (empty($value)) {
             throw new CloudTaskCannotBeValidException('Required field `'.$key.'` missing from task body payload');
         }
