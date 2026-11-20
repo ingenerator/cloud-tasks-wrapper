@@ -16,6 +16,9 @@ final class TestTaskChain extends TaskHandlerChain
 {
     protected bool $allow_next = true;
 
+    /**
+     * @param array<string, mixed> $log_context
+     */
     public static function withArbitraryResult(
         string $code,
         ?string $msg = null,

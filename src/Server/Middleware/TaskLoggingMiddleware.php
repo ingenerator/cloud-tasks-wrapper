@@ -22,8 +22,15 @@ use function memory_get_peak_usage;
  */
 class TaskLoggingMiddleware implements TaskHandlerMiddleware
 {
-    public function __construct(protected RealtimeClock $clock, protected LoggerInterface $logger, protected TaskResultCodeMapper $code_mapper, protected array $default_context = [])
-    {
+    /**
+     * @param array<string, mixed> $default_context
+     */
+    public function __construct(
+        protected RealtimeClock $clock,
+        protected LoggerInterface $logger,
+        protected TaskResultCodeMapper $code_mapper,
+        protected array $default_context = [],
+    ) {
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
