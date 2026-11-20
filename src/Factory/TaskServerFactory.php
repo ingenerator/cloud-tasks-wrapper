@@ -13,6 +13,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
+use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\OIDCTokenVerifier\OIDCTokenVerifier;
 use Ingenerator\OIDCTokenVerifier\OpenIDDiscoveryCertificateProvider;
@@ -23,6 +24,9 @@ use Psr\Log\LoggerInterface;
 
 use function parse_url;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ */
 class TaskServerFactory
 {
     /**
@@ -31,6 +35,7 @@ class TaskServerFactory
      * For more advanced customisation you can of course replace this with an equivalent implementation / dependency
      * container config.
      *
+     * @param array<string, TPartialTaskTypeConfigArray> $task_types
      * @param array<string, mixed> $server_config
      */
     public static function makeController(

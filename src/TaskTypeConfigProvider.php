@@ -11,6 +11,7 @@ use function array_merge;
 
 /**
  * @phpstan-import-type TRetrySettingsArray from TaskTypeConfig
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
  */
 class TaskTypeConfigProvider
 {
@@ -26,10 +27,13 @@ class TaskTypeConfigProvider
         'retriesEnabled' => true,
     ];
 
+    /**
+     * @var array<string, TPartialTaskTypeConfigArray>
+     */
     protected array $config;
 
     /**
-     * @param array<string, mixed> $config
+     * @param array<string, TPartialTaskTypeConfigArray> $config
      */
     public function __construct(array $config)
     {

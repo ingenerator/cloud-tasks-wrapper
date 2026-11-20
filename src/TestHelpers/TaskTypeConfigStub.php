@@ -8,6 +8,9 @@ use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ */
 final class TaskTypeConfigStub extends TaskTypeConfigProvider
 {
     protected bool $allow_any_task_type = false;
@@ -20,6 +23,9 @@ final class TaskTypeConfigStub extends TaskTypeConfigProvider
         return $i;
     }
 
+    /**
+     * @param TPartialTaskTypeConfigArray $opts
+     */
     public static function withTaskType(string $type, array $opts = []): TaskTypeConfigStub
     {
         return new self([$type => $opts]);

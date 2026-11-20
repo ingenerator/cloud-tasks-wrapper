@@ -25,6 +25,18 @@ use function str_replace;
  *     maxRetries?: int,
  *     retryFunction?: callable(Exception,array<mixed>):bool
  * }
+ * @phpstan-type TQueueConfigArray array{
+ *     project: non-empty-string,
+ *     location: non-empty-string,
+ *     name: non-empty-string,
+ * }
+ * @phpstan-type TPartialTaskTypeConfigArray array{
+ *   create_retry_settings?: TRetrySettingsArray,
+ *   handler_url?: non-empty-string,
+ *   queue?: array{project?: non-empty-string, location?: non-empty-string, name?: non-empty-string},
+ *   signer_email?: non-empty-string,
+ *   custom_token_audience?: non-empty-string,
+ * }
  */
 class TaskTypeConfig
 {
@@ -42,6 +54,8 @@ class TaskTypeConfig
 
     /**
      * The project, name and location of the queue this task type will be sent through.
+     *
+     * @var TQueueConfigArray
      */
     protected array $queue;
 

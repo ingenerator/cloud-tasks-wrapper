@@ -12,8 +12,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use UnderflowException;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ */
 final class TaskTypeConfigProviderTest extends TestCase
 {
+    /**
+     * @var array<string, TPartialTaskTypeConfigArray>
+     */
     protected array $config = [
         '_default' => [
             'queue' => [
@@ -194,6 +200,10 @@ final class TaskTypeConfigProviderTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $config
+     * @param array<string, mixed> $expect
+     */
     #[DataProvider('provider_custom_retry')]
     public function testItCanCustomiseCreationRetryOptionsForAllTasksOrOneTask(array $config, array $expect): void
     {
