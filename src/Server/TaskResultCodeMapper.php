@@ -12,6 +12,9 @@ use function ucfirst;
 
 class TaskResultCodeMapper
 {
+    /**
+     * @var array<string, array{http_status: int, loglevel: string}>
+     */
     protected array $code_map = [
         CoreTaskResult::SUCCESS => [
             'http_status' => 200,
@@ -60,12 +63,18 @@ class TaskResultCodeMapper
         ],
     ];
 
+    /**
+     * @param array<string, array{http_status?: int, loglevel?: string}> $custom_map
+     */
     public function __construct(array $custom_map = [])
     {
         $this->code_map = AssociativeArrayUtils::deepMerge($this->code_map, $custom_map);
     }
 
-    protected function findCodeConfig(TaskHandlerResult $result)
+    /**
+     * @return array{http_status: int, loglevel: string}
+     */
+    protected function findCodeConfig(TaskHandlerResult $result): array
     {
         $result_code = $result->getCode();
         if (isset($this->code_map[$result_code])) {
