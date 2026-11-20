@@ -151,9 +151,8 @@ class CreateTaskOptions
             throw new InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
         }
 
-        if ($this->throttle_interval instanceof DateInterval) {
-            $this->parseThrottleOptions();
-        }
+        $this->parseThrottleOptions();
+
         if ($this->task_id_hash_options) {
             $this->appendOptionsToTaskIdFrom();
         }
@@ -187,6 +186,10 @@ class CreateTaskOptions
 
     private function parseThrottleOptions(): void
     {
+        if (!$this->throttle_interval instanceof DateInterval) {
+            return;
+        }
+
         if ($this->schedule_send_after instanceof DateTimeImmutable) {
             throw new InvalidArgumentException('Cannot set both schedule_send_after and throttle_interval');
         }
@@ -210,13 +213,12 @@ class CreateTaskOptions
         $this->task_id_from .= '@'.$this->schedule_send_after->format('U.u');
     }
 
-    private function calculateIntervalSeconds(?DateInterval $interval): int
+    private function calculateIntervalSeconds(DateInterval $interval): int
     {
         $start = new DateTimeImmutable();
         $end = $start->add($interval);
-        $delta = $end->getTimestamp() - $start->getTimestamp();
 
-        return $delta;
+        return $end->getTimestamp() - $start->getTimestamp();
     }
 
     private function appendOptionsToTaskIdFrom(): void
