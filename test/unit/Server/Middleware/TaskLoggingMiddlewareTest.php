@@ -26,7 +26,7 @@ final class TaskLoggingMiddlewareTest extends TestCase
     protected StoppedMockClock $clock;
 
     /**
-     * @var array<mixed>
+     * @var array<string, mixed>
      */
     protected array $default_context = [];
 
@@ -209,7 +209,7 @@ final class TaskLoggingMiddlewareTest extends TestCase
     }
 
     /**
-     * @return array{level: string, message: string, context: array<string,mixed>}
+     * @return array{level: string, message: string, context: array<mixed>}
      */
     protected function assertLoggedOnce(string $level): array
     {
