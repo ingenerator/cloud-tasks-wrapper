@@ -16,7 +16,7 @@ use function http_build_query;
 use function str_contains;
 
 /**
- * @phpstan-type TBodyOption array{json: mixed}|array{form: array<string, mixed>}
+ * @phpstan-type TBodyOption array{json: mixed}|array{form: array<string, mixed>}|string
  */
 class CreateTaskOptions
 {
@@ -162,9 +162,9 @@ class CreateTaskOptions
     /**
      * @param TBodyOption|null $body
      *
-     * @return ($body is null ? null : array{body: string, Content-Type: string})
+     * @return ($body is array ? array{body: string, Content-Type: string}: null)
      */
-    private function encodeBodyOption(?array $body): ?array
+    private function encodeBodyOption(array|string|null $body): ?array
     {
         if (!is_array($body)) {
             return null;
