@@ -36,7 +36,7 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         return $result;
     }
 
-    protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms)
+    protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms): void
     {
         // By default, request is not logged on the assumption your logger already includes info on
         // the request URL etc within log metadata

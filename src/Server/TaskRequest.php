@@ -173,7 +173,7 @@ class TaskRequest
      * The exception short-circuits further execution but will be mapped to an HTTP response
      * that tells CloudTasks not to bother retrying.
      */
-    public function requireBodyField(string $key)
+    public function requireBodyField(string $key): mixed
     {
         $value = $this->request->getParsedBody()[$key] ?? null;
         if (empty($value)) {
