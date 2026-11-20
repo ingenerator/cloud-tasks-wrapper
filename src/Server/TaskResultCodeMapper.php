@@ -68,6 +68,7 @@ class TaskResultCodeMapper
      */
     public function __construct(array $custom_map = [])
     {
+        /* @phpstan-ignore assign.propertyType (no way to auto-declare the array shape deepMerge returns) */
         $this->code_map = AssociativeArrayUtils::deepMerge($this->code_map, $custom_map);
     }
 

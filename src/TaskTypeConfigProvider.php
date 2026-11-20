@@ -65,6 +65,8 @@ class TaskTypeConfigProvider
             $this->config['_default'] ?? [],
             $this->config[$task_type]
         );
+        /** @var TPartialTaskTypeConfigArray $cfg */
+        // No way to tell phpstan that the deepMerge returns the union of array shapes that went in
 
         if (isset($cfg['create_retry_settings']['retryableCodes'])) {
             // This is because the ::deepMerge will always combine rather than replace an indexed array of codes
