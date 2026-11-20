@@ -134,6 +134,9 @@ class TaskRequest
         $this->caller_email = $email;
     }
 
+    /**
+     * @param array<array-key, mixed> $body
+     */
     public function setRequestParsedBody(array $body): void
     {
         $this->request = $this->request->withParsedBody($body);
@@ -142,8 +145,15 @@ class TaskRequest
     public function optionalQueryParam(string $param): ?string
     {
         $params = $this->request->getQueryParams();
+        if (!isset($params[$param])) {
+            return null;
+        }
 
-        return $params[$param] ?? null;
+        if (!is_string($params[$param])) {
+            throw new CloudTaskCannotBeValidException('Query parameter "'.$param.'" must be a string');
+        }
+
+        return $params[$param];
     }
 
     /**
@@ -173,9 +183,13 @@ class TaskRequest
      * The exception short-circuits further execution but will be mapped to an HTTP response
      * that tells CloudTasks not to bother retrying.
      */
-    public function requireBodyField(string $key)
+    public function requireBodyField(string $key): mixed
     {
-        $value = $this->request->getParsedBody()[$key] ?? null;
+        $body = $this->request->getParsedBody();
+        if (!is_array($body)) {
+            throw new CloudTaskCannotBeValidException('Task body payload must be an array');
+        }
+        $value = $body[$key] ?? null;
         if (empty($value)) {
             throw new CloudTaskCannotBeValidException('Required field `'.$key.'` missing from task body payload');
         }

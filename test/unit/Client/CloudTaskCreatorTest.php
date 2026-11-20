@@ -10,6 +10,7 @@ use Google\ApiCore\ApiException;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Google\Cloud\Tasks\V2\HttpMethod;
+use Google\Cloud\Tasks\V2\HttpRequest;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
@@ -40,41 +41,50 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertInstanceOf(CloudTaskCreator::class, $this->newSubject());
     }
 
+    /**
+     * @param array{body?: string} $opts
+     */
     #[TestWith([[], ''])]
     #[TestWith([['body' => 'any body'], 'any body'])]
-    public function testItAddsBodyAndHeadersIfProvided($opts, $expect_body): void
+    public function testItAddsBodyAndHeadersIfProvided(array $opts, string $expect_body): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
+        $this->assertSame($expect_body, $task->getHttpRequest()?->getBody(), 'Sets body');
     }
 
+    /**
+     * @param non-empty-string $signer
+     */
     #[TestWith(['someone@service.com', true, 'someone@service.com'])]
     #[TestWith(['anonymous', false, null])]
     public function testItAddsOidcTokenForTaskUnlessTaskTypeIsConfiguredAnonymous(
-        $signer,
-        $expect_has_oidc,
-        $expect_oidc_email,
+        string $signer,
+        bool $expect_has_oidc,
+        ?string $expect_oidc_email,
     ): void {
         $this->task_config = TaskTypeConfigStub::withTaskType('do-something', ['signer_email' => $signer]);
         $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect_has_oidc, $task->getHttpRequest()->hasOidcToken());
+        $this->assertSame($expect_has_oidc, $task->getHttpRequest()?->hasOidcToken());
         if ($expect_has_oidc) {
             $this->assertSame(
                 $expect_oidc_email,
-                $task->getHttpRequest()->getOidcToken()->getServiceAccountEmail()
+                $task->getHttpRequest()->getOidcToken()?->getServiceAccountEmail()
             );
         } else {
             $this->assertNull($task->getHttpRequest()->getOidcToken());
         }
     }
 
+    /**
+     * @param array{custom_token_audience?: non-empty-string|null} $config
+     */
     #[TestWith([['custom_token_audience' => null], ''])]
     #[TestWith([[], ''])]
     #[TestWith([['custom_token_audience' => 'pick-me!'], 'pick-me!'])]
-    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured($config, $expect): void
+    public function testItConfiguresCustomAudienceForAuthenticatedTaskIfConfigured(array $config, string $expect): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'do-something',
@@ -83,8 +93,8 @@ final class CloudTaskCreatorTest extends TestCase
         $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertTrue($task->getHttpRequest()->hasOidcToken(), 'should have oidc token');
-        $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
+        $this->assertTrue($task->getHttpRequest()?->hasOidcToken(), 'should have oidc token');
+        $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()?->getAudience());
     }
 
     /**
@@ -117,6 +127,9 @@ final class CloudTaskCreatorTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     #[DataProvider('provider_task_url')]
     public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams(array $opts, string $expect): void
     {
@@ -126,13 +139,16 @@ final class CloudTaskCreatorTest extends TestCase
         );
         $this->newSubject()->create('do-something', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect, $task->getHttpRequest()->getUrl());
+        $this->assertSame($expect, $task->getHttpRequest()?->getUrl());
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
+    /**
+     * @param array{task_id?: string} $opts
+     */
     #[TestWith([[], ''])]
     #[TestWith([['task_id' => 'absad237'], 'absad237'])]
-    public function testItAddsTaskNameFromIdIfProvided($opts, $expect_id): void
+    public function testItAddsTaskNameFromIdIfProvided(array $opts, string $expect_id): void
     {
         $this->task_config = TaskTypeConfigStub::withTaskType(
             'some-task',
@@ -150,17 +166,22 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect_name, $task->getName());
     }
 
+    /**
+     * @param array{headers?: array<string, string>} $opts
+     * @param array<string, string> $expect
+     */
     #[TestWith([[], []])]
     #[TestWith([['headers' => ['X-SomeThing' => 'This']], ['X-SomeThing' => 'This']])]
-    public function testItAddsHttpHeadersIfProvided($opts, $expect): void
+    public function testItAddsHttpHeadersIfProvided(array $opts, array $expect): void
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertInstanceOf(HttpRequest::class, $task->getHttpRequest());
         $this->assertSame($expect, iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
     /**
-     * @return Iterator<int, bool[][]|DateTimeImmutable[][]|int[][]|null[]>
+     * @return Iterator<int, array{array<string, mixed>, array{seconds: int, nanos: int}|null}>
      */
     public static function provider_schedule_time(): Iterator
     {
@@ -177,6 +198,10 @@ final class CloudTaskCreatorTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     * @param array{seconds: int, nanos: int}|null $expect
+     */
     #[DataProvider('provider_schedule_time')]
     public function testItAddsTimestampForScheduledTimeIfProvided(array $opts, ?array $expect): void
     {
@@ -311,7 +336,6 @@ final class CloudTaskCreatorTest extends TestCase
                     'initialRetryDelayMillis' => 100,
                     'retryDelayMultiplier' => 1.3,
                     'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                     'retriesEnabled' => true,
                 ],
             ]
@@ -323,8 +347,8 @@ final class CloudTaskCreatorTest extends TestCase
                     'initialRetryDelayMillis' => 100,
                     'retryDelayMultiplier' => 1.3,
                     'maxRetryDelayMillis' => 10000,
-                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                     'retriesEnabled' => true,
+                    'retryableCodes' => [ApiStatus::DEADLINE_EXCEEDED, ApiStatus::UNAVAILABLE],
                 ],
             ]
         );
@@ -351,7 +375,7 @@ final class CloudTaskCreatorTest extends TestCase
 final class TasksClientSpy implements CloudTasksClientInterface
 {
     /**
-     * @var array<string, mixed[]|Task|string>[]
+     * @var list<array{parent: string, task: Task, args: array<string,mixed>}>
      */
     private array $created = [];
     private ?Exception $create_will_throw = null;
@@ -393,6 +417,9 @@ final class TasksClientSpy implements CloudTasksClientInterface
         Assert::assertSame($queue, $this->created[0]['parent']);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function assertCreatedOneTaskWithOptions(array $options): void
     {
         Assert::assertCount(1, $this->created);

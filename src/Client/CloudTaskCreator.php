@@ -83,6 +83,8 @@ class CloudTaskCreator implements TaskCreator
             if ($e->getCode() === Code::ALREADY_EXISTS && !$options->shouldThrowOnDuplicate()) {
                 // This is an expected failure, we are using server-side-task-dedupe and the caller has asked
                 // for us to silently ignore failures to create duplicates of tasks that have already been queued.
+                assert(is_string($task_name), 'Can only fire ALREADY_EXISTS if a task name was provided');
+
                 return $task_name;
             }
 

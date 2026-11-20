@@ -22,8 +22,15 @@ use function memory_get_peak_usage;
  */
 class TaskLoggingMiddleware implements TaskHandlerMiddleware
 {
-    public function __construct(protected RealtimeClock $clock, protected LoggerInterface $logger, protected TaskResultCodeMapper $code_mapper, protected array $default_context = [])
-    {
+    /**
+     * @param array<string, mixed> $default_context
+     */
+    public function __construct(
+        protected RealtimeClock $clock,
+        protected LoggerInterface $logger,
+        protected TaskResultCodeMapper $code_mapper,
+        protected array $default_context = [],
+    ) {
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult
@@ -36,7 +43,7 @@ class TaskLoggingMiddleware implements TaskHandlerMiddleware
         return $result;
     }
 
-    protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms)
+    protected function logResult(TaskRequest $request, TaskHandlerResult $result, int $time_ms): void
     {
         // By default, request is not logged on the assumption your logger already includes info on
         // the request URL etc within log metadata

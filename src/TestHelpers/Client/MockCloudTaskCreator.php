@@ -9,13 +9,14 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 use PHPUnit\Framework\Assert;
 use Throwable;
 
+use function array_map;
 use function json_encode;
 use function uniqid;
 
 final class MockCloudTaskCreator implements TaskCreator
 {
     /**
-     * @var array<string, mixed[]|string>[]
+     * @var list<array{task_type: string, options: array<string,scalar>}>
      */
     private array $calls = [];
 
@@ -50,7 +51,7 @@ final class MockCloudTaskCreator implements TaskCreator
     }
 
     /**
-     * @param mixed[][] $expect
+     * @param list<array{task_type: string, options: array<string, scalar>}> $expect
      */
     public function assertQueuedExactly(array $expect): void
     {
@@ -74,7 +75,7 @@ final class MockCloudTaskCreator implements TaskCreator
     {
         Assert::assertSame(
             [$expect_task_type],
-            \array_map(fn (array $t): string|array => $t['task_type'], $this->calls)
+            array_map(fn (array $t): string => $t['task_type'], $this->calls)
         );
     }
 
@@ -85,6 +86,8 @@ final class MockCloudTaskCreator implements TaskCreator
      * or throttle_interval. So they need to be converted to some sort of scalar that we can compare.
      *
      * @param array<string, mixed> $opts
+     *
+     * @return array<string, scalar>
      */
     private function convertOptionsToScalars(array $opts): array
     {

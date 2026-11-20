@@ -15,6 +15,9 @@ use function hash;
 use function http_build_query;
 use function str_contains;
 
+/**
+ * @phpstan-type TBodyOption array{json: mixed}|array{form: array<string, mixed>}|string
+ */
 class CreateTaskOptions
 {
     /**
@@ -31,6 +34,8 @@ class CreateTaskOptions
 
     /**
      * Extra headers to send with the HTTP request to the task handler.
+     *
+     * @var array<string, string>
      */
     private array $headers = [];
 
@@ -43,6 +48,8 @@ class CreateTaskOptions
      * Optionally add GET parameters to the handler URL.
      *
      * The handler URL itself comes from the task type config.
+     *
+     * @var array<string, mixed>|null
      */
     private ?array $query = null;
 
@@ -144,37 +151,45 @@ class CreateTaskOptions
             throw new InvalidArgumentException('Cannot use throttle_delay_secs without throttle_interval');
         }
 
-        if ($this->throttle_interval instanceof DateInterval) {
-            $this->parseThrottleOptions();
-        }
+        $this->parseThrottleOptions();
+
         if ($this->task_id_hash_options) {
             $this->appendOptionsToTaskIdFrom();
         }
     }
 
-    private function encodeBodyOption($body): ?array
+    /**
+     * @param TBodyOption|null $body
+     *
+     * @return ($body is array ? array{body: string, Content-Type: string}: null)
+     */
+    private function encodeBodyOption(array|string|null $body): ?array
     {
         if (!is_array($body)) {
             return null;
         }
 
-        $type = implode(',', array_keys($body));
+        $hasSingleType = count($body) === 1;
 
-        return match ($type) {
-            'json' => [
+        return match (true) {
+            $hasSingleType && array_key_exists('json', $body) => [
                 'body' => JSON::encode($body['json'], false),
                 'Content-Type' => 'application/json',
             ],
-            'form' => [
+            $hasSingleType && array_key_exists('form', $body) => [
                 'body' => http_build_query($body['form']),
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ],
-            default => throw new InvalidArgumentException('Invalid body type: '.JSON::encode($type, false)),
+            default => throw new InvalidArgumentException('Invalid body type: '.implode(',', array_keys($body))),
         };
     }
 
     private function parseThrottleOptions(): void
     {
+        if (!$this->throttle_interval instanceof DateInterval) {
+            return;
+        }
+
         if ($this->schedule_send_after instanceof DateTimeImmutable) {
             throw new InvalidArgumentException('Cannot set both schedule_send_after and throttle_interval');
         }
@@ -198,13 +213,12 @@ class CreateTaskOptions
         $this->task_id_from .= '@'.$this->schedule_send_after->format('U.u');
     }
 
-    private function calculateIntervalSeconds(?DateInterval $interval): int
+    private function calculateIntervalSeconds(DateInterval $interval): int
     {
         $start = new DateTimeImmutable();
         $end = $start->add($interval);
-        $delta = $end->getTimestamp() - $start->getTimestamp();
 
-        return $delta;
+        return $end->getTimestamp() - $start->getTimestamp();
     }
 
     private function appendOptionsToTaskIdFrom(): void
@@ -243,6 +257,9 @@ class CreateTaskOptions
         return $this->body;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getHeaders(): array
     {
         return $this->headers;
@@ -253,6 +270,9 @@ class CreateTaskOptions
         return $this->custom_handler_url;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getQuery(): ?array
     {
         return $this->query;
@@ -271,6 +291,9 @@ class CreateTaskOptions
         return $this->schedule_send_after;
     }
 
+    /**
+     * @phpstan-assert-if-true array<string,mixed> $this->getQuery()
+     */
     public function hasQuery(): bool
     {
         return !empty($this->query);

@@ -16,7 +16,10 @@ use Psr\Log\LogLevel;
 
 final class TaskResultCodeMapperTest extends TestCase
 {
-    protected $custom_codes = [];
+    /**
+     * @var array<string, array{http_status?: int, loglevel?: string}>
+     */
+    protected array $custom_codes = [];
 
     public function testItIsInitialisable(): void
     {
@@ -66,15 +69,22 @@ final class TaskResultCodeMapperTest extends TestCase
         $subject->getLogLevel($result);
     }
 
-    public static function provider_core_task_results(): array
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provider_core_task_results(): iterable
     {
-        $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
-
-        return array_map(fn (string $code): array => [$code], $consts);
+        foreach (ConstantDirectory::forClass(CoreTaskResult::class)->listConstants() as $const) {
+            assert(is_string($const), 'Constant value must be a string');
+            yield $const => [$const];
+        }
     }
 
+    /**
+     * @param non-empty-string $code
+     */
     #[DataProvider('provider_core_task_results')]
-    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults($code): void
+    public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults(string $code): void
     {
         $result = new ArbitraryTaskResult($code);
         $subject = $this->newSubject();
@@ -93,7 +103,7 @@ final class TaskResultCodeMapperTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, array<array<string, array<string, int|string>|int|string>|string>>
+     * @return Iterator<int, array{array<string,mixed>, non-empty-string, array{http: int, loglevel: string}}>
      */
     public static function provider_code_overrides(): Iterator
     {
@@ -119,6 +129,11 @@ final class TaskResultCodeMapperTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, array{http_status?: int, loglevel?: string}> $custom_codes
+     * @param non-empty-string $code
+     * @param array{http: int, loglevel: string} $expect
+     */
     #[DataProvider('provider_code_overrides')]
     public function testUsersCanOverrideBehaviourOfCoreCodes(array $custom_codes, string $code, array $expect): void
     {

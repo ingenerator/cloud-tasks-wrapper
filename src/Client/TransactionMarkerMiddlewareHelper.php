@@ -18,6 +18,8 @@ class TransactionMarkerMiddlewareHelper
 {
     /**
      * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
      */
     public static function addTransactionMarkerHeaders(array $options, string $uuid, DateTimeImmutable $expiry): array
     {

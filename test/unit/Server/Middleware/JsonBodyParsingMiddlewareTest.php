@@ -11,6 +11,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 final class JsonBodyParsingMiddlewareTest extends TestCase
@@ -94,16 +95,18 @@ final class JsonBodyParsingMiddlewareTest extends TestCase
         $this->assertSame($result, $actual_result);
     }
 
-    public function testItReturnsCouldNotBeValidResultWithInvalidJson(): void
+    #[TestWith(['{Invalid JSON}'])]
+    #[TestWith(['true'])]
+    public function testItReturnsCouldNotBeValidResultWithInvalidJsonOrNotArray(string $body): void
     {
         $request = TaskRequestStub::with([
             'headers' => ['Content-Type' => 'application/json'],
-            'body' => '{Invalid JSON}',
+            'body' => $body,
         ]);
         $result = $this->newSubject()->process($request, TestTaskChain::nextNeverCalled())->toArray();
         $this->assertNull($request->getHttpRequest()->getParsedBody());
         $this->assertSame(CoreTaskResult::CANNOT_BE_VALID, $result['code']);
-        $this->assertSame('Cannot be valid: Could not decode JSON body', $result['msg']);
+        $this->assertSame('Cannot be valid: Could not decode JSON body array', $result['msg']);
     }
 
     protected function newSubject(): JsonBodyParsingMiddleware

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use BadMethodCallException;
+use Closure;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandler;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
@@ -16,6 +17,10 @@ final class TestTaskChain extends TaskHandlerChain
 {
     protected bool $allow_next = true;
 
+    /**
+     * @param non-empty-string $code
+     * @param array<string, mixed> $log_context
+     */
     public static function withArbitraryResult(
         string $code,
         ?string $msg = null,
@@ -29,7 +34,10 @@ final class TestTaskChain extends TaskHandlerChain
         return self::withHandler(TestTaskHandler::returnsResult($result), true);
     }
 
-    public static function will(callable $handler): TestTaskChain
+    /**
+     * @param Closure(TaskRequest): TaskHandlerResult $handler
+     */
+    public static function will(Closure $handler): TestTaskChain
     {
         return self::withHandler(new TestTaskHandler($handler), true);
     }

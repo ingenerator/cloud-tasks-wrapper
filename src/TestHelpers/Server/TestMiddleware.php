@@ -3,6 +3,7 @@
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Server;
 
 use BadMethodCallException;
+use Closure;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
@@ -13,8 +14,6 @@ use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
  */
 final class TestMiddleware implements TaskHandlerMiddleware
 {
-    private $callable;
-
     public static function callsNext(): TestMiddleware
     {
         return new self(
@@ -36,9 +35,11 @@ final class TestMiddleware implements TaskHandlerMiddleware
         );
     }
 
-    public function __construct(callable $callable)
+    /**
+     * @param Closure(TaskRequest, TaskHandlerChain): TaskHandlerResult $callable
+     */
+    public function __construct(private readonly Closure $callable)
     {
-        $this->callable = $callable;
     }
 
     public function process(TaskRequest $request, TaskHandlerChain $chain): TaskHandlerResult

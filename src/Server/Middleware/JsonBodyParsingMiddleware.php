@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
  *
@@ -27,10 +29,10 @@ class JsonBodyParsingMiddleware implements TaskHandlerMiddleware
                 $body = $http_req->getBody()->getContents();
                 // rewind the body seeing getContents() leaves the marker at the end
                 $request->getHttpRequest()->getBody()->rewind();
-                $request->setRequestParsedBody(JSON::decode($body));
+                $request->setRequestParsedBody(JSON::decodeArray($body));
             } catch (InvalidJSONException $e) {
                 return CoreTaskResult::cannotBeValid(
-                    new CloudTaskCannotBeValidException('Could not decode JSON body', 0, $e)
+                    new CloudTaskCannotBeValidException('Could not decode JSON body array', 0, $e)
                 );
             }
         }

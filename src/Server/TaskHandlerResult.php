@@ -15,18 +15,14 @@ namespace Ingenerator\CloudTasksWrapper\Server;
  */
 abstract class TaskHandlerResult
 {
+    /**
+     * @param non-empty-string $code internal status code
+     * @param string $msg short status message for logging etc
+     * @param array<string, mixed> $log_context any extra values to pass along to the logger
+     */
     protected function __construct(
-        /**
-         * @var string internal status code
-         */
         protected string $code,
-        /**
-         * @var string short status message for logging etc
-         */
         protected string $msg,
-        /**
-         * @var array any extra values to pass along to the logger
-         */
         protected array $log_context = [],
     ) {
     }
@@ -36,6 +32,9 @@ abstract class TaskHandlerResult
         return $this->msg;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getLogContext(): array
     {
         return $this->log_context;
@@ -47,7 +46,7 @@ abstract class TaskHandlerResult
     }
 
     /**
-     * @return array<string, mixed[]|string>
+     * @return array{code: non-empty-string, msg: string, log_context: array<string, mixed>}
      */
     public function toArray(): array
     {
