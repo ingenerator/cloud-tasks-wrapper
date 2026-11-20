@@ -9,10 +9,13 @@ use UnderflowException;
 
 use function array_merge;
 
+/**
+ * @phpstan-import-type TRetrySettingsArray from TaskTypeConfig
+ */
 class TaskTypeConfigProvider
 {
     /**
-     * @var array default options for retrying creation of cloud tasks
+     * @var TRetrySettingsArray default options for retrying creation of cloud tasks
      */
     protected static array $defaultCreateRetry = [
         'initialRetryDelayMillis' => 100,

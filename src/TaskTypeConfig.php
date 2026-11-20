@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper;
 
+use Exception;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 
@@ -9,11 +10,28 @@ use function str_replace;
 
 /**
  * Represents the overall config for a particular task type.
+ *
+ * @phpstan-type TRetrySettingsArray array{
+ *     retriesEnabled?: true,
+ *     noRetriesRpcTimeoutMillis?: int,
+ *     retryableCodes?: list<string>,
+ *     initialRetryDelayMillis?: int,
+ *     retryDelayMultiplier?: float,
+ *     maxRetryDelayMillis?: int,
+ *     initialRpcTimeoutMillis?: int,
+ *     rpcTimeoutMultiplier?: float,
+ *     maxRpcTimeoutMillis?: int,
+ *     totalTimeoutMillis?: int,
+ *     maxRetries?: int,
+ *     retryFunction?: callable(Exception,array<mixed>):bool
+ * }
  */
 class TaskTypeConfig
 {
     /**
      * Custom settings for retrying creating tasks of this type.
+     *
+     * @var TRetrySettingsArray
      */
     protected array $create_retry_settings;
 
@@ -55,6 +73,9 @@ class TaskTypeConfig
         ObjectPropertyPopulator::assignHash($this, $cfg);
     }
 
+    /**
+     * @return TRetrySettingsArray
+     */
     public function getCreateRetrySettings(): array
     {
         return $this->create_retry_settings;
