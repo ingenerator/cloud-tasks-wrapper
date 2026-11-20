@@ -12,6 +12,9 @@ use Ingenerator\CloudTasksWrapper\Server\Middleware\TransactionMarkerRepository;
 
 final class ArrayTransactionMarkerRepository implements TransactionMarkerRepository
 {
+    /**
+     * @var list<string>
+     */
     private array $uuids = [];
 
     public static function withNothing(): ArrayTransactionMarkerRepository
@@ -19,6 +22,9 @@ final class ArrayTransactionMarkerRepository implements TransactionMarkerReposit
         return new self();
     }
 
+    /**
+     * @param list<string> $uuids
+     */
     public static function withUuids(array $uuids): ArrayTransactionMarkerRepository
     {
         $static = new self();

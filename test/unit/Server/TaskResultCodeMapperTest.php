@@ -69,6 +69,9 @@ final class TaskResultCodeMapperTest extends TestCase
         $subject->getLogLevel($result);
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
     public static function provider_core_task_results(): array
     {
         $consts = ConstantDirectory::forClass(CoreTaskResult::class)->listConstants();
@@ -122,6 +125,10 @@ final class TaskResultCodeMapperTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, array{http_status?: int, loglevel?: string}> $custom_codes
+     * @param array{http: int, loglevel: string} $expect
+     */
     #[DataProvider('provider_code_overrides')]
     public function testUsersCanOverrideBehaviourOfCoreCodes(array $custom_codes, string $code, array $expect): void
     {

@@ -19,9 +19,9 @@ use function call_user_func_array;
 final class CoreTaskResultTest extends TestCase
 {
     /**
-     * @return mixed[]
+     * @return iterable<int, array{string, list<mixed>, array{msg: string, log_context: array<string,mixed>}}>
      */
-    public static function provider_status_constructors(): array
+    public static function provider_status_constructors(): iterable
     {
         /**
          * This data provider and test is a sanity test that:
@@ -97,6 +97,10 @@ final class CoreTaskResultTest extends TestCase
         return $cases;
     }
 
+    /**
+     * @param list<mixed>|null $args
+     * @param array{msg: string, log_context: array<string,mixed>} $expect
+     */
     #[DataProvider('provider_status_constructors')]
     public function testItHasNamedConstructorForEachStatusAndCanBeCreated(
         string $method,

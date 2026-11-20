@@ -206,6 +206,9 @@ final class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function assertLoggedOnce(string $level): array
     {
         $infos = $this->logger->recordsByLevel[$level];

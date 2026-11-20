@@ -123,6 +123,9 @@ final class CloudTaskCreatorTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     */
     #[DataProvider('provider_task_url')]
     public function testItSetsTaskToPostToCustomOrConfigUrlOptionallyAddingQueryParams(array $opts, string $expect): void
     {
@@ -173,7 +176,7 @@ final class CloudTaskCreatorTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, bool[][]|DateTimeImmutable[][]|int[][]|null[]>
+     * @return Iterator<int, array{array<string, mixed>, array{seconds: int, nanos: int}|null}>
      */
     public static function provider_schedule_time(): Iterator
     {
@@ -190,6 +193,10 @@ final class CloudTaskCreatorTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     * @param array{seconds: int, nanos: int}|null $expect
+     */
     #[DataProvider('provider_schedule_time')]
     public function testItAddsTimestampForScheduledTimeIfProvided(array $opts, ?array $expect): void
     {
@@ -406,6 +413,9 @@ final class TasksClientSpy implements CloudTasksClientInterface
         Assert::assertSame($queue, $this->created[0]['parent']);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function assertCreatedOneTaskWithOptions(array $options): void
     {
         Assert::assertCount(1, $this->created);

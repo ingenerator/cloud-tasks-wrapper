@@ -22,7 +22,7 @@ final class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, mixed[]>
+     * @return Iterator<int, array{array<string, mixed>, string}>
      */
     public static function provider_invalid_args(): Iterator
     {
@@ -71,6 +71,9 @@ final class CreateTaskOptionsTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     #[DataProvider('provider_invalid_args')]
     public function testItThrowsOnConstructionWithInvalidArgs(array $args, string $expect_msg): void
     {
@@ -117,7 +120,7 @@ final class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, mixed[]>
+     * @return Iterator<int, array{array<string, mixed>, array<string, string>, string|null}>
      */
     public static function provider_body_encoding(): Iterator
     {
@@ -161,6 +164,10 @@ final class CreateTaskOptionsTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     * @param array<string, string> $expect_headers
+     */
     #[DataProvider('provider_body_encoding')]
     public function testItCanEncodeBodyTypesAndSetsDefaultContentTypeHeader(
         array $opts,
