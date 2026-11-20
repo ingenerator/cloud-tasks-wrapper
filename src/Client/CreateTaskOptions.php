@@ -291,6 +291,9 @@ class CreateTaskOptions
         return $this->schedule_send_after;
     }
 
+    /**
+     * @phpstan-assert-if-true array<string,mixed> $this->getQuery()
+     */
     public function hasQuery(): bool
     {
         return !empty($this->query);
