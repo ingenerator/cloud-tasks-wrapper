@@ -110,6 +110,7 @@ final class CoreTaskResultTest extends TestCase
         if ($args === null) {
             $this->fail('No testcase defined for CoreTaskResult::'.$method);
         }
+        /** @phpstan-ignore argument.type (can't dynamically resolve the callable method here, but we want the test to fail on nonexistent anyway) */
         $result = call_user_func_array(CoreTaskResult::class.'::'.$method, $args);
         /** @var TaskHandlerResult $result */
         $this->assertSame(

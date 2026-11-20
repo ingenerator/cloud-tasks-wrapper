@@ -52,6 +52,9 @@ final class CloudTaskCreatorTest extends TestCase
         $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
     }
 
+    /**
+     * @param non-empty-string $signer
+     */
     #[TestWith(['someone@service.com', true, 'someone@service.com'])]
     #[TestWith(['anonymous', false, null])]
     public function testItAddsOidcTokenForTaskUnlessTaskTypeIsConfiguredAnonymous(
@@ -75,7 +78,7 @@ final class CloudTaskCreatorTest extends TestCase
     }
 
     /**
-     * @param array{custom_token_audience?: string|null} $config
+     * @param array{custom_token_audience?: non-empty-string|null} $config
      */
     #[TestWith([['custom_token_audience' => null], ''])]
     #[TestWith([[], ''])]
@@ -371,7 +374,7 @@ final class CloudTaskCreatorTest extends TestCase
 final class TasksClientSpy implements CloudTasksClientInterface
 {
     /**
-     * @var array<string, mixed[]|Task|string>[]
+     * @var list<array{parent: string, task: Task, args: array<string,mixed>}>
      */
     private array $created = [];
     private ?Exception $create_will_throw = null;

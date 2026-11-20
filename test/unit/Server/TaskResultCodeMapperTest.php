@@ -79,6 +79,9 @@ final class TaskResultCodeMapperTest extends TestCase
         return array_map(fn (string $code): array => [$code], $consts);
     }
 
+    /**
+     * @param non-empty-string $code
+     */
     #[DataProvider('provider_core_task_results')]
     public function testItsDefaultMappingDefinesValuesForAllCoreTaskResults(string $code): void
     {
@@ -99,7 +102,7 @@ final class TaskResultCodeMapperTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, array<array<string, array<string, int|string>|int|string>|string>>
+     * @return Iterator<int, array{array<string,mixed>, non-empty-string, array{http: int, loglevel: string}}>
      */
     public static function provider_code_overrides(): Iterator
     {
@@ -127,6 +130,7 @@ final class TaskResultCodeMapperTest extends TestCase
 
     /**
      * @param array<string, array{http_status?: int, loglevel?: string}> $custom_codes
+     * @param non-empty-string $code
      * @param array{http: int, loglevel: string} $expect
      */
     #[DataProvider('provider_code_overrides')]

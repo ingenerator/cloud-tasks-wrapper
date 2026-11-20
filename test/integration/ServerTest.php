@@ -151,6 +151,7 @@ final class ServerTest extends TestCase
             ]
         );
         $query = parse_url($handler_url, PHP_URL_QUERY);
+        $this->assertIsString($query, 'Handler URL must contain a query string');
         parse_str($query, $query_vars);
 
         return $req->withQueryParams($query_vars);
