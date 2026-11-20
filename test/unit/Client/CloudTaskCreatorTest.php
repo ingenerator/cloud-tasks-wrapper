@@ -10,6 +10,7 @@ use Google\ApiCore\ApiException;
 use Google\ApiCore\ApiStatus;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Google\Cloud\Tasks\V2\HttpMethod;
+use Google\Cloud\Tasks\V2\HttpRequest;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Google\Rpc\Code;
@@ -49,7 +50,7 @@ final class CloudTaskCreatorTest extends TestCase
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect_body, $task->getHttpRequest()->getBody(), 'Sets body');
+        $this->assertSame($expect_body, $task->getHttpRequest()?->getBody(), 'Sets body');
     }
 
     /**
@@ -66,11 +67,11 @@ final class CloudTaskCreatorTest extends TestCase
         $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect_has_oidc, $task->getHttpRequest()->hasOidcToken());
+        $this->assertSame($expect_has_oidc, $task->getHttpRequest()?->hasOidcToken());
         if ($expect_has_oidc) {
             $this->assertSame(
                 $expect_oidc_email,
-                $task->getHttpRequest()->getOidcToken()->getServiceAccountEmail()
+                $task->getHttpRequest()->getOidcToken()?->getServiceAccountEmail()
             );
         } else {
             $this->assertNull($task->getHttpRequest()->getOidcToken());
@@ -92,8 +93,8 @@ final class CloudTaskCreatorTest extends TestCase
         $this->newSubject()->create('do-something');
 
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertTrue($task->getHttpRequest()->hasOidcToken(), 'should have oidc token');
-        $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()->getAudience());
+        $this->assertTrue($task->getHttpRequest()?->hasOidcToken(), 'should have oidc token');
+        $this->assertSame($expect, $task->getHttpRequest()->getOidcToken()?->getAudience());
     }
 
     /**
@@ -138,7 +139,7 @@ final class CloudTaskCreatorTest extends TestCase
         );
         $this->newSubject()->create('do-something', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
-        $this->assertSame($expect, $task->getHttpRequest()->getUrl());
+        $this->assertSame($expect, $task->getHttpRequest()?->getUrl());
         $this->assertSame(HttpMethod::POST, $task->getHttpRequest()->getHttpMethod());
     }
 
@@ -175,6 +176,7 @@ final class CloudTaskCreatorTest extends TestCase
     {
         $this->newSubject()->create('some-task', new CreateTaskOptions($opts));
         $task = $this->tasks_client->assertCreatedOneTask();
+        $this->assertInstanceOf(HttpRequest::class, $task->getHttpRequest());
         $this->assertSame($expect, iterator_to_array($task->getHttpRequest()->getHeaders()));
     }
 
