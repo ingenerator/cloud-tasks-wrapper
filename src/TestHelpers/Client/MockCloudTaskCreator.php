@@ -2,6 +2,8 @@
 
 namespace Ingenerator\CloudTasksWrapper\TestHelpers\Client;
 
+use DateInterval;
+use DateTimeImmutable;
 use Ingenerator\CloudTasksWrapper\Client\CreateTaskOptions;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreationFailedException;
 use Ingenerator\CloudTasksWrapper\Client\TaskCreator;
@@ -35,6 +37,7 @@ final class MockCloudTaskCreator implements TaskCreator
         $options ??= new CreateTaskOptions([]);
         $this->calls[] = [
             'task_type' => $task_type,
+            /* @phpstan-ignore argument.type (need to refactor CreateTaskOptions API) */
             'options' => $this->convertOptionsToScalars($options->getRawOptions()),
         ];
 
@@ -51,13 +54,14 @@ final class MockCloudTaskCreator implements TaskCreator
     }
 
     /**
-     * @param list<array{task_type: string, options: array<string, scalar>}> $expect
+     * @param list<array{task_type: string, options: array<string, mixed>}> $expect
      */
     public function assertQueuedExactly(array $expect): void
     {
         Assert::assertSame(
             array_map(
                 function (array $call): array {
+                    /* @phpstan-ignore argument.type (need to refactor CreateTaskOptions API) */
                     $call['options'] = $this->convertOptionsToScalars($call['options']);
 
                     return $call;
@@ -85,7 +89,7 @@ final class MockCloudTaskCreator implements TaskCreator
      * The testcase will almost never have the actual object instances that were passed for schedule_send_after
      * or throttle_interval. So they need to be converted to some sort of scalar that we can compare.
      *
-     * @param array<string, mixed> $opts
+     * @param array{schedule_send_after?: DateTimeImmutable|null, throttle_interval?: DateInterval, ...<string,scalar>} $opts
      *
      * @return array<string, scalar>
      */
@@ -100,6 +104,8 @@ final class MockCloudTaskCreator implements TaskCreator
             // be enough to make it comparable and vaguely understandable in the diff.
             $opts['throttle_interval'] = json_encode(array_filter((array) $opts['throttle_interval']));
         }
+
+        /** @var array<string,scalar> $opts */
 
         return $opts;
     }

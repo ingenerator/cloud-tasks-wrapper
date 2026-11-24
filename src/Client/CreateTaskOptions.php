@@ -119,15 +119,19 @@ class CreateTaskOptions
     public function __construct(
         private readonly array $_raw_options,
     ) {
+        /* @phpstan-ignore assign.propertyType (need to refactor the create args separately) */
         $this->_create_time = $this->_raw_options['_create_time'] ?? new DateTimeImmutable();
         $options = $this->_raw_options;
         unset($options['_create_time']);
+
+        /* @phpstan-ignore argument.type (need to refactor the create args separately) */
         $encoded = $this->encodeBodyOption($options['body'] ?? null);
         if ($encoded) {
             $options['body'] = $encoded['body'];
             // ??= means only set this key if not already present / null
             // equivalent to if (!isset($op['hdr']['CT']) { $op['hdr']['CT'] = $foo } or to using array_merge
             // to set a default
+            /* @phpstan-ignore offsetAccess.nonOffsetAccessible (need to refactor the create args separately) */
             $options['headers']['Content-Type'] ??= $encoded['Content-Type'];
         }
 
