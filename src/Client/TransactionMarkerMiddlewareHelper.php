@@ -17,12 +17,13 @@ use Ingenerator\PHPUtils\DateTime\DateString;
 class TransactionMarkerMiddlewareHelper
 {
     /**
-     * @param array<string, mixed> $options
+     * @param array{headers?:array<string, mixed>, ...<string, mixed>} $options
      *
      * @return array<string, mixed>
      */
     public static function addTransactionMarkerHeaders(array $options, string $uuid, DateTimeImmutable $expiry): array
     {
+        // @todo: Should accept and return `CreateTaskOptions` (e.g. cloned with extra headers) for better clarity & type-safety.
         $options['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_HEADER] = $uuid;
         $options['headers'][TransactionMarkerMiddleware::TRANSACTION_MARKER_EXPIRE_HEADER] = DateString::ymdhis(
             $expiry
