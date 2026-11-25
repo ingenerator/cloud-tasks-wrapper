@@ -12,6 +12,7 @@ use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 final class ExceptionCatchingMiddlewareTest extends TestCase
 {
@@ -37,9 +38,12 @@ final class ExceptionCatchingMiddlewareTest extends TestCase
         );
     }
 
+    /**
+     * @param class-string<Throwable> $err_class
+     */
     #[TestWith(['Error'])]
     #[TestWith(['RuntimeException'])]
-    public function testItConvertsUncaughtThrowableToUncaughtExceptionResult($err_class): void
+    public function testItConvertsUncaughtThrowableToUncaughtExceptionResult(string $err_class): void
     {
         $exception = new $err_class('I have a problem');
         $result = $this->newSubject()->process(

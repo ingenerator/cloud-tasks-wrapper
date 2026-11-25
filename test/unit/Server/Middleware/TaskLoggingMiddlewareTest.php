@@ -25,7 +25,10 @@ final class TaskLoggingMiddlewareTest extends TestCase
 
     protected StoppedMockClock $clock;
 
-    protected $default_context = [];
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $default_context = [];
 
     public function testItIsInitialisable(): void
     {
@@ -141,14 +144,16 @@ final class TaskLoggingMiddlewareTest extends TestCase
         );
 
         $log = $this->assertLoggedOnce(LogLevel::INFO);
+        $mem = $log['context']['peak_mem'];
+        $this->assertIsString($mem, 'Memory should be formatted to string for fixed size output');
         $this->assertMatchesRegularExpression(
             '/^[1-9][0-9]*\.[0-9]{3}MB$/',
-            $log['context']['peak_mem'],
+            $mem,
             'Should have a plausible value for peak memory'
         );
         // Can't be too strict, dependencies will change their usage over time, but roughly check we've divided to the
         // correct unit scale.
-        $mem = (float) $log['context']['peak_mem'];
+        $mem = (float) $mem;
         $this->assertGreaterThan(1, $mem, 'Should be more than 1MB');
         $this->assertLessThan(100, $mem, 'Should be less than 100MB');
     }
@@ -203,11 +208,27 @@ final class TaskLoggingMiddlewareTest extends TestCase
         );
     }
 
+    /**
+     * @return array{level: string, message: string, context: array<mixed>}
+     */
     protected function assertLoggedOnce(string $level): array
     {
         $infos = $this->logger->recordsByLevel[$level];
         $this->assertCount(1, $infos, 'Should have logged exactly once');
 
-        return array_shift($infos);
+        $record = array_shift($infos);
+        assert(
+            is_array($record)
+            && isset($record['level'])
+            && is_string($record['level'])
+            && isset($record['message'])
+            && is_string($record['message'])
+            && isset($record['context'])
+            && is_array($record['context'])
+            && !array_is_list($record['context']),
+            'TestLogger stores records in expected internal shape'
+        );
+
+        return $record;
     }
 }

@@ -13,6 +13,7 @@ use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\CloudTasksWrapper\Server\TaskResultCodeMapper;
+use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\OIDCTokenVerifier\OIDCTokenVerifier;
 use Ingenerator\OIDCTokenVerifier\OpenIDDiscoveryCertificateProvider;
@@ -23,6 +24,21 @@ use Psr\Log\LoggerInterface;
 
 use function parse_url;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ *
+ * @phpstan-type TTaskServerConfigArray array{
+ *     result_map?: array<string, array{http_status?: int, loglevel?: string}>,
+ *     token_issuer?: non-empty-string,
+ *     oidc_cert_options?: array{
+ *       allow_insecure? :bool,
+ *       cache_key_prefix?: string,
+ *       cache_refresh_grace_period?: string,
+ *       cache_expires_if_no_header?: string
+ *     },
+ *     handler_url_pattern?: non-empty-string
+ * }
+ */
 class TaskServerFactory
 {
     /**
@@ -31,7 +47,8 @@ class TaskServerFactory
      * For more advanced customisation you can of course replace this with an equivalent implementation / dependency
      * container config.
      *
-     * @param array<string, mixed> $server_config
+     * @param array<string, TPartialTaskTypeConfigArray> $task_types
+     * @param TTaskServerConfigArray $server_config
      */
     public static function makeController(
         LoggerInterface $logger,
@@ -42,38 +59,36 @@ class TaskServerFactory
         array $server_config,
         TaskHandlerMiddleware ...$additional_middlewares,
     ): TaskController {
-        $server_config = array_merge(
-            [
-                'result_map' => [
-                    // This should be a hash of custom task result codes / overrides to the treatment of
-                    // CoreTaskResult:: codes.
-                    //
-                    // e.g.:
-                    //
-                    // CustomTaskResult::IMAGE_INVALID => [
-                    //   // Allocate a specific code to highlight it in your request logs, but 2xx it to mark it does
-                    //   // not need to be retried.
-                    //   'http_status' => 295,
-                    //   // But log as a warning as this is an error case
-                    //   'loglevel'    => LogLevel::WARNING
-                    // ],
-                ],
-                // If you're using an emulator in dev / CI you may want to provide a custom token issuer here. Tasks
-                // sent by Cloud Tasks will be signed by google.
-                'token_issuer' => 'https://accounts.google.com',
-                // See the OpenIDDiscoveryCertificateProvider for full options here
-                // Note the code below to allow insecure issuers if you specified an http:// token issuer
-                'oidc_cert_options' => [],
-                // The URL pattern should be a regex that can extract the task_type value from the URL. It must capture
-                // a `task_type` named parameter as below. Note that the TaskController will throw an
-                // \InvalidArgumentException if the URL does not match this pattern.
-                // Note there will usually be an overlap between this and your task_types._default.handler_url
-                // configuration, but they are separate because it is valid to have a server that is not a client, or a
-                // client that is not a server.
-                'handler_url_pattern' => '#^/_do_task/(?P<task_type>.+)$#',
+        $server_config = [
+            'result_map' => [
+                // This should be a hash of custom task result codes / overrides to the treatment of
+                // CoreTaskResult:: codes.
+                //
+                // e.g.:
+                //
+                // CustomTaskResult::IMAGE_INVALID => [
+                //   // Allocate a specific code to highlight it in your request logs, but 2xx it to mark it does
+                //   // not need to be retried.
+                //   'http_status' => 295,
+                //   // But log as a warning as this is an error case
+                //   'loglevel'    => LogLevel::WARNING
+                // ],
             ],
-            $server_config
-        );
+            // If you're using an emulator in dev / CI you may want to provide a custom token issuer here. Tasks
+            // sent by Cloud Tasks will be signed by google.
+            'token_issuer' => 'https://accounts.google.com',
+            // See the OpenIDDiscoveryCertificateProvider for full options here
+            // Note the code below to allow insecure issuers if you specified an http:// token issuer
+            'oidc_cert_options' => [],
+            // The URL pattern should be a regex that can extract the task_type value from the URL. It must capture
+            // a `task_type` named parameter as below. Note that the TaskController will throw an
+            // \InvalidArgumentException if the URL does not match this pattern.
+            // Note there will usually be an overlap between this and your task_types._default.handler_url
+            // configuration, but they are separate because it is valid to have a server that is not a client, or a
+            // client that is not a server.
+            'handler_url_pattern' => '#^/_do_task/(?P<task_type>.+)$#',
+            ...$server_config,
+        ];
 
         if (parse_url($server_config['token_issuer'], PHP_URL_SCHEME) === 'http') {
             // The configured token issuer is http:// - presumably because you are using an emulator in dev / CI.

@@ -1,6 +1,6 @@
 parameters:
     treatPhpDocTypesAsCertain: false
-    level: 5
+    level: 10
     paths:
         - src
         - test
@@ -10,3 +10,8 @@ parameters:
       -
         identifier: property.unusedType
         path: src/Client/CreateTaskOptions.php
+
+      # Will be fixed with update to oidc-token-verifier 2.x in separate PR
+      -
+        message: /MockTokenVerifier/
+        path: test/unit/Server/Middleware/TaskRequestAuthenticatingMiddlewareTest.php

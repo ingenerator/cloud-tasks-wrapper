@@ -30,13 +30,16 @@ final class TaskRequestTest extends TestCase
         $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar');
         $this->assertSame(
             'https://my.app/task?foo=bar',
-            $this->newSubject()->getFullUrl()
+            $this->newSubject()->getFullUrl(),
         );
     }
 
+    /**
+     * @param array<string, string> $hdrs
+     */
     #[TestWith([['X-CloudTasks-TaskETA' => '1501912403.555197'], '2017-08-05T06:53:23.555197+01:00'])]
     #[TestWith([[], null])]
-    public function testItProvidesCloudTasksEtaAsDatetimeOrNull($hdrs, $expect): void
+    public function testItProvidesCloudTasksEtaAsDatetimeOrNull(array $hdrs, ?string $expect): void
     {
         $dtz = date_default_timezone_get();
         try {
@@ -45,7 +48,7 @@ final class TaskRequestTest extends TestCase
             $this->http_req = new ServerRequest('POST', 'https://my.app/task?foo=bar', $hdrs);
             $this->assertSame(
                 $expect,
-                DateString::isoMS($this->newSubject()->getScheduledTime(), null)
+                DateString::isoMS($this->newSubject()->getScheduledTime(), null),
             );
         } finally {
             date_default_timezone_set($dtz);
@@ -59,7 +62,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-QueueName' => 'my-queue',
-            ]
+            ],
         );
         $this->assertSame('my-queue', $this->newSubject()->getQueueName());
     }
@@ -71,7 +74,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskName' => 'task12472315223',
-            ]
+            ],
         );
         $this->assertSame('task12472315223', $this->newSubject()->getTaskName());
     }
@@ -83,7 +86,7 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskRetryCount' => '5',
-            ]
+            ],
         );
         $this->assertSame(5, $this->newSubject()->getRetryCount());
     }
@@ -95,39 +98,57 @@ final class TaskRequestTest extends TestCase
             'https://my.app/task?foo=bar',
             [
                 'X-CloudTasks-TaskExecutionCount' => '3',
-            ]
+            ],
         );
         $this->assertSame(3, $this->newSubject()->getExecutionCount());
     }
 
+    /**
+     * @param array<string, string> $hdrs
+     */
     #[TestWith([['X-CloudTasks-TaskPreviousResponse' => '499'], '499'])]
     #[TestWith([[], null])]
-    public function testItProvidesPreviousResponseIfPresent($hdrs, $expect): void
+    public function testItProvidesPreviousResponseIfPresent(array $hdrs, ?string $expect): void
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
-            $hdrs
+            $hdrs,
         );
         $this->assertSame($expect, $this->newSubject()->getPreviousResponse());
     }
 
+    /**
+     * @param array<string, string> $hdrs
+     */
     #[TestWith([['X-CloudTasks-TaskRetryReason' => "didn't work before"], "didn't work before"])]
     #[TestWith([[], null])]
-    public function testItProvidesRetryReasonIfPresent($hdrs, $expect): void
+    public function testItProvidesRetryReasonIfPresent(array $hdrs, ?string $expect): void
     {
         $this->http_req = new ServerRequest(
             'POST',
             'https://my.app/task?foo=bar',
-            $hdrs
+            $hdrs,
         );
         $this->assertSame($expect, $this->newSubject()->getRetryReason());
     }
 
+    public function testItThrowsOnAccessToNonStringQueryParam(): void
+    {
+        $this->http_req = $this->http_req->withQueryParams(['foo' => ['one', 'two']]);
+        $subject = $this->newSubject();
+        $this->expectException(CloudTaskCannotBeValidException::class);
+        $this->expectExceptionMessageIsOrContains('Query parameter "foo" must be a string');
+        $subject->optionalQueryParam('foo');
+    }
+
+    /**
+     * @param array<string, string> $vars
+     */
     #[TestWith([[], null])]
     #[TestWith([['foo' => 'bar'], null])]
     #[TestWith([['param' => 'this'], 'this'])]
-    public function testItsOptionalQueryProvidesValueOrNull($vars, $expect): void
+    public function testItsOptionalQueryProvidesValueOrNull(array $vars, ?string $expect): void
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
         $this->assertSame($expect, $this->newSubject()->optionalQueryParam('param'));
@@ -139,10 +160,13 @@ final class TaskRequestTest extends TestCase
         $this->assertSame('bar', $this->newSubject()->requireQueryParam('foo'));
     }
 
+    /**
+     * @param array<string, string> $vars
+     */
     #[TestWith([[]])]
     #[TestWith([['something' => 'else']])]
     #[TestWith([['foo' => '']])]
-    public function testItsRequireQueryThrowsIfValueMissingOrEmpty($vars): void
+    public function testItsRequireQueryThrowsIfValueMissingOrEmpty(array $vars): void
     {
         $this->http_req = $this->http_req->withQueryParams($vars);
         $subject = $this->newSubject();
@@ -157,12 +181,15 @@ final class TaskRequestTest extends TestCase
         $this->assertSame('My value', $subject->requireBodyField('some_payload_field'));
     }
 
+    /**
+     * @param array<string, string|null>|null $body
+     */
     #[TestWith([null])]
     #[TestWith([[]])]
     #[TestWith([['other' => 'things']])]
     #[TestWith([['anything' => null]])]
     #[TestWith([['anything' => '']])]
-    public function testItsRequireBodyFieldThrowsIfValueMissingOrEmpty($body): void
+    public function testItsRequireBodyFieldThrowsIfValueMissingOrEmpty(?array $body): void
     {
         $this->http_req = $this->http_req->withParsedBody($body);
         $subject = $this->newSubject();

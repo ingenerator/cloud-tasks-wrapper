@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Craig Gosman <craig@ingenerator.com>
  *
@@ -17,8 +19,8 @@ use Ingenerator\PHPUtils\DateTime\DateTimeImmutableFactory;
 
 class TransactionMarkerMiddleware implements TaskHandlerMiddleware
 {
-    public const TRANSACTION_MARKER_HEADER = 'X-Transaction';
-    public const TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
+    public const string TRANSACTION_MARKER_HEADER = 'X-Transaction';
+    public const string TRANSACTION_MARKER_EXPIRE_HEADER = 'X-Transaction-Expire';
 
     public function __construct(
         private readonly TransactionMarkerRepository $transaction_marker_repo,

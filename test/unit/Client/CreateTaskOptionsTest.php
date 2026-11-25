@@ -22,7 +22,7 @@ final class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, mixed[]>
+     * @return Iterator<int, array{array<string, mixed>, string}>
      */
     public static function provider_invalid_args(): Iterator
     {
@@ -71,6 +71,9 @@ final class CreateTaskOptionsTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $args
+     */
     #[DataProvider('provider_invalid_args')]
     public function testItThrowsOnConstructionWithInvalidArgs(array $args, string $expect_msg): void
     {
@@ -85,7 +88,7 @@ final class CreateTaskOptionsTest extends TestCase
     #[TestWith([['query' => ['foo' => 'bar']], true])]
     #[TestWith([['query' => null], false])]
     #[TestWith([[], false])]
-    public function testItCanHaveQuery(array $opts, $expect): void
+    public function testItCanHaveQuery(array $opts, bool $expect): void
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->hasQuery());
@@ -94,10 +97,13 @@ final class CreateTaskOptionsTest extends TestCase
         }
     }
 
+    /**
+     * @param array{query?: array<string, string>, custom_handler_url: string} $opts
+     */
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever'], true])]
     #[TestWith([['custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], true])]
     #[TestWith([['query' => ['foo' => 'bar'], 'custom_handler_url' => 'http://some.service/wherever?hardcoded=query'], false])]
-    public function testItOnlyAllowsQueryWithCustomUrlIfUrlDoesNotContainAQuery($opts, $is_valid): void
+    public function testItOnlyAllowsQueryWithCustomUrlIfUrlDoesNotContainAQuery(array $opts, bool $is_valid): void
     {
         $e = null;
         try {
@@ -114,7 +120,7 @@ final class CreateTaskOptionsTest extends TestCase
     }
 
     /**
-     * @return Iterator<int, mixed[]>
+     * @return Iterator<int, array{array<string, mixed>, array<string, string>, string|null}>
      */
     public static function provider_body_encoding(): Iterator
     {
@@ -158,6 +164,10 @@ final class CreateTaskOptionsTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $opts
+     * @param array<string, string> $expect_headers
+     */
     #[DataProvider('provider_body_encoding')]
     public function testItCanEncodeBodyTypesAndSetsDefaultContentTypeHeader(
         array $opts,
@@ -180,20 +190,24 @@ final class CreateTaskOptionsTest extends TestCase
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'query' => ['foo' => 'bar']], '/some/queue/path/tasks/59c9944a18e175c30831ce9b7ded47bc48aba09f8b0e920f21c44d7e72b6b2fe'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'headers' => ['X-foo' => 'bar']], '/some/queue/path/tasks/8dbbc54179cb185b6ff25c4765403adea4692aa35f69594af1ab3b254e3dcd15'])]
     #[TestWith([['task_id_from' => 'app-type', 'task_id_hash_options' => true, 'schedule_send_after' => '2020-09-04 00:00:00 +01:00'], '/some/queue/path/tasks/90372598891aabbb05ea2461ff3164aba8fd7e9de42d9c9f5418309cb9a015dc'])]
-    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue(array $opts, $expect): void
+    public function testItCanBuildTaskNameFromExplicitIdOrHashableValue(array $opts, ?string $expect): void
     {
         if (isset($opts['schedule_send_after'])) {
+            $this->assertIsString($opts['schedule_send_after']);
             $opts['schedule_send_after'] = new DateTimeImmutable($opts['schedule_send_after']);
         }
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->buildTaskName('/some/queue/path'));
     }
 
+    /**
+     * @param array{task_id?: string, task_id_from?: string, throw_on_duplicate?: bool} $opts
+     */
     #[TestWith([[], true])]
     #[TestWith([['task_id' => 'foo'], true])]
     #[TestWith([['task_id_from' => 'bar'], true])]
     #[TestWith([['task_id' => 'foo', 'throw_on_duplicate' => false], false])]
-    public function testItDefaultsToThrowOnDuplicateTaskIdButCanOverride($opts, $expect): void
+    public function testItDefaultsToThrowOnDuplicateTaskIdButCanOverride(array $opts, bool $expect): void
     {
         $subject = new CreateTaskOptions($opts);
         $this->assertSame($expect, $subject->shouldThrowOnDuplicate());

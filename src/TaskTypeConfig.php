@@ -2,6 +2,7 @@
 
 namespace Ingenerator\CloudTasksWrapper;
 
+use Exception;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Ingenerator\PHPUtils\Object\ObjectPropertyPopulator;
 
@@ -9,11 +10,39 @@ use function str_replace;
 
 /**
  * Represents the overall config for a particular task type.
+ *
+ * @phpstan-type TRetrySettingsArray array{
+ *     retriesEnabled?: true,
+ *     noRetriesRpcTimeoutMillis?: int,
+ *     initialRetryDelayMillis?: int,
+ *     retryDelayMultiplier?: float,
+ *     maxRetryDelayMillis?: int,
+ *     initialRpcTimeoutMillis?: int,
+ *     rpcTimeoutMultiplier?: float,
+ *     maxRpcTimeoutMillis?: int,
+ *     totalTimeoutMillis?: int,
+ *     maxRetries?: int,
+ *     retryFunction?: callable(Exception,array<mixed>):bool
+ * }
+ * @phpstan-type TQueueConfigArray array{
+ *     project: non-empty-string,
+ *     location: non-empty-string,
+ *     name: non-empty-string,
+ * }
+ * @phpstan-type TPartialTaskTypeConfigArray array{
+ *   create_retry_settings?: TRetrySettingsArray,
+ *   handler_url?: non-empty-string,
+ *   queue?: array{project?: non-empty-string, location?: non-empty-string, name?: non-empty-string},
+ *   signer_email?: non-empty-string,
+ *   custom_token_audience?: non-empty-string|null,
+ * }
  */
 class TaskTypeConfig
 {
     /**
      * Custom settings for retrying creating tasks of this type.
+     *
+     * @var TRetrySettingsArray
      */
     protected array $create_retry_settings;
 
@@ -24,6 +53,8 @@ class TaskTypeConfig
 
     /**
      * The project, name and location of the queue this task type will be sent through.
+     *
+     * @var TQueueConfigArray
      */
     protected array $queue;
 
@@ -40,7 +71,7 @@ class TaskTypeConfig
     protected ?string $custom_token_audience = null;
 
     /**
-     * @param array<string, mixed> $cfg
+     * @param TPartialTaskTypeConfigArray $cfg
      */
     public function __construct(
         /**
@@ -55,6 +86,9 @@ class TaskTypeConfig
         ObjectPropertyPopulator::assignHash($this, $cfg);
     }
 
+    /**
+     * @return TRetrySettingsArray
+     */
     public function getCreateRetrySettings(): array
     {
         return $this->create_retry_settings;

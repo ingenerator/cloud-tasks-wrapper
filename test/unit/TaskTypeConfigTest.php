@@ -7,8 +7,14 @@ namespace Ingenerator\CloudTasksWrapper;
 use Google\ApiCore\ValidationException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ */
 final class TaskTypeConfigTest extends TestCase
 {
+    /**
+     * @var TPartialTaskTypeConfigArray
+     */
     protected array $vars = [];
     protected string $type = 'foo-task';
 

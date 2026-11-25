@@ -6,6 +6,7 @@ namespace test\integration;
 
 use Ingenerator\CloudTasksWrapper\Factory\TaskServerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskController;
+use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerFactory;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerMiddleware;
 use Ingenerator\PHPUtils\Mutex\MutexWrapper;
@@ -34,7 +35,9 @@ final class TaskServerFactoryTest extends TestCase
         $this->assertInstanceOf(TaskController::class, $controller);
 
         $chain = ObjectPropertyRipper::ripOne($controller, 'chain');
+        $this->assertInstanceOf(TaskHandlerChain::class, $chain);
         $middlewares = ObjectPropertyRipper::ripOne($chain, 'middlewares');
+        $this->assertIsArray($middlewares);
         $this->assertSame($mock_middleware, array_pop($middlewares));
     }
 
@@ -58,7 +61,9 @@ final class TaskServerFactoryTest extends TestCase
         $this->assertInstanceOf(TaskController::class, $controller);
 
         $chain = ObjectPropertyRipper::ripOne($controller, 'chain');
+        $this->assertInstanceOf(TaskHandlerChain::class, $chain);
         $middlewares = ObjectPropertyRipper::ripOne($chain, 'middlewares');
+        $this->assertIsArray($middlewares);
 
         array_splice($middlewares, 0, -3);
         $this->assertSame([$middleware1, $middleware2, $middleware3], $middlewares);

@@ -8,6 +8,9 @@ use Ingenerator\CloudTasksWrapper\TaskTypeConfig;
 use Ingenerator\CloudTasksWrapper\TaskTypeConfigProvider;
 use Ingenerator\PHPUtils\ArrayHelpers\AssociativeArrayUtils;
 
+/**
+ * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ */
 final class TaskTypeConfigStub extends TaskTypeConfigProvider
 {
     protected bool $allow_any_task_type = false;
@@ -20,6 +23,9 @@ final class TaskTypeConfigStub extends TaskTypeConfigProvider
         return $i;
     }
 
+    /**
+     * @param TPartialTaskTypeConfigArray $opts
+     */
     public static function withTaskType(string $type, array $opts = []): TaskTypeConfigStub
     {
         return new self([$type => $opts]);
@@ -27,22 +33,25 @@ final class TaskTypeConfigStub extends TaskTypeConfigProvider
 
     public function __construct(array $config)
     {
-        parent::__construct(
-            AssociativeArrayUtils::deepMerge(
-                [
-                    '_default' => [
-                        'queue' => [
-                            'project' => 'dev',
-                            'location' => 'europe',
-                            'name' => 'my-queue',
-                        ],
-                        'signer_email' => 'tasks-signer@serviceaccount.test',
-                        'handler_url' => 'http://app-http/_do_task/{TASK_TYPE}',
+        $merged = AssociativeArrayUtils::deepMerge(
+            [
+                '_default' => [
+                    'queue' => [
+                        'project' => 'dev',
+                        'location' => 'europe',
+                        'name' => 'my-queue',
                     ],
+                    'signer_email' => 'tasks-signer@serviceaccount.test',
+                    'handler_url' => 'http://app-http/_do_task/{TASK_TYPE}',
                 ],
-                $config
-            )
+            ],
+            $config
         );
+
+        /** @var array<string, TPartialTaskTypeConfigArray> $merged */
+        // There's no easy way to tell phpstan that AssociativeArrayUtils::deepMerge returns the same array shape(s)
+        // that went in.
+        parent::__construct($merged);
     }
 
     public function getConfig(string $task_type): TaskTypeConfig

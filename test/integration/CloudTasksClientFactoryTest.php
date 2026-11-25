@@ -7,6 +7,7 @@ namespace test\integration;
 use Google\ApiCore\CredentialsWrapper;
 use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Ingenerator\CloudTasksWrapper\Client\CloudTasksClientFactory;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -21,6 +22,16 @@ final class CloudTasksClientFactoryTest extends TestCase
             'credentials' => null,
         ]);
         $this->assertInstanceOf(CloudTasksClient::class, $client);
+    }
+
+    public function testItThrowsIfConfiguringEmulatorWithoutUrl(): void
+    {
+        $cache = $this->createStub(CacheItemPoolInterface::class);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageIsOrContains('emulator_endpoint must be provided when use_emulator is true');
+        CloudTasksClientFactory::makeClient($cache, [
+            'use_emulator' => true,
+        ]);
     }
 
     public function testItCanCreateClientWhenCalledWithProductionConfiguration(): void

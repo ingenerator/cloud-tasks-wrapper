@@ -6,6 +6,7 @@ namespace test\unit\Ingenerator\CloudTasksWrapper\Server;
 
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerChain;
 use Ingenerator\CloudTasksWrapper\Server\TaskHandlerResult;
+use Ingenerator\CloudTasksWrapper\Server\TaskRequest;
 use Ingenerator\CloudTasksWrapper\Server\TaskResult\ArbitraryTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestMiddleware;
@@ -16,7 +17,10 @@ use UnderflowException;
 
 final class TaskHandlerChainTest extends TestCase
 {
-    protected $middlewares = [];
+    /**
+     * @var list<TestMiddleware>
+     */
+    protected array $middlewares = [];
 
     public function testItIsInitialisable(): void
     {
@@ -74,14 +78,14 @@ final class TaskHandlerChainTest extends TestCase
         $middleware_calls = [];
         $this->middlewares = [
             new TestMiddleware(
-                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
+                function (TaskRequest $got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
                     $middleware_calls[] = ['one', $got_req];
 
                     return $chain->nextHandler($got_req);
                 }
             ),
             new TestMiddleware(
-                function ($got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
+                function (TaskRequest $got_req, TaskHandlerChain $chain) use (&$middleware_calls): TaskHandlerResult {
                     $middleware_calls[] = ['two', $got_req];
 
                     return $chain->nextHandler($got_req);
