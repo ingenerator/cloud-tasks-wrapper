@@ -14,6 +14,8 @@ use Ingenerator\CloudTasksWrapper\Server\TaskResult\CoreTaskResult;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TaskRequestStub;
 use Ingenerator\CloudTasksWrapper\TestHelpers\Server\TestTaskChain;
 use Ingenerator\CloudTasksWrapper\TestHelpers\TaskTypeConfigStub;
+use Ingenerator\OIDCTokenVerifier\Constraint\AudiencePathAndQueryTokenConstraint;
+use Ingenerator\OIDCTokenVerifier\Constraint\EmailExactTokenConstraint;
 use Ingenerator\OIDCTokenVerifier\TestHelpers\MockTokenVerifier;
 use Iterator;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -116,8 +118,8 @@ final class TaskRequestAuthenticatingMiddlewareTest extends TestCase
         $this->token_verifier->assertVerifiedOnce(
             'abc215.1242121asd2.ad7215724',
             [
-                'audience_path_and_query' => 'http://foo.bar.com/_task?foo=bar&data=some%20thing',
-                'email_exact' => 'foo@bar.serviceaccount.com',
+                new AudiencePathAndQueryTokenConstraint('http://foo.bar.com/_task?foo=bar&data=some%20thing'),
+                new EmailExactTokenConstraint('foo@bar.serviceaccount.com'),
             ]
         );
     }
