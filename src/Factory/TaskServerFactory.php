@@ -26,16 +26,12 @@ use function parse_url;
 
 /**
  * @phpstan-import-type TPartialTaskTypeConfigArray from TaskTypeConfig
+ * @phpstan-import-type TProviderOptions from OpenIDDiscoveryCertificateProvider
  *
  * @phpstan-type TTaskServerConfigArray array{
  *     result_map?: array<string, array{http_status?: int, loglevel?: string}>,
  *     token_issuer?: non-empty-string,
- *     oidc_cert_options?: array{
- *       allow_insecure? :bool,
- *       cache_key_prefix?: string,
- *       cache_refresh_grace_period?: string,
- *       cache_expires_if_no_header?: string
- *     },
+ *     oidc_cert_options?: TProviderOptions,
  *     handler_url_pattern?: non-empty-string
  * }
  */
